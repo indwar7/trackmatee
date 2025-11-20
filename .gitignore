@@ -1,45 +1,93 @@
-# Miscellaneous
-*.class
-*.log
-*.pyc
-*.swp
-.DS_Store
-.atom/
-.build/
-.buildlog/
-.history
-.svn/
-.swiftpm/
-migrate_working_dir/
+# ===============================
+# Flutter & Dart Ignored Files
+# ===============================
 
-# IntelliJ related
+.dart_tool/
+.packages
+.pub-cache/
+.pub/
+.buildlog/
+.dart_tools/
+
+# Flutter plugin files
+.flutter-plugins
+.flutter-plugins-dependencies
+
+# Build directories
+build/
+**/build/
+
+# Generated documentation
+doc/api/
+
+# Coverage
+coverage/
+
+# iOS build files
+ios/Flutter/.last_build_id
+ios/Flutter/Generated*
+ios/Flutter/flutter_export_environment*.sh
+ios/Pods/
+ios/.generated/
+ios/build/
+
+# macOS build files
+macos/Flutter/ephemeral/
+macos/Pods/
+macos/build/
+
+# Android build files
+android/.gradle/
+android/app/build/
+android/local.properties
+
+# Windows & Linux ephemeral folders
+windows/flutter/ephemeral/
+linux/flutter/ephemeral/
+
+# Web publish
+web/.dart_tool/
+web/manifest.json
+web/version.json
+
+# ===============================
+# IDE / Editor Files
+# ===============================
+
+# IntelliJ / Android Studio
 *.iml
 *.ipr
 *.iws
 .idea/
 
-# The .vscode folder contains launch configuration and tasks you configure in
-# VS Code which you may wish to be included in version control, so this line
-# is commented out by default.
+# VS Code
+# (Uncomment if you don't want editor settings tracked)
 #.vscode/
 
-# Flutter/Dart/Pub related
-**/doc/api/
-**/ios/Flutter/.last_build_id
-.dart_tool/
-.flutter-plugins-dependencies
-.pub-cache/
-.pub/
-/build/
-/coverage/
+# Others
+*.log
+*.class
+*.pyc
+*.swp
+.DS_Store
+.svn/
+.swiftpm/
+migrate_working_dir/
 
-# Symbolication related
+# ===============================
+# Project-Specific Ignored Files
+# ===============================
+
+# Mistaken folders
+trackmatee/
+lib/assests/   # (If this was created by mistake)
+
+# Symbolication / Obfuscation
 app.*.symbols
-
-# Obfuscation related
 app.*.map.json
 
-# Android Studio will place build artifacts here
-/android/app/debug
-/android/app/profile
-/android/app/release
+# Android APK & Bundles
+*.apk
+*.aab
+*.aar
+
