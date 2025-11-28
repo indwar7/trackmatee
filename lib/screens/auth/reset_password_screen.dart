@@ -1,4 +1,9 @@
+// lib/screens/auth/reset_password_screen.dart
+
+import 'dart:convert';
 import 'package:flutter/material.dart';
+import 'package:get/get.dart';
+import 'package:http/http.dart' as http;
 
 class ResetPasswordScreen extends StatefulWidget {
   const ResetPasswordScreen({super.key});
@@ -8,289 +13,99 @@ class ResetPasswordScreen extends StatefulWidget {
 }
 
 class _ResetPasswordScreenState extends State<ResetPasswordScreen> {
-  final TextEditingController newPasswordController = TextEditingController();
-  final TextEditingController confirmPasswordController = TextEditingController();
+  final newPass = TextEditingController();
+  final confirmPass = TextEditingController();
+  bool show1 = false, show2 = false;
+  bool loading = false;
 
-  bool obscureNew = true;
-  bool obscureConfirm = true;
+  Future<void> resetPassword() async {
+    final email = Get.arguments["email"];
+    final otp = Get.arguments["otp"];
 
-  // Password rule flags
-  bool hasMinLength = false;
-  bool hasUpper = false;
-  bool hasLower = false;
-  bool hasDigit = false;
-  bool hasSpecial = false;
-
-  @override
-  void initState() {
-    super.initState();
-    newPasswordController.addListener(_onPasswordChanged);
-  }
-
-  @override
-  void dispose() {
-    newPasswordController.dispose();
-    confirmPasswordController.dispose();
-    super.dispose();
-  }
-
-  void _onPasswordChanged() {
-    final pwd = newPasswordController.text;
-
-    setState(() {
-      hasMinLength = pwd.length >= 8;
-      hasUpper = RegExp(r'[A-Z]').hasMatch(pwd);
-      hasLower = RegExp(r'[a-z]').hasMatch(pwd);
-      hasDigit = RegExp(r'[0-9]').hasMatch(pwd);
-      hasSpecial = RegExp(r'[!@#\$&*~%^()\[\]{}?<>|/+_=.,-]').hasMatch(pwd);
-    });
-  }
-
-  bool isPasswordStrong() {
-    return hasMinLength && hasUpper && hasLower && hasDigit && hasSpecial;
-  }
-
-  void _onDone() {
-    if (!isPasswordStrong()) {
-      ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(
-          content:
-          Text("Password does not meet required conditions"),
-          backgroundColor: Colors.red,
-        ),
-      );
+    if (newPass.text.trim().isEmpty || newPass.text != confirmPass.text) {
+      Get.snackbar("Error", "Passwords do not match", backgroundColor: Colors.red,colorText: Colors.white);
       return;
     }
 
-    if (newPasswordController.text != confirmPasswordController.text) {
-      ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(
-          content: Text('Passwords do not match'),
-          backgroundColor: Colors.red,
-        ),
-      );
-      return;
-    }
+    setState(() => loading = true);
 
-    Navigator.pushNamedAndRemoveUntil(context, '/login', (_) => false);
-  }
-
-  Widget reqRow(bool ok, String text) {
-    return Row(
-      children: [
-        Container(
-          width: 22,
-          height: 22,
-          decoration: BoxDecoration(
-            color: ok ? const Color(0xFF4CAF50) : Colors.transparent,
-            border: Border.all(
-              color: ok ? const Color(0xFF4CAF50) : Colors.white24,
-              width: 1.2,
-            ),
-            borderRadius: BorderRadius.circular(6),
-          ),
-          child: Icon(
-            ok ? Icons.check_rounded : Icons.circle,
-            color: ok ? Colors.white : Colors.white24,
-            size: ok ? 14 : 8,
-          ),
-        ),
-        const SizedBox(width: 10),
-        Text(
-          text,
-          style: TextStyle(
-            fontFamily: "Helvetica",
-            color: ok ? Colors.white : Colors.white70,
-            fontSize: 13,
-          ),
-        ),
-      ],
+    final response = await http.post(
+      Uri.parse("http://56.228.42.249/api/auth/reset-password/"),
+      headers: {"Content-Type": "application/json"},
+      body: jsonEncode({
+        "email": email,
+        "code": otp,
+        "new_password": newPass.text.trim(),
+      }),
     );
+
+    setState(() => loading = false);
+
+    if (response.statusCode == 200) {
+      Get.snackbar("Done", "Password Reset Successful",
+          backgroundColor: Colors.green,colorText: Colors.white);
+      Get.offAllNamed('/login');
+    } else {
+      Get.snackbar("Failed", "Incorrect OTP or email",
+          backgroundColor: Colors.red,colorText: Colors.white);
+    }
   }
 
   @override
   Widget build(BuildContext context) {
-    const fieldColor = Color(0xFF16213E);
-
     return Scaffold(
-      backgroundColor: const Color(0xFF1A1A2E),
+      backgroundColor: const Color(0xFF121212),
       appBar: AppBar(
+        leading: BackButton(color: Colors.white),
         backgroundColor: Colors.transparent,
         elevation: 0,
-        leading: const BackButton(color: Colors.white),
-        title: const Text(
-          'Reset Password',
-          style: TextStyle(
-            fontFamily: "Helvetica",
-            color: Colors.white,
-            fontSize: 24,
-            fontWeight: FontWeight.bold,
-          ),
-        ),
+        title: const Text("Reset Password",
+            style: TextStyle(fontSize: 20,fontWeight: FontWeight.bold)),
       ),
 
-      body: LayoutBuilder(
-        builder: (context, constraints) {
-          return SingleChildScrollView(
-            padding: const EdgeInsets.all(24),
-            child: ConstrainedBox(
-              constraints: BoxConstraints(minHeight: constraints.maxHeight),
-              child: IntrinsicHeight(
-                child: Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: [
-                    const SizedBox(height: 40),
+      body: Padding(
+        padding: const EdgeInsets.symmetric(horizontal: 24),
+        child: Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
 
-                    // NEW PASSWORD LABEL
-                    const Text(
-                      'New Password',
-                      style: TextStyle(
-                        fontFamily: "Helvetica",
-                        color: Colors.white,
-                        fontSize: 16,
-                        fontWeight: FontWeight.w500,
-                      ),
-                    ),
-                    const SizedBox(height: 8),
+          const SizedBox(height: 25),
+          _field("New Password", newPass, show1, ()=>setState(()=> show1=!show1)),
+          const SizedBox(height: 20),
+          _field("Confirm Password", confirmPass, show2, ()=>setState(()=> show2=!show2)),
 
-                    // NEW PASSWORD FIELD
-                    TextField(
-                      controller: newPasswordController,
-                      obscureText: obscureNew,
-                      style: const TextStyle(
-                          color: Colors.white, fontFamily: "Helvetica"),
-                      decoration: InputDecoration(
-                        hintText: 'Enter Password',
-                        hintStyle: TextStyle(color: Colors.grey[500]),
-                        filled: true,
-                        fillColor: fieldColor,
-                        contentPadding:
-                        const EdgeInsets.symmetric(horizontal: 20, vertical: 18),
-                        border: OutlineInputBorder(
-                          borderRadius: BorderRadius.circular(14),
-                          borderSide: BorderSide.none,
-                        ),
-                        focusedBorder: OutlineInputBorder(
-                          borderRadius: BorderRadius.circular(14),
-                          borderSide: const BorderSide(
-                              color: Color(0xFF8B5CF6), width: 1.5),
-                        ),
-                        suffixIcon: GestureDetector(
-                          onTap: () => setState(() {
-                            obscureNew = !obscureNew;
-                          }),
-                          child: Icon(
-                            obscureNew
-                                ? Icons.visibility_off
-                                : Icons.visibility,
-                            color: Colors.grey[300],
-                          ),
-                        ),
-                      ),
-                    ),
-
-                    const SizedBox(height: 20),
-
-                    // LIVE PASSWORD STRENGTH RULES
-                    Column(
-                      crossAxisAlignment: CrossAxisAlignment.start,
-                      children: [
-                        reqRow(hasMinLength, "At least 8 characters"),
-                        const SizedBox(height: 10),
-                        reqRow(hasUpper, "1 uppercase letter"),
-                        const SizedBox(height: 10),
-                        reqRow(hasLower, "1 lowercase letter"),
-                        const SizedBox(height: 10),
-                        reqRow(hasDigit, "1 number"),
-                        const SizedBox(height: 10),
-                        reqRow(hasSpecial, "1 special character"),
-                      ],
-                    ),
-
-                    const SizedBox(height: 30),
-
-                    // CONFIRM PASSWORD LABEL
-                    const Text(
-                      'Confirm Password',
-                      style: TextStyle(
-                        fontFamily: "Helvetica",
-                        color: Colors.white,
-                        fontSize: 16,
-                        fontWeight: FontWeight.w500,
-                      ),
-                    ),
-                    const SizedBox(height: 8),
-
-                    // CONFIRM PASSWORD FIELD
-                    TextField(
-                      controller: confirmPasswordController,
-                      obscureText: obscureConfirm,
-                      style: const TextStyle(
-                          color: Colors.white, fontFamily: "Helvetica"),
-                      decoration: InputDecoration(
-                        hintText: 'Confirm Password',
-                        hintStyle: TextStyle(color: Colors.grey[500]),
-                        filled: true,
-                        fillColor: fieldColor,
-                        contentPadding:
-                        const EdgeInsets.symmetric(horizontal: 20, vertical: 18),
-                        border: OutlineInputBorder(
-                          borderRadius: BorderRadius.circular(14),
-                          borderSide: BorderSide.none,
-                        ),
-                        focusedBorder: OutlineInputBorder(
-                          borderRadius: BorderRadius.circular(14),
-                          borderSide: const BorderSide(
-                              color: Color(0xFF8B5CF6), width: 1.5),
-                        ),
-                        suffixIcon: GestureDetector(
-                          onTap: () =>
-                              setState(() => obscureConfirm = !obscureConfirm),
-                          child: Icon(
-                            obscureConfirm
-                                ? Icons.visibility_off
-                                : Icons.visibility,
-                            color: Colors.grey[300],
-                          ),
-                        ),
-                      ),
-                    ),
-
-                    const Spacer(),
-
-                    // DONE BUTTON
-                    SizedBox(
-                      width: double.infinity,
-                      height: 56,
-                      child: ElevatedButton(
-                        onPressed: _onDone,
-                        style: ElevatedButton.styleFrom(
-                          backgroundColor: const Color(0xFF8B5CF6),
-                          foregroundColor: Colors.white,
-                          shape: RoundedRectangleBorder(
-                            borderRadius: BorderRadius.circular(14),
-                          ),
-                          elevation: 0,
-                        ),
-                        child: const Text(
-                          'Done',
-                          style: TextStyle(
-                            fontFamily: "Helvetica",
-                            fontSize: 17,
-                            fontWeight: FontWeight.w600,
-                          ),
-                        ),
-                      ),
-                    ),
-
-                    const SizedBox(height: 32),
-                  ],
-                ),
-              ),
+          const SizedBox(height: 45),
+          SizedBox(
+            width: double.infinity,
+            height: 55,
+            child: ElevatedButton(
+              onPressed: loading ? null : resetPassword,
+              style: ElevatedButton.styleFrom(backgroundColor: const Color(0xFF8B5CF6)),
+              child: loading
+                  ? const CircularProgressIndicator(color: Colors.white)
+                  : const Text("Done", style: TextStyle(fontSize: 17,fontWeight: FontWeight.bold)),
             ),
-          );
-        },
+          ),
+        ]),
       ),
     );
+  }
+
+  Widget _field(String label, TextEditingController c, bool v, VoidCallback toggle) {
+    return Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
+      Text(label, style: const TextStyle(color: Colors.white,fontSize: 16)),
+      const SizedBox(height: 8),
+      TextField(
+        controller: c,
+        obscureText: !v,
+        style: const TextStyle(color: Colors.white),
+        decoration: InputDecoration(
+          filled: true, fillColor: const Color(0xFF3A3A3A),
+          suffixIcon: GestureDetector(
+            onTap: toggle,
+            child: Icon(v ? Icons.visibility : Icons.visibility_off,color:Colors.white),
+          ),
+          border: OutlineInputBorder(borderRadius: BorderRadius.circular(12)),
+        ),
+      )
+    ]);
   }
 }

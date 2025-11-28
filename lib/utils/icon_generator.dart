@@ -6,10 +6,10 @@ import 'package:path/path.dart' as path;
 Future<void> main() async {
   // Create directories
   await _createDirectories();
-  
+
   // Copy icon to Android directories
   await _copyIcons();
-  
+
   print('Icons have been set up successfully!');
 }
 
@@ -30,7 +30,7 @@ Future<void> _createDirectories() async {
 Future<void> _copyIcons() async {
   // Copy the app_logo.png to all Android directories
   final sourceFile = File('assets/app_logo.png');
-  
+
   if (!await sourceFile.exists()) {
     print('Error: app_logo.png not found in assets folder');
     return;
@@ -46,7 +46,7 @@ Future<void> _copyIcons() async {
 
 Future<void> _copyToAndroid(File source, String folder, int size) async {
   final destPath = 'android/app/src/main/res/$folder/ic_launcher.png';
-  
+
   // Resize and save the image
   final result = await FlutterImageCompress.compressAndGetFile(
     source.path,
@@ -55,7 +55,7 @@ Future<void> _copyToAndroid(File source, String folder, int size) async {
     minHeight: size,
     quality: 100,
   );
-  
+
   if (result != null) {
     print('Created: $destPath');
   } else {

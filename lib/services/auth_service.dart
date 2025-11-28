@@ -4,67 +4,57 @@ import 'package:get_storage/get_storage.dart';
 class AuthService extends GetxService {
   final _isLoggedIn = false.obs;
   final _token = ''.obs;
+  final _email = ''.obs;
+  final _username = ''.obs;
+
   final _box = GetStorage();
 
+  // GETTERS
   bool get isLoggedIn => _isLoggedIn.value;
   String get token => _token.value;
+  String get email => _email.value;
+  String get username => _username.value;
 
   @override
   void onInit() {
     super.onInit();
-    // Load auth state when service initializes
+
     _isLoggedIn.value = _box.read('isLoggedIn') ?? false;
     _token.value = _box.read('token') ?? '';
+    _email.value = _box.read('email') ?? '';
+    _username.value = _box.read('username') ?? 'User';
   }
 
+  // CALL THIS AFTER LOGIN API SUCCESS
   Future<void> login(String email, String password) async {
-    try {
-      // Here you would typically make an API call to your backend
-      // For now, we'll simulate a successful login
-      await Future.delayed(const Duration(seconds: 1));
-      
-      // Save auth state
-      _isLoggedIn.value = true;
-      _token.value = 'dummy_token_${DateTime.now().millisecondsSinceEpoch}';
-      
-      await _box.write('isLoggedIn', true);
-      await _box.write('token', _token.value);
-      await _box.write('email', email);
-      
-      return; // Success
-    } catch (e) {
-      throw 'Login failed. Please try again.';
-    }
+    await Future.delayed(const Duration(seconds: 1));
+
+    _isLoggedIn.value = true;
+    _token.value = 'dummy_token_${DateTime.now().millisecondsSinceEpoch}';
+    _email.value = email;
+    _username.value = email.split('@')[0]; // TEMP – until API sends real name
+
+    await _box.write('isLoggedIn', true);
+    await _box.write('token', _token.value);
+    await _box.write('email', _email.value);
+    await _box.write('username', _username.value);
   }
 
   Future<void> logout() async {
-    try {
-      // Here you would typically make an API call to invalidate the token
-      await Future.delayed(const Duration(milliseconds: 500));
-      
-      // Clear auth state
-      _isLoggedIn.value = false;
-      _token.value = '';
-      
-      await _box.remove('isLoggedIn');
-      await _box.remove('token');
-      await _box.remove('email');
-      
-      return; // Success
-    } catch (e) {
-      throw 'Logout failed. Please try again.';
-    }
-  }
+    await Future.delayed(const Duration(milliseconds: 300));
 
-  // Add this method to check if user is logged in
-  bool isAuthenticated() {
-    return _isLoggedIn.value && _token.value.isNotEmpty;
+    _isLoggedIn.value = false;
+    _token.value = '';
+    _email.value = '';
+    _username.value = '';
+
+    await _box.erase(); // complete wipe – safest
+
+    Get.offAllNamed('/login');
   }
 }
 
-// Initialize the auth service
 Future<AuthService> initAuthService() async {
-  final authService = Get.put(AuthService());
-  await Get.putAsync(() => Future.value(authService), permanent: true);
-  return authService;
+  Get.put(AuthService());
+  return Get.find<AuthService>();
 }

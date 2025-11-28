@@ -1,4 +1,7 @@
+import 'dart:convert';
 import 'package:flutter/material.dart';
+import 'package:get/get.dart';
+import 'package:http/http.dart' as http;
 
 class ForgotPasswordScreen extends StatefulWidget {
   const ForgotPasswordScreen({super.key});
@@ -8,174 +11,179 @@ class ForgotPasswordScreen extends StatefulWidget {
 }
 
 class _ForgotPasswordScreenState extends State<ForgotPasswordScreen> {
-  final _emailController = TextEditingController();
-  String? _errorMessage;
+  final TextEditingController email = TextEditingController();
+
+  String? emailError;
+  bool loading = false;
+
+  bool isValidEmail(String mail) {
+    return RegExp(r'^[\w-\.]+@([\w-]+\.)+[\w-]{2,4}$').hasMatch(mail);
+  }
+
+  Future<void> sendOtp() async {
+    final text = email.text.trim();
+
+    // validate
+    if (!isValidEmail(text)) {
+      setState(() => emailError = "Invalid Email!");
+      return;
+    }
+
+    setState(() {
+      emailError = null;
+      loading = true;
+    });
+
+    final response = await http.post(
+      Uri.parse("http://56.228.42.249/api/auth/forgot-password/"),
+      headers: {"Content-Type": "application/json"},
+      body: jsonEncode({"email": text}),
+    );
+
+    setState(() => loading = false);
+
+    if (response.statusCode == 200) {
+      Get.snackbar(
+        "OTP Sent",
+        "Check your email for the reset code",
+        backgroundColor: Colors.green,
+        colorText: Colors.white,
+      );
+
+      // 👉 Go to OTP screen, pass email
+      Get.toNamed('/forgot-otp', arguments: text);
+    } else {
+      Get.snackbar(
+        "Error",
+        "Email not registered",
+        backgroundColor: Colors.red,
+        colorText: Colors.white,
+      );
+    }
+  }
 
   @override
   void dispose() {
-    _emailController.dispose();
+    email.dispose();
     super.dispose();
-  }
-
-  bool _isValidEmail(String email) {
-    return RegExp(r'^[\w-\.]+@([\w-]+\.)+[\w-]{2,4}$').hasMatch(email);
-  }
-
-  void _validateAndContinue() {
-    final email = _emailController.text.trim();
-    
-    if (email.isEmpty) {
-      setState(() {
-        _errorMessage = 'Email cannot be empty';
-      });
-      return;
-    }
-    
-    if (!_isValidEmail(email)) {
-      setState(() {
-        _errorMessage = 'Invalid Email';
-      });
-      return;
-    }
-    
-    setState(() {
-      _errorMessage = null;
-    });
-    
-    // Navigate to OTP screen
-    Navigator.pushNamed(
-      context,
-      '/otp-verification',
-      arguments: email,
-    );
   }
 
   @override
   Widget build(BuildContext context) {
+    const fieldColor = Color(0xFF3A3A3A);
+
     return Scaffold(
-      backgroundColor: const Color(0xFF1A1A2E),
+      backgroundColor: const Color(0xFF121212),
       appBar: AppBar(
         backgroundColor: Colors.transparent,
         elevation: 0,
-        leading: IconButton(
-          icon: const Icon(Icons.arrow_back, color: Colors.white),
-          onPressed: () {
-            Navigator.pop(context);
-          },
-        ),
+        leading: const BackButton(color: Colors.white),
         title: const Text(
-          'Forgot Password',
-          style: TextStyle(
-            color: Colors.white,
-            fontSize: 24,
-            fontWeight: FontWeight.bold,
-          ),
+          "Forgot Password",
+          style: TextStyle(fontSize: 22, fontWeight: FontWeight.bold),
         ),
       ),
+
       body: SafeArea(
-        child: Padding(
-          padding: const EdgeInsets.all(24.0),
+        child: SingleChildScrollView(
+          padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 8),
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
-              const SizedBox(height: 40),
-              
-              // Body Text
+              const SizedBox(height: 8),
               const Text(
-                'No worries, it happens! Reset your password and get back to your journey!',
-                style: TextStyle(
-                  color: Colors.white,
-                  fontSize: 16,
-                  height: 1.5,
-                ),
+                "No worries, it happens!\nReset your password and get back to your journey!",
+                style: TextStyle(color: Colors.white70, fontSize: 14),
               ),
-              
+
               const SizedBox(height: 32),
-              
-              // Email Input
+
               const Text(
-                'Email address',
-                style: TextStyle(
-                  color: Colors.white,
-                  fontSize: 16,
-                  fontWeight: FontWeight.w500,
-                ),
+                "Email address",
+                style: TextStyle(color: Colors.white, fontSize: 16),
               ),
               const SizedBox(height: 8),
+
               TextField(
-                controller: _emailController,
+                controller: email,
                 keyboardType: TextInputType.emailAddress,
                 style: const TextStyle(color: Colors.white),
-                decoration: InputDecoration(
-                  hintText: 'Enter your Email',
-                  hintStyle: TextStyle(color: Colors.grey[600]),
-                  filled: true,
-                  fillColor: const Color(0xFF16213E),
-                  border: OutlineInputBorder(
-                    borderRadius: BorderRadius.circular(12),
-                    borderSide: BorderSide.none,
-                  ),
-                  errorBorder: OutlineInputBorder(
-                    borderRadius: BorderRadius.circular(12),
-                    borderSide: const BorderSide(color: Colors.red),
-                  ),
-                  focusedErrorBorder: OutlineInputBorder(
-                    borderRadius: BorderRadius.circular(12),
-                    borderSide: const BorderSide(color: Colors.red),
-                  ),
-                  contentPadding: const EdgeInsets.symmetric(
-                    horizontal: 16,
-                    vertical: 16,
-                  ),
-                ),
-                onChanged: (value) {
-                  if (_errorMessage != null) {
-                    setState(() {
-                      _errorMessage = null;
-                    });
+                onChanged: (_) {
+                  if (emailError != null) {
+                    setState(() => emailError = null);
                   }
                 },
-              ),
-              
-              // Error Message
-              if (_errorMessage != null) ...[
-                const SizedBox(height: 8),
-                Text(
-                  _errorMessage!,
-                  style: const TextStyle(
-                    color: Colors.red,
-                    fontSize: 12,
+                decoration: InputDecoration(
+                  hintText: "Enter your Email",
+                  hintStyle: const TextStyle(color: Colors.white54),
+                  filled: true,
+                  fillColor: fieldColor,
+                  contentPadding: const EdgeInsets.symmetric(
+                    horizontal: 18,
+                    vertical: 16,
+                  ),
+                  border: OutlineInputBorder(
+                    borderRadius: BorderRadius.circular(14),
+                    borderSide: BorderSide.none,
+                  ),
+                  enabledBorder: OutlineInputBorder(
+                    borderRadius: BorderRadius.circular(14),
+                    borderSide: BorderSide(
+                      color: emailError == null ? Colors.transparent : Colors.red,
+                      width: 1.2,
+                    ),
+                  ),
+                  focusedBorder: OutlineInputBorder(
+                    borderRadius: BorderRadius.circular(14),
+                    borderSide: BorderSide(
+                      color: emailError == null
+                          ? const Color(0xFF8B5CF6)
+                          : Colors.red,
+                      width: 1.4,
+                    ),
                   ),
                 ),
+              ),
+
+              if (emailError != null) ...[
+                const SizedBox(height: 6),
+                Text(
+                  emailError!,
+                  style: const TextStyle(color: Colors.redAccent, fontSize: 13),
+                ),
               ],
-              
-              const Spacer(),
-              
-              // Continue Button
+
+              const SizedBox(height: 40),
+
               SizedBox(
                 width: double.infinity,
                 height: 56,
                 child: ElevatedButton(
-                  onPressed: _validateAndContinue,
+                  onPressed: loading ? null : sendOtp,
                   style: ElevatedButton.styleFrom(
-                    backgroundColor: const Color(0xFF8B5CF6), // Purple
-                    foregroundColor: Colors.white,
+                    backgroundColor: const Color(0xFF8B5CF6),
                     shape: RoundedRectangleBorder(
-                      borderRadius: BorderRadius.circular(12),
+                      borderRadius: BorderRadius.circular(14),
                     ),
-                    elevation: 0,
                   ),
-                  child: const Text(
-                    'Continue',
+                  child: loading
+                      ? const SizedBox(
+                    width: 22,
+                    height: 22,
+                    child: CircularProgressIndicator(
+                      strokeWidth: 2.4,
+                      color: Colors.white,
+                    ),
+                  )
+                      : const Text(
+                    "Continue",
                     style: TextStyle(
-                      fontSize: 16,
+                      fontSize: 17,
                       fontWeight: FontWeight.w600,
                     ),
                   ),
                 ),
               ),
-              
-              const SizedBox(height: 32),
             ],
           ),
         ),
@@ -183,4 +191,3 @@ class _ForgotPasswordScreenState extends State<ForgotPasswordScreen> {
     );
   }
 }
-

@@ -1,12 +1,17 @@
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 import 'package:google_fonts/google_fonts.dart';
+import 'package:trackmate_app/services/auth_service.dart';
 
 class ProfileScreen extends StatelessWidget {
   const ProfileScreen({Key? key}) : super(key: key);
 
   @override
   Widget build(BuildContext context) {
+
+    // 🔥 AuthService instance to get stored username + email
+    final auth = Get.find<AuthService>();
+
     return Scaffold(
       backgroundColor: Colors.black,
       appBar: AppBar(
@@ -26,33 +31,43 @@ class ProfileScreen extends StatelessWidget {
         ),
         centerTitle: true,
       ),
+
       body: Center(
         child: Column(
           mainAxisAlignment: MainAxisAlignment.center,
           children: [
+
+            // ---------------- PROFILE IMAGE ----------------
             const CircleAvatar(
               radius: 50,
               backgroundColor: Color(0xFF8B5CF6),
               child: Icon(Icons.person, size: 50, color: Colors.white),
             ),
             const SizedBox(height: 20),
+
+            // 🔥 DYNAMIC USERNAME (no UI changed)
             Text(
-              'User Name',
+              auth.username.isNotEmpty ? auth.username.capitalize! : "User",
               style: GoogleFonts.inter(
                 color: Colors.white,
                 fontSize: 24,
                 fontWeight: FontWeight.bold,
               ),
             ),
+
             const SizedBox(height: 10),
+
+            // 🔥 DYNAMIC EMAIL
             Text(
-              'user@example.com',
+              auth.email.isNotEmpty ? auth.email : "no-email@user.com",
               style: GoogleFonts.inter(
                 color: Colors.grey[400],
                 fontSize: 16,
               ),
             ),
+
             const SizedBox(height: 30),
+
             _buildProfileMenuItem(
               icon: Icons.edit,
               title: 'Edit Profile',
@@ -63,13 +78,12 @@ class ProfileScreen extends StatelessWidget {
               title: 'Settings',
               onTap: () {},
             ),
+
+            // 🔥 Logout through AuthService (session + token clear)
             _buildProfileMenuItem(
               icon: Icons.logout,
               title: 'Logout',
-              onTap: () {
-                // Add logout logic here
-                Get.offAllNamed('/login');
-              },
+              onTap: () => auth.logout(), // FULL LOGOUT
             ),
           ],
         ),

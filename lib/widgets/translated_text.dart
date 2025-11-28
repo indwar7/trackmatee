@@ -78,7 +78,7 @@ class _TranslatedTextState extends State<TranslatedText> {
     return Obx(() {
       // This will make the widget rebuild when language changes
       final currentLang = languageController.currentLang.value;
-      
+
       return FutureBuilder<String>(
         future: _getTranslation(),
         builder: (context, snapshot) {
