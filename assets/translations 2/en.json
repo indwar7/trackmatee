@@ -1,0 +1,18 @@
+{
+  "greeting": "Good morning",
+  "traveler": "Traveler",
+  "search_hint": "Search destinations, hotels, flights...",
+  "quick_actions": "Quick Actions",
+  "plan_trip": "Plan Trip",
+  "track_trip": "Track Trip",
+  "ai_assistant": "AI Assistant",
+  "travel_booking": "Travel Booking",
+  "flights": "Flights",
+  "hotels": "Hotels",
+  "tours": "Tours",
+  "handpicked_collection": "Handpicked Collection",
+  "exclusive_deals": "Exclusive Deals",
+  "exclusive_deals_subtitle": "Discover handpicked destinations and exclusive offers for your next adventure",
+  "popular_destinations": "Popular Destinations",
+  "see_all": "See all"
+}

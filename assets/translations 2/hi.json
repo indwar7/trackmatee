@@ -1,0 +1,18 @@
+{
+  "greeting": "नमस्ते",
+  "traveler": "यात्री",
+  "search_hint": "गंतव्य, होटल, फ्लाइट्स खोजें...",
+  "quick_actions": "त्वरित कार्य",
+  "plan_trip": "योजना बनाएं",
+  "track_trip": "यात्रा ट्रैक करें",
+  "ai_assistant": "एआई सहायक",
+  "travel_booking": "यात्रा बुकिंग",
+  "flights": "उड़ानें",
+  "hotels": "होटल",
+  "tours": "यात्राएं",
+  "handpicked_collection": "चुने हुए स्थान",
+  "exclusive_deals": "विशेष ऑफर",
+  "exclusive_deals_subtitle": "अपनी अगली यात्रा के लिए चुने हुए स्थान और विशेष ऑफर खोजें",
+  "popular_destinations": "लोकप्रिय स्थान",
+  "see_all": "सभी देखें"
+}
