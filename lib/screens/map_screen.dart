@@ -1,546 +1,365 @@
-﻿
+﻿import 'dart:async';
+import 'dart:math';
 import 'package:flutter/material.dart';
+import 'package:geocoding/geocoding.dart';
 import 'package:google_maps_flutter/google_maps_flutter.dart';
 import 'package:geolocator/geolocator.dart';
-import 'trip_review_form.dart';
-import 'package:permission_handler/permission_handler.dart';
-import 'dart:async';
 
 class MapScreen extends StatefulWidget {
-const MapScreen({Key? key}) : super(key: key);
+  const MapScreen({super.key});
 
-@override
-State<MapScreen> createState() => _MapScreenState();
+  @override
+  State<MapScreen> createState() => _MapScreenState();
 }
 
 class _MapScreenState extends State<MapScreen> {
-GoogleMapController? _mapController;
-Position? _currentPosition;
-bool _isTracking = false;
-bool _hasPermission = false;
-String _startLocation = 'Current Location';
-String _destination = '';
-final List<LatLng> _routePoints = [];
-final Set<Polyline> _polylines = {};
-final Set<Marker> _markers = {};
-StreamSubscription<Position>? _positionStreamSubscription;
-final TextEditingController _destController = TextEditingController();
+  Completer<GoogleMapController> _controller = Completer();
 
-@override
-void initState() {
-super.initState();
-_requestLocationPermission();
-}
+  TextEditingController startController = TextEditingController();
+  TextEditingController endController = TextEditingController();
 
-@override
-void dispose() {
-_positionStreamSubscription?.cancel();
-_mapController?.dispose();
-_destController.dispose();
-super.dispose();
-}
+  // Cost controllers
+  TextEditingController parkingController = TextEditingController(text: "0");
+  TextEditingController tollController = TextEditingController(text: "0");
+  double fuelCost = 0;
+  double totalCost = 0;
 
-Future<void> _requestLocationPermission() async {
-final status = await Permission.location.request();
+  LatLng? startLatLng;
+  LatLng? endLatLng;
 
-if (status.isGranted) {
-setState(() => _hasPermission = true);
-await _getCurrentLocation();
-} else if (status.isDenied) {
-_showPermissionDialog();
-} else if (status.isPermanentlyDenied) {
-openAppSettings();
-}
-}
+  bool selectingStart = false;
+  bool selectingEnd = false;
 
-Future<void> _getCurrentLocation() async {
-try {
-Position position = await Geolocator.getCurrentPosition(
-desiredAccuracy: LocationAccuracy.high,
-);
+  String startTime = "";
+  String endTime = "";
+  String date = "";
+  String duration = "";
+  double distance = 0.0;
 
-setState(() {
-_currentPosition = position;
-_markers.add(
-Marker(
-markerId: const MarkerId('current'),
-position: LatLng(position.latitude, position.longitude),
-icon: BitmapDescriptor.defaultMarkerWithHue(BitmapDescriptor.hueViolet),
-),
-);
-});
+  bool showForm = false;
 
-_mapController?.animateCamera(
-CameraUpdate.newCameraPosition(
-CameraPosition(
-target: LatLng(position.latitude, position.longitude),
-zoom: 15,
-),
-),
-);
-} catch (e) {
-_showErrorDialog('Error getting location: $e');
-}
-}
+  // Dropdowns
+  String? travelMode;
+  String? purpose;
+  String? fuelType;
 
-void _startLiveTracking() {
-if (!_hasPermission) {
-_requestLocationPermission();
-return;
-}
+  Set<Marker> markers = {};
 
-setState(() {
-_isTracking = true;
-_routePoints.clear();
-});
+  @override
+  void initState() {
+    super.initState();
+    _determinePosition();
+  }
 
-const locationSettings = LocationSettings(
-accuracy: LocationAccuracy.high,
-distanceFilter: 5,
-);
+  Future<void> _determinePosition() async {
+    await Geolocator.requestPermission();
+  }
 
-_positionStreamSubscription = Geolocator.getPositionStream(
-locationSettings: locationSettings,
-).listen((Position position) {
-final newPoint = LatLng(position.latitude, position.longitude);
+  Future<void> searchPlace(String text, bool isStart) async {
+    if (text.isEmpty) return;
+    try {
+      List<Location> locations = await locationFromAddress(text);
+      if (locations.isNotEmpty) {
+        LatLng target = LatLng(locations.first.latitude, locations.first.longitude);
 
-setState(() {
-_currentPosition = position;
-_routePoints.add(newPoint);
+        GoogleMapController controller = await _controller.future;
+        controller.animateCamera(CameraUpdate.newLatLngZoom(target, 15));
 
-_markers.clear();
-_markers.add(
-Marker(
-markerId: const MarkerId('current'),
-position: newPoint,
-icon: BitmapDescriptor.defaultMarkerWithHue(BitmapDescriptor.hueViolet),
-rotation: position.heading,
-),
-);
+        setState(() {
+          if (isStart) {
+            startLatLng = target;
+            markers.add(Marker(markerId: MarkerId("start"), position: target));
+          } else {
+            endLatLng = target;
+            markers.add(Marker(markerId: MarkerId("end"), position: target));
+          }
+        });
+      }
+    } catch (e) {
+      print("Search error: $e");
+    }
+  }
 
-if (_routePoints.length > 1) {
-_polylines.clear();
-_polylines.add(
-Polyline(
-polylineId: const PolylineId('route'),
-points: _routePoints,
-color: Colors.purple,
-width: 5,
-patterns: [PatternItem.dash(20), PatternItem.gap(10)],
-),
-);
-}
-});
+  // After clicking "Done" below End Location
+  void generateForm() {
+    if (startLatLng == null || endLatLng == null) return;
 
-_mapController?.animateCamera(
-CameraUpdate.newLatLng(newPoint),
-);
-});
-}
+    calculateDistance();
+    autoFillTime();
+    calculateFuelCost();
+    calculateTotalCost();
 
-void _stopTracking() {
-_positionStreamSubscription?.cancel();
-setState(() => _isTracking = false);
-Navigator.push(
-  context,
-  MaterialPageRoute(builder: (context) => const TripReviewForm()),
-);
-}
+    setState(() {
+      showForm = true;
+    });
+  }
 
-void _showPermissionDialog() {
-showDialog(
-context: context,
-builder: (context) => AlertDialog(
-backgroundColor: const Color(0xFF374151),
-title: const Text('Location Permission Required'),
-content: const Text(
-'This app needs location access to track your movement. Please grant location permission.',
-),
-actions: [
-TextButton(
-onPressed: () => Navigator.pop(context),
-child: const Text('Cancel'),
-),
-ElevatedButton(
-onPressed: () {
-Navigator.pop(context);
-_requestLocationPermission();
-},
-style: ElevatedButton.styleFrom(backgroundColor: Colors.purple),
-child: const Text('Grant Permission'),
-),
-],
-),
-);
-}
+  void autoFillTime() {
+    DateTime now = DateTime.now();
+    startTime = "${now.hour}:${now.minute.toString().padLeft(2, '0')}";
+    endTime = "${(now.hour + 1) % 24}:${now.minute.toString().padLeft(2, '0')}";
+    date = "${now.day}/${now.month}/${now.year}";
+    duration = "1 hour";
+  }
 
-void _showErrorDialog(String message) {
-showDialog(
-context: context,
-builder: (context) => AlertDialog(
-backgroundColor: const Color(0xFF374151),
-title: const Text('Error'),
-content: Text(message),
-actions: [
-TextButton(
-onPressed: () => Navigator.pop(context),
-child: const Text('OK'),
-),
-],
-),
-);
-}
+  void calculateDistance() {
+    const R = 6371;
+    double lat1 = startLatLng!.latitude * pi / 180;
+    double lat2 = endLatLng!.latitude * pi / 180;
+    double dLat = (endLatLng!.latitude - startLatLng!.latitude) * pi / 180;
+    double dLon = (endLatLng!.longitude - startLatLng!.longitude) * pi / 180;
 
-void _showDestinationInput() {
-showModalBottomSheet(
-context: context,
-backgroundColor: const Color(0xFF1F2937),
-shape: const RoundedRectangleBorder(
-borderRadius: BorderRadius.vertical(top: Radius.circular(20)),
-),
-builder: (context) => Padding(
-padding: EdgeInsets.only(
-bottom: MediaQuery.of(context).viewInsets.bottom,
-left: 16,
-right: 16,
-top: 16,
-),
-child: Column(
-mainAxisSize: MainAxisSize.min,
-crossAxisAlignment: CrossAxisAlignment.start,
-children: [
-Row(
-mainAxisAlignment: MainAxisAlignment.spaceBetween,
-children: [
-const Text(
-'Enter Destination',
-style: TextStyle(
-fontSize: 18,
-fontWeight: FontWeight.bold,
-color: Colors.white,
-),
-),
-IconButton(
-onPressed: () => Navigator.pop(context),
-icon: const Icon(Icons.close, color: Colors.white),
-),
-],
-),
-const SizedBox(height: 16),
-TextField(
-controller: _destController,
-style: const TextStyle(color: Colors.white),
-decoration: InputDecoration(
-hintText: 'Enter destination address',
-hintStyle: TextStyle(color: Colors.grey[400]),
-filled: true,
-fillColor: const Color(0xFF374151),
-border: OutlineInputBorder(
-borderRadius: BorderRadius.circular(12),
-borderSide: BorderSide.none,
-),
-prefixIcon: const Icon(Icons.search, color: Colors.grey),
-),
-),
-const SizedBox(height: 16),
-SizedBox(
-width: double.infinity,
-child: ElevatedButton(
-onPressed: () {
-setState(() {
-_destination = _destController.text;
-});
-Navigator.pop(context);
-_startLiveTracking();
-},
-style: ElevatedButton.styleFrom(
-backgroundColor: Colors.purple,
-padding: const EdgeInsets.symmetric(vertical: 16),
-shape: RoundedRectangleBorder(
-borderRadius: BorderRadius.circular(25),
-),
-),
-child: const Text(
-'Confirm',
-style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold),
-),
-),
-),
-const SizedBox(height: 16),
-],
-),
-),
-);
-}
+    double a = sin(dLat / 2) * sin(dLat / 2) +
+        cos(lat1) * cos(lat2) * sin(dLon / 2) * sin(dLon / 2);
 
-@override
-Widget build(BuildContext context) {
-if (!_hasPermission) {
-return Scaffold(
-body: Center(
-child: Column(
-mainAxisAlignment: MainAxisAlignment.center,
-children: [
-const Icon(Icons.location_off, size: 64, color: Colors.purple),
-const SizedBox(height: 16),
-const Text(
-'Location Access Required',
-style: TextStyle(fontSize: 20, fontWeight: FontWeight.bold),
-),
-const SizedBox(height: 8),
-const Padding(
-padding: EdgeInsets.symmetric(horizontal: 32),
-child: Text(
-'Please enable location access to use this app',
-textAlign: TextAlign.center,
-style: TextStyle(color: Colors.grey),
-),
-),
-const SizedBox(height: 24),
-ElevatedButton(
-onPressed: _requestLocationPermission,
-style: ElevatedButton.styleFrom(
-backgroundColor: Colors.purple,
-padding: const EdgeInsets.symmetric(horizontal: 32, vertical: 16),
-shape: RoundedRectangleBorder(
-borderRadius: BorderRadius.circular(25),
-),
-),
-child: const Text('Enable Location'),
-),
-],
-),
-),
-);
-}
+    distance = 6371 * 2 * atan2(sqrt(a), sqrt(1 - a));
+  }
 
-return Scaffold(
-body: Stack(
-children: [
-_currentPosition == null
-? const Center(child: CircularProgressIndicator())
-    : GoogleMap(
-initialCameraPosition: CameraPosition(
-target: LatLng(
-_currentPosition!.latitude,
-_currentPosition!.longitude,
-),
-zoom: 15,
-),
-onMapCreated: (controller) => _mapController = controller,
-markers: _markers,
-polylines: _polylines,
-myLocationEnabled: false,
-myLocationButtonEnabled: false,
-zoomControlsEnabled: false,
-mapType: MapType.normal,
-),
-Positioned(
-top: 0,
-left: 0,
-right: 0,
-child: Container(
-padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
-child: SafeArea(
-child: Row(
-mainAxisAlignment: MainAxisAlignment.spaceBetween,
-children: const [
-Text(
-'20:09',
-style: TextStyle(color: Colors.white, fontSize: 14),
-),
-Row(
-children: [
-Icon(Icons.signal_cellular_4_bar, size: 16, color: Colors.white),
-SizedBox(width: 4),
-Icon(Icons.wifi, size: 16, color: Colors.white),
-SizedBox(width: 4),
-Icon(Icons.battery_full, size: 16, color: Colors.white),
-],
-),
-],
-),
-),
-),
-),
-Positioned(
-top: 48,
-left: 16,
-child: SafeArea(
-child: Container(
-decoration: BoxDecoration(
-color: Colors.black.withOpacity(0.3),
-shape: BoxShape.circle,
-),
-child: IconButton(
-onPressed: () {},
-icon: const Icon(Icons.arrow_back, color: Colors.white),
-),
-),
-),
-),
-Positioned(
-top: 48,
-left: 64,
-right: 16,
-child: SafeArea(
-child: Container(
-padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 14),
-decoration: BoxDecoration(
-color: Colors.white,
-borderRadius: BorderRadius.circular(12),
-boxShadow: [
-BoxShadow(
-color: Colors.black.withOpacity(0.3),
-blurRadius: 10,
-offset: const Offset(0, 4),
-),
-],
-),
-child: Text(
-_startLocation,
-textAlign: TextAlign.center,
-style: const TextStyle(
-color: Colors.black,
-fontWeight: FontWeight.w500,
-fontSize: 16,
-),
-),
-),
-),
-),
-if (_isTracking)
-Positioned(
-top: 120,
-left: 0,
-right: 0,
-child: Center(
-child: Container(
-padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 10),
-decoration: BoxDecoration(
-color: Colors.green,
-borderRadius: BorderRadius.circular(25),
-boxShadow: [
-BoxShadow(
-color: Colors.black.withOpacity(0.3),
-blurRadius: 10,
-),
-],
-),
-child: Row(
-mainAxisSize: MainAxisSize.min,
-children: [
-Container(
-width: 8,
-height: 8,
-decoration: const BoxDecoration(
-color: Colors.white,
-shape: BoxShape.circle,
-),
-),
-const SizedBox(width: 8),
-const Text(
-'Live Tracking Active',
-style: TextStyle(
-color: Colors.white,
-fontWeight: FontWeight.bold,
-fontSize: 14,
-),
-),
-],
-),
-),
-),
-),
-Positioned(
-bottom: 32,
-left: 16,
-right: 16,
-child: Row(
-children: [
-Expanded(
-child: ElevatedButton(
-onPressed: _isTracking ? _stopTracking : _startLiveTracking,
-style: ElevatedButton.styleFrom(
-backgroundColor: _isTracking ? Colors.red : Colors.purple,
-padding: const EdgeInsets.symmetric(vertical: 16),
-shape: RoundedRectangleBorder(
-borderRadius: BorderRadius.circular(25),
-),
-elevation: 8,
-),
-child: Row(
-mainAxisAlignment: MainAxisAlignment.center,
-children: [
-Icon(_isTracking ? Icons.stop : Icons.play_arrow),
-const SizedBox(width: 8),
-Text(
-_isTracking ? 'Stop Tracking' : 'Start',
-style: const TextStyle(
-fontSize: 16,
-fontWeight: FontWeight.bold,
-),
-),
-],
-),
-),
-),
-if (!_isTracking) ...[
-const SizedBox(width: 12),
-Container(
-decoration: BoxDecoration(
-color: const Color(0xFF374151),
-shape: BoxShape.circle,
-boxShadow: [
-BoxShadow(
-color: Colors.black.withOpacity(0.3),
-blurRadius: 10,
-),
-],
-),
-child: IconButton(
-onPressed: _showDestinationInput,
-icon: const Icon(Icons.location_on, color: Colors.white),
-iconSize: 28,
-),
-),
-],
-],
-),
-),
-Positioned(
-bottom: 120,
-right: 16,
-child: Container(
-decoration: BoxDecoration(
-color: Colors.white,
-shape: BoxShape.circle,
-boxShadow: [
-BoxShadow(
-color: Colors.black.withOpacity(0.3),
-blurRadius: 10,
-),
-],
-),
-child: IconButton(
-onPressed: () {
-if (_currentPosition != null) {
-_mapController?.animateCamera(
-CameraUpdate.newLatLng(
-LatLng(
-_currentPosition!.latitude,
-_currentPosition!.longitude,
-),
-),
-);
-}
-},
-icon: const Icon(Icons.my_location, color: Colors.black),
-),
-),
-),
-],
-),
-);
-}
+  void calculateFuelCost() {
+    if (fuelType == null) return;
+
+    double rate = 0;
+    if (fuelType == "Petrol") rate = 102;
+    if (fuelType == "Diesel") rate = 90;
+    if (fuelType == "EV") rate = 12; // per kWh approx
+
+    fuelCost = distance * (rate / 15); // avg 15 km/l mileage
+  }
+
+  void calculateTotalCost() {
+    double parking = double.tryParse(parkingController.text) ?? 0;
+    double toll = double.tryParse(tollController.text) ?? 0;
+
+    totalCost = fuelCost + parking + toll;
+    setState(() {});
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    return Scaffold(
+      backgroundColor: Colors.black,
+      appBar: AppBar(
+        title: const Text("Planned Trip"),
+        backgroundColor: Colors.black,
+        foregroundColor: Colors.white,
+      ),
+      body: Stack(
+        children: [
+          GoogleMap(
+            initialCameraPosition:
+            CameraPosition(target: LatLng(28.61, 77.20), zoom: 12),
+            markers: markers,
+            onTap: (pos) {
+              if (selectingStart) {
+                startLatLng = pos;
+                startController.text = "${pos.latitude}, ${pos.longitude}";
+                selectingStart = false;
+              } else if (selectingEnd) {
+                endLatLng = pos;
+                endController.text = "${pos.latitude}, ${pos.longitude}";
+                selectingEnd = false;
+              }
+              setState(() {});
+            },
+            onMapCreated: (c) => _controller.complete(c),
+          ),
+
+          // ===================== TOP INPUT BOXES =====================
+          Positioned(
+            top: 10,
+            left: 10,
+            right: 10,
+            child: Column(
+              children: [
+                bigInputBox(
+                  label: "Start Location",
+                  controller: startController,
+                  onChanged: (v) => searchPlace(v, true),
+                  onPick: () {
+                    selectingStart = true;
+                  },
+                ),
+                const SizedBox(height: 10),
+                bigInputBox(
+                  label: "End Location",
+                  controller: endController,
+                  onChanged: (v) => searchPlace(v, false),
+                  onPick: () {
+                    selectingEnd = true;
+                  },
+                ),
+
+                // DONE BUTTON to open form
+                if (startLatLng != null && endLatLng != null)
+                  Padding(
+                    padding: const EdgeInsets.only(top: 10),
+                    child: ElevatedButton(
+                      style: ElevatedButton.styleFrom(
+                        backgroundColor: Colors.purple,
+                        shape: StadiumBorder(),
+                      ),
+                      onPressed: generateForm,
+                      child: const Text("Done"),
+                    ),
+                  )
+              ],
+            ),
+          ),
+
+          // ======================= FORM =============================
+          if (showForm)
+            Positioned(
+              bottom: 0,
+              left: 0,
+              right: 0,
+              child: Container(
+                height: 500,
+                padding: EdgeInsets.all(20),
+                decoration: BoxDecoration(
+                    color: Colors.black,
+                    borderRadius:
+                    BorderRadius.vertical(top: Radius.circular(20))),
+                child: SingleChildScrollView(
+                  child: Column(
+                    children: [
+                      formField("Start Location", startController.text),
+                      formField("End Location", endController.text),
+                      formField("Start time", startTime),
+                      formField("End time", endTime),
+                      formField("Day/Date", date),
+                      formField("Duration", duration),
+                      formField("Distance", "${distance.toStringAsFixed(2)} km"),
+
+                      dropdownBox(
+                        label: "Mode of Travel",
+                        value: travelMode,
+                        items: ["Car", "Bike", "Bus", "Walk"],
+                        onChanged: (v) => setState(() => travelMode = v),
+                      ),
+
+                      dropdownBox(
+                        label: "Fuel Type",
+                        value: fuelType,
+                        items: ["Petrol", "Diesel", "EV"],
+                        onChanged: (v) {
+                          setState(() {
+                            fuelType = v;
+                            calculateFuelCost();
+                            calculateTotalCost();
+                          });
+                        },
+                      ),
+
+                      // Parking Cost
+                      costInput("Parking Cost (₹)", parkingController),
+
+                      // Toll Cost
+                      costInput("Toll Cost (₹)", tollController),
+
+                      // Fuel Cost auto
+                      formField("Fuel Cost", "₹${fuelCost.toStringAsFixed(2)}"),
+
+                      // Total Cost auto
+                      formField("Total Trip Cost",
+                          "₹${totalCost.toStringAsFixed(2)}"),
+                    ],
+                  ),
+                ),
+              ),
+            ),
+        ],
+      ),
+    );
+  }
+
+  Widget costInput(String label, TextEditingController controller) {
+    return Container(
+      margin: EdgeInsets.only(bottom: 12),
+      padding: EdgeInsets.all(12),
+      decoration: BoxDecoration(
+          color: Colors.grey[900], borderRadius: BorderRadius.circular(12)),
+      child: TextField(
+        controller: controller,
+        onChanged: (v) => calculateTotalCost(),
+        keyboardType: TextInputType.number,
+        style: TextStyle(color: Colors.white),
+        decoration: InputDecoration(
+          labelText: label,
+          labelStyle: TextStyle(color: Colors.white70),
+          border: InputBorder.none,
+        ),
+      ),
+    );
+  }
+
+  Widget formField(String label, String value) {
+    return Container(
+      width: double.infinity,
+      padding: EdgeInsets.all(14),
+      margin: EdgeInsets.only(bottom: 12),
+      decoration: BoxDecoration(
+          color: Colors.grey[900], borderRadius: BorderRadius.circular(12)),
+      child: Text(
+        "$label: $value",
+        style: TextStyle(color: Colors.white),
+      ),
+    );
+  }
+
+  Widget dropdownBox({
+    required String label,
+    required String? value,
+    required List<String> items,
+    required Function(String?) onChanged,
+  }) {
+    return Container(
+      padding: EdgeInsets.symmetric(horizontal: 12),
+      margin: EdgeInsets.only(bottom: 12),
+      decoration: BoxDecoration(
+          color: Colors.grey[900], borderRadius: BorderRadius.circular(12)),
+      child: DropdownButton<String>(
+        dropdownColor: Colors.black,
+        isExpanded: true,
+        value: value,
+        underline: SizedBox(),
+        hint: Text(label, style: TextStyle(color: Colors.white54)),
+        items: items
+            .map((e) => DropdownMenuItem(
+            value: e,
+            child: Text(e, style: TextStyle(color: Colors.white))))
+            .toList(),
+        onChanged: onChanged,
+      ),
+    );
+  }
+
+  Widget bigInputBox({
+    required String label,
+    required TextEditingController controller,
+    required Function(String) onChanged,
+    required VoidCallback onPick,
+  }) {
+    return Container(
+      padding: EdgeInsets.symmetric(horizontal: 15),
+      decoration: BoxDecoration(
+          color: Colors.white, borderRadius: BorderRadius.circular(12)),
+      child: Row(
+        children: [
+          Icon(Icons.location_on, color: Colors.purple),
+          SizedBox(width: 10),
+          Expanded(
+            child: TextField(
+              controller: controller,
+              onChanged: onChanged,
+              decoration:
+              InputDecoration(hintText: label, border: InputBorder.none),
+            ),
+          ),
+          IconButton(
+              onPressed: onPick,
+              icon: Icon(Icons.map, color: Colors.purple))
+        ],
+      ),
+    );
+  }
 }

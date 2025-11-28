@@ -1,203 +1,106 @@
 import 'package:flutter/material.dart';
 
-class TripReviewForm extends StatefulWidget {
-  const TripReviewForm({super.key});
+class TripFormScreen extends StatefulWidget {
+  final String startLocation;
+  final String endLocation;
+
+  const TripFormScreen({
+    super.key,
+    required this.startLocation,
+    required this.endLocation,
+  });
 
   @override
-  State<TripReviewForm> createState() => _TripReviewFormState();
+  State<TripFormScreen> createState() => _TripFormScreenState();
 }
 
-class _TripReviewFormState extends State<TripReviewForm> {
-  // Text controllers
-  final TextEditingController startLocation = TextEditingController();
-  final TextEditingController endLocation = TextEditingController();
-  final TextEditingController dayTime = TextEditingController();
-  final TextEditingController duration = TextEditingController();
-  final TextEditingController distance = TextEditingController();
-  final TextEditingController costIncurred = TextEditingController();
-  final TextEditingController parkingCost = TextEditingController();
-  final TextEditingController tollCost = TextEditingController();
-  final TextEditingController ticketCost = TextEditingController();
-
-  // Dropdown values
-  String? selectedFuelType;
-  String? selectedModeOfTravel;
-  String? selectedTripPurpose;
-
-  // Dropdown lists
-  final List<String> fuelTypes = ["Petrol", "Diesel", "Electric"];
-  final List<String> modesOfTravel = [
-    "Car",
-    "Bike",
-    "Bus",
-    "Airplane",
-    "Train",
-    "Bi-cycle",
-    "Walk"
-  ];
-  final List<String> tripPurposes = [
-    "Family",
-    "Office",
-    "Daily commute (Home)",
-    "Daily commute (Office)",
-    "Vacation",
-    "Friends trip",
-    "Walk"
-  ];
-
-  Widget _buildTextBox(String label, TextEditingController controller) {
-    return Padding(
-      padding: const EdgeInsets.symmetric(vertical: 8),
-      child: Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
-          Text(label,
-              style: const TextStyle(color: Colors.white, fontSize: 14)),
-          const SizedBox(height: 6),
-          Container(
-            decoration: BoxDecoration(
-              color: const Color(0xFF374151),
-              borderRadius: BorderRadius.circular(10),
-            ),
-            child: TextField(
-              controller: controller,
-              style: const TextStyle(color: Colors.white),
-              decoration: const InputDecoration(
-                border: InputBorder.none,
-                contentPadding:
-                EdgeInsets.symmetric(horizontal: 16, vertical: 14),
-              ),
-            ),
-          ),
-        ],
-      ),
-    );
-  }
-
-  Widget _buildDropdownBox(
-      String label, String? selectedValue, List<String> items, Function(String?) onChanged) {
-    return Padding(
-      padding: const EdgeInsets.symmetric(vertical: 8),
-      child: Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
-          Text(label,
-              style: const TextStyle(color: Colors.white, fontSize: 14)),
-          const SizedBox(height: 6),
-          Container(
-            padding: const EdgeInsets.symmetric(horizontal: 16),
-            decoration: BoxDecoration(
-              color: const Color(0xFF374151),
-              borderRadius: BorderRadius.circular(10),
-            ),
-            child: DropdownButtonHideUnderline(
-              child: DropdownButton<String>(
-                value: selectedValue,
-                dropdownColor: const Color(0xFF374151),
-                icon: const Icon(Icons.arrow_drop_down, color: Colors.white),
-                isExpanded: true,
-                style: const TextStyle(color: Colors.white),
-                items: items
-                    .map((item) => DropdownMenuItem(
-                  value: item,
-                  child: Text(item,
-                      style: const TextStyle(color: Colors.white)),
-                ))
-                    .toList(),
-                onChanged: onChanged,
-              ),
-            ),
-          )
-        ],
-      ),
-    );
-  }
+class _TripFormScreenState extends State<TripFormScreen> {
+  String? mode;
+  String? fuel;
+  String? purpose;
 
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      backgroundColor: const Color(0xFF111827),
-
-      appBar: AppBar(
-        backgroundColor: Colors.purple,
-        title: const Text("Trip Review"),
-      ),
-
+      appBar: AppBar(title: const Text("Trip Form")),
       body: SingleChildScrollView(
-        padding: const EdgeInsets.all(16),
+        padding: const EdgeInsets.all(18),
         child: Column(
           children: [
-            _buildTextBox("Start Location", startLocation),
-            _buildTextBox("End Location", endLocation),
-            _buildTextBox("Day/Time", dayTime),
-            _buildTextBox("Duration", duration),
-            _buildTextBox("Distance", distance),
-            _buildTextBox("Cost Incurred", costIncurred),
+            _buildReadOnlyBox("Start Location", widget.startLocation),
+            const SizedBox(height: 20),
+            _buildReadOnlyBox("End Location", widget.endLocation),
+            const SizedBox(height: 20),
 
-            // DROPDOWNS ADDED HERE
-            _buildDropdownBox(
-              "Mode of Travel",
-              selectedModeOfTravel,
-              modesOfTravel,
-                  (value) => setState(() => selectedModeOfTravel = value),
+            // Mode of travel
+            DropdownButtonFormField(
+              decoration: _inputDecoration("Mode of Travel"),
+              items: ["Car", "Bike", "Bus", "Train", "Walk"]
+                  .map((e) => DropdownMenuItem(value: e, child: Text(e)))
+                  .toList(),
+              onChanged: (v) => setState(() => mode = v),
+            ),
+            const SizedBox(height: 20),
+
+            // Fuel type
+            DropdownButtonFormField(
+              decoration: _inputDecoration("Fuel Type"),
+              items: ["Petrol", "Diesel", "Electric"]
+                  .map((e) => DropdownMenuItem(value: e, child: Text(e)))
+                  .toList(),
+              onChanged: (v) => setState(() => fuel = v),
+            ),
+            const SizedBox(height: 20),
+
+            // Purpose
+            DropdownButtonFormField(
+              decoration: _inputDecoration("Trip Purpose"),
+              items: [
+                "Family",
+                "Office",
+                "Daily commute (Home)",
+                "Daily commute (Office)",
+                "Vacation",
+                "Friends trip",
+                "Walk"
+              ].map((e) => DropdownMenuItem(value: e, child: Text(e))).toList(),
+              onChanged: (v) => setState(() => purpose = v),
             ),
 
-            _buildDropdownBox(
-              "Trip Purpose",
-              selectedTripPurpose,
-              tripPurposes,
-                  (value) => setState(() => selectedTripPurpose = value),
-            ),
-
-            _buildDropdownBox(
-              "Fuel Type",
-              selectedFuelType,
-              fuelTypes,
-                  (value) => setState(() => selectedFuelType = value),
-            ),
-
-            _buildTextBox("Parking Cost", parkingCost),
-            _buildTextBox("Toll Cost", tollCost),
-            _buildTextBox("Ticket Cost", ticketCost),
-
-            const SizedBox(height: 16),
-
-            Container(
-              padding: const EdgeInsets.all(14),
-              decoration: BoxDecoration(
-                color: const Color(0xFF1F2937),
-                borderRadius: BorderRadius.circular(12),
-              ),
-              child: const Text(
-                "- Check the entered times and duration of the trip\n"
-                    "- Make sure distance and expenses are accurate\n"
-                    "- Are you satisfied with your trip?",
-                style: TextStyle(color: Colors.white70, fontSize: 13),
-              ),
-            ),
-
-            const SizedBox(height: 24),
-
-            SizedBox(
-              width: double.infinity,
-              child: ElevatedButton(
-                onPressed: () {},
-                style: ElevatedButton.styleFrom(
-                  backgroundColor: Colors.purple,
-                  padding: const EdgeInsets.symmetric(vertical: 16),
-                  shape: RoundedRectangleBorder(
-                      borderRadius: BorderRadius.circular(25)),
-                ),
-                child: const Text(
-                  "Done",
-                  style: TextStyle(
-                      fontSize: 16, fontWeight: FontWeight.bold),
-                ),
-              ),
-            ),
+            const SizedBox(height: 40),
+            ElevatedButton(
+              style: ElevatedButton.styleFrom(
+                  backgroundColor: Colors.deepPurple, minimumSize: const Size(double.infinity, 50)),
+              onPressed: () {},
+              child: const Text("Done"),
+            )
           ],
         ),
       ),
+    );
+  }
+
+  Widget _buildReadOnlyBox(String label, String value) {
+    return Container(
+      padding: const EdgeInsets.all(18),
+      decoration: BoxDecoration(
+        border: Border.all(color: Colors.white30),
+        borderRadius: BorderRadius.circular(12),
+      ),
+      child: Row(
+        children: [
+          const Icon(Icons.location_on, color: Colors.purple),
+          const SizedBox(width: 12),
+          Expanded(child: Text(value, style: const TextStyle(fontSize: 16))),
+        ],
+      ),
+    );
+  }
+
+  InputDecoration _inputDecoration(String label) {
+    return InputDecoration(
+      labelText: label,
+      border: OutlineInputBorder(borderRadius: BorderRadius.circular(12)),
     );
   }
 }
