@@ -11,7 +11,7 @@
 
 # Flutter plugin files
 .flutter-plugins
-.flutter-plugins-dependencies
+plugins/.flutter-plugins-dependencies
 
 # Build directories
 build/

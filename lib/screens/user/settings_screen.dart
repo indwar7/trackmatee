@@ -1,17 +1,19 @@
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 import 'package:trackmate_app/controllers/language_controller.dart';
-import 'package:trackmate_app/controllers/saved_places_controller.dart';
+import 'package:trackmate_app/controllers/profile_controller.dart';
 import 'package:trackmate_app/screens/places/add_home_screen.dart';
 import 'package:trackmate_app/screens/places/add_work_screen.dart';
 import 'package:trackmate_app/screens/tools/safety_tools_screen.dart';
+import 'package:trackmate_app/screens/user/vehicle_info_screen.dart';
+import 'package:trackmate_app/screens/verification/user_verification_screen.dart';
 
 class SettingsScreen extends StatelessWidget {
   const SettingsScreen({Key? key}) : super(key: key);
 
   @override
   Widget build(BuildContext context) {
-    final savedPlacesController = Get.find<SavedPlacesController>();
+    final profileController = Get.put(ProfileController());
     final LanguageController languageController = Get.find<LanguageController>();
 
     return Scaffold(
@@ -41,35 +43,40 @@ class SettingsScreen extends StatelessWidget {
             subtitle: languageController.getLanguageByCode(languageController.getCurrentLanguage())?.name ?? 'English',
             onTap: () => _showLanguageDialog(context, languageController),
           )),
+
           _buildSectionHeader('Shortcuts'),
           Obx(() => _buildSettingsTile(
             icon: Icons.home,
             title: 'Home',
-            subtitle: savedPlacesController.homeAddress.value ?? 'Add Shortcut',
+            subtitle: profileController.homeLocation.value.isEmpty
+                ? 'Add Shortcut'
+                : profileController.homeLocation.value,
             onTap: () => Get.to(() => const AddHomeScreen()),
           )),
           Obx(() => _buildSettingsTile(
             icon: Icons.work,
             title: 'Work',
-            subtitle: savedPlacesController.workAddress.value ?? 'Add Shortcut',
+            subtitle: profileController.workLocation.value.isEmpty
+                ? 'Add Shortcut'
+                : profileController.workLocation.value,
             onTap: () => Get.to(() => const AddWorkScreen()),
           )),
+
           _buildSectionHeader('Document'),
           _buildSettingsTile(
             icon: Icons.verified_user,
             title: 'Verification',
-            onTap: () {},
+            onTap: () => Get.to(() => const UserVerificationScreen()),
           ),
-          _buildSettingsTile(
-            icon: Icons.history,
-            title: 'Status',
-            onTap: () {},
-          ),
-          _buildSettingsTile(
-            icon: Icons.save,
+          Obx(() => _buildSettingsTile(
+            icon: Icons.directions_car,
             title: 'Saved vehicle data',
-            onTap: () {},
-          ),
+            subtitle: profileController.vehicleNumber.value.isNotEmpty
+                ? '${profileController.vehicleNumber.value} - ${profileController.vehicleModel.value}'
+                : 'No vehicle added',
+            onTap: () => Get.to(() => const VehicleInfoScreen()),
+          )),
+
           _buildSectionHeader('Safety'),
           _buildSettingsTile(
             icon: Icons.security,
@@ -79,13 +86,43 @@ class SettingsScreen extends StatelessWidget {
           _buildSettingsTile(
             icon: Icons.gavel,
             title: 'Legal',
-            onTap: () {},
+            onTap: () {
+              // TODO: Implement legal screen
+            },
           ),
+
           const SizedBox(height: 32),
+
           ListTile(
             leading: const Icon(Icons.logout, color: Colors.red),
             title: const Text('Log out', style: TextStyle(color: Colors.red)),
-            onTap: () {},
+            onTap: () {
+              showDialog(
+                context: context,
+                builder: (context) => AlertDialog(
+                  backgroundColor: const Color(0xFF2A2A3E),
+                  title: const Text('Logout', style: TextStyle(color: Colors.white)),
+                  content: const Text(
+                    'Are you sure you want to logout?',
+                    style: TextStyle(color: Colors.white70),
+                  ),
+                  actions: [
+                    TextButton(
+                      onPressed: () => Navigator.pop(context),
+                      child: const Text('Cancel', style: TextStyle(color: Colors.white70)),
+                    ),
+                    ElevatedButton(
+                      style: ElevatedButton.styleFrom(backgroundColor: Colors.red),
+                      onPressed: () {
+                        // TODO: Implement logout
+                        Get.offAllNamed('/login');
+                      },
+                      child: const Text('Logout', style: TextStyle(color: Colors.white)),
+                    ),
+                  ],
+                ),
+              );
+            },
           ),
         ],
       ),
@@ -106,6 +143,15 @@ class SettingsScreen extends StatelessWidget {
             child: Column(
               mainAxisSize: MainAxisSize.min,
               children: [
+                const Text(
+                  'Select Language',
+                  style: TextStyle(
+                    color: Colors.white,
+                    fontSize: 18,
+                    fontWeight: FontWeight.bold,
+                  ),
+                ),
+                const SizedBox(height: 16),
                 ...controller.supportedLanguages.map((lang) {
                   return Column(
                     children: [
@@ -127,11 +173,7 @@ class SettingsScreen extends StatelessWidget {
                         ),
                       ),
                       if (lang != controller.supportedLanguages.last)
-                        const Divider(
-                          color: Colors.white24,
-                          height: 16,
-                          thickness: 1,
-                        ),
+                        const SizedBox(height: 8),
                     ],
                   );
                 }).toList(),
@@ -167,6 +209,7 @@ class SettingsScreen extends StatelessWidget {
       leading: Icon(icon, color: Colors.white),
       title: Text(title, style: const TextStyle(color: Colors.white)),
       subtitle: subtitle != null ? Text(subtitle, style: const TextStyle(color: Colors.white70)) : null,
+      trailing: const Icon(Icons.chevron_right, color: Colors.grey),
       onTap: onTap,
     );
   }
