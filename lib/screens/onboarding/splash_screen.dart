@@ -59,9 +59,10 @@ class _SplashScreenState extends State<SplashScreen>
 
     if (firstOpen) {
       box.write("first_open", false);
-      Get.offAllNamed('/terms-of-use');
+      Get.offAllNamed('/terms'); // CORRECT
       return;
     }
+
 
     Get.offAllNamed('/login');
   }

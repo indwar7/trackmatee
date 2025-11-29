@@ -1,9 +1,9 @@
 import 'package:get/get.dart';
-import 'package:trackmate_app/screens/home_screen.dart';
+import 'package:trackmate_app/screens/onboarding/home_screen.dart';
 import 'package:trackmate_app/screens/analytics/analytics_screen.dart';
 import 'package:trackmate_app/screens/bookings/booking_screen.dart';
 import 'package:trackmate_app/screens/planner_screen.dart';
-import 'package:trackmate_app/screens/profile_screen.dart';
+import 'package:trackmate_app/screens/user/profile_screen.dart';
 import 'package:trackmate_app/screens/auth/login_screen.dart';
 import 'package:trackmate_app/screens/auth/signup_screen.dart';
 import 'package:trackmate_app/screens/auth/forgot_password_screen.dart';
@@ -23,9 +23,9 @@ import 'package:trackmate_app/screens/user/settings_screen.dart';
 import 'package:trackmate_app/screens/user/support_screen.dart';
 import 'package:trackmate_app/screens/user/trusted_contacts_screen.dart';
 import 'package:trackmate_app/screens/verification/user_verification_screen.dart';
-import 'package:trackmate_app/screens/verification/capture_id_screen.dart';
-import 'package:trackmate_app/screens/verification/id_capture_tips_screen.dart';
-import 'package:trackmate_app/screens/verification/id_status_screen.dart';
+import 'package:trackmate_app/screens/capture_id_screen.dart';
+import 'package:trackmate_app/screens/id_capture_tips_screen.dart';
+import 'package:trackmate_app/screens/id_status_screen.dart';
 
 class AppPages {
   static const initial = '/splash';
@@ -41,7 +41,7 @@ class AppPages {
 
     // ---------------- AUTH ROUTES ----------------
     GetPage(name: '/login', page: () => const LoginScreen()),
-    GetPage(name: '/signup', page: () => const SignupScreen()),
+    GetPage(name: '/signup', page: () => const SignUpScreen()),
     GetPage(name: '/forgot-password', page: () => const ForgotPasswordScreen()),
     GetPage(name: '/forgot-otp', page: () => const ForgotOtpVerifyScreen()),    // 🔥 ADDED
     GetPage(name: '/reset-password', page: () => const ResetPasswordScreen()),

@@ -52,4 +52,6 @@ class LanguageController extends GetxController {
       return null;
     }
   }
+
+  Future<String>? translate(String text) async {}
 }

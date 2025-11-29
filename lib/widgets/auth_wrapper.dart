@@ -1,6 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:trackmate_app/screens/auth/login_screen.dart';
-import 'package:trackmate_app/screens/home_screen.dart';
+import 'package:trackmate_app/screens/onboarding/home_screen.dart';
 import 'package:trackmate_app/services/auth_service.dart';
 
 class AuthWrapper extends StatelessWidget {

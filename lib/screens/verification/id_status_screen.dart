@@ -1,100 +1,57 @@
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
-import 'package:trackmate_app/screens/user/profile_screen.dart';
 
 class IdStatusScreen extends StatelessWidget {
-  const IdStatusScreen({Key? key}) : super(key: key);
+  final bool approved;
+  final String message;
+
+  const IdStatusScreen({
+    super.key,
+    this.approved = false,
+    this.message = "Verification is under review",
+  });
 
   @override
-  Widget build(BuildContext context) {
+  Widget build(BuildContext context) {        // <--- MUST RETURN WIDGET
     return Scaffold(
-      backgroundColor: const Color(0xFF1A1A1A),
+      backgroundColor: const Color(0xFF0F0F1E),
       appBar: AppBar(
-        backgroundColor: const Color(0xFF1A1A1A),
-        elevation: 0,
-        leading: IconButton(
-          icon: const Icon(Icons.arrow_back, color: Colors.white),
-          onPressed: () => Get.offAll(() => const ProfileScreen()), // Go back to profile screen
-        ),
-        title: const Text(
-          'Upload Documents',
-          style: TextStyle(
-            color: Colors.white,
-            fontSize: 20,
-            fontWeight: FontWeight.bold,
-          ),
-        ),
+        backgroundColor: const Color(0xFF0F0F1E),
+        title: const Text("Verification Status"),
       ),
-      body: Padding(
-        padding: const EdgeInsets.all(16.0),
+
+      body: Center(
         child: Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
+          mainAxisAlignment: MainAxisAlignment.center,
           children: [
-            const Text(
-              'Front side of the ID',
-              style: TextStyle(
-                color: Colors.white,
-                fontSize: 18,
-                fontWeight: FontWeight.bold,
-              ),
+            Icon(
+              approved ? Icons.verified : Icons.hourglass_top_rounded,
+              size: 95,
+              color: approved ? Colors.green : Colors.amber,
             ),
-             const SizedBox(height: 8),
-            const Text(
-              'Make sure the lighting is good and letters are clearly visible.',
-              style: TextStyle(
-                color: Colors.white70,
-                fontSize: 14,
-              ),
+
+            const SizedBox(height: 25),
+
+            Text(
+              approved ? "Verified Successfully!" : "Pending Verification",
+              style: const TextStyle(color: Colors.white, fontSize: 22, fontWeight: FontWeight.bold),
             ),
-            const SizedBox(height: 16),
-            ClipRRect(
-              borderRadius: BorderRadius.circular(12),
-              child: Image.asset('assets/aadhar_1.png', fit: BoxFit.contain),
+
+            const SizedBox(height: 10),
+
+            Text(
+              message,
+              textAlign: TextAlign.center,
+              style: const TextStyle(color: Colors.white70, fontSize: 15),
             ),
-            const SizedBox(height: 32),
-            const Text(
-              'Back side of the ID',
-              style: TextStyle(
-                color: Colors.white,
-                fontSize: 18,
-                fontWeight: FontWeight.bold,
-              ),
-            ),
-             const SizedBox(height: 8),
-            const Text(
-              'Make sure the lighting is good and letters are clearly visible.',
-              style: TextStyle(
-                color: Colors.white70,
-                fontSize: 14,
-              ),
-            ),
-            const SizedBox(height: 16),
-            ClipRRect(
-              borderRadius: BorderRadius.circular(12),
-              child: Image.asset('assets/aadhar_2.png', fit: BoxFit.contain),
-            ),
-             const Spacer(),
+
+            const SizedBox(height: 40),
+
             ElevatedButton(
-              onPressed: () {
-                // TODO: Handle document submission
-                Get.snackbar(
-                  'Success',
-                  'Documents uploaded successfully!',
-                  snackPosition: SnackPosition.BOTTOM,
-                );
-              },
-              style: ElevatedButton.styleFrom(
-                backgroundColor: const Color(0xFF7C3AED),
-                shape: RoundedRectangleBorder(
-                  borderRadius: BorderRadius.circular(12.0),
-                ),
-                minimumSize: const Size(double.infinity, 50),
-              ),
-              child: const Text(
-                'Capture Photo',
-                style: TextStyle(color: Colors.white, fontSize: 16),
-              ),
-            ),
+              onPressed: ()=> Get.offAllNamed('/home'),
+              style: ElevatedButton.styleFrom(backgroundColor: const Color(0xFF7C3AED)),
+              child: const Text("Continue", style: TextStyle(color: Colors.white)),
+            )
           ],
         ),
       ),

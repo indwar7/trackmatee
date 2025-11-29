@@ -24,6 +24,8 @@ class _TranslatedTextState extends State<TranslatedText> {
   late Future<String> translatedText;
   final languageController = Get.find<LanguageController>();
 
+  get TranslationService => null;
+
   @override
   void initState() {
     super.initState();
