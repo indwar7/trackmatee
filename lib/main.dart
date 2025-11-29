@@ -26,7 +26,7 @@ class MyApp extends StatelessWidget {
         scaffoldBackgroundColor: const Color(0xFF1F2937),
         brightness: Brightness.dark,
       ),
-      home: const MapScreen(),
+      home: MapScreen(),
     );
   }
 }

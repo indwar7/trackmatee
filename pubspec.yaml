@@ -1,6 +1,8 @@
 name: trackmatee
-description: Navigation app with dark map + Places autocomplete
+description: A trip tracking and planning app
 publish_to: "none"
+
+version: 1.0.0+1
 
 environment:
   sdk: ">=3.0.0 <4.0.0"
@@ -8,18 +10,22 @@ environment:
 dependencies:
   flutter:
     sdk: flutter
-  cupertino_icons: ^1.0.2
+
   google_maps_flutter: ^2.5.0
-  location: ^5.0.3
-  permission_handler: ^11.0.1
-  geolocator: ^10.1.0
+  geolocator: ^10.0.0
   http: ^1.1.0
-  flutter_polyline_points: ^2.0.0
+
+  flutter_typeahead: ^5.2.0
+  flutter_keyboard_visibility: ^6.0.0
+
+
 
 dev_dependencies:
   flutter_test:
     sdk: flutter
-  flutter_lints: ^2.0.0
+  flutter_lints: ^3.0.0
 
 flutter:
   uses-material-design: true
+
+
