@@ -1,5 +1,6 @@
+// 📌 lib/screens/onboarding/splash_screen.dart
+
 import 'package:flutter/material.dart';
-import 'dart:async';
 import 'package:get/get.dart';
 import 'package:get_storage/get_storage.dart';
 import 'package:trackmate_app/services/auth_service.dart';
@@ -11,77 +12,140 @@ class SplashScreen extends StatefulWidget {
   State<SplashScreen> createState() => _SplashScreenState();
 }
 
-class _SplashScreenState extends State<SplashScreen>
-    with SingleTickerProviderStateMixin {
+class _SplashScreenState extends State<SplashScreen> with SingleTickerProviderStateMixin {
   late AnimationController _controller;
-  late Animation<double> _fade;
-  late Animation<double> _scale;
-
-  final box = GetStorage();
+  late Animation<double> _fadeAnimation;
+  final _storage = GetStorage();
 
   @override
   void initState() {
     super.initState();
 
+    // Setup animation
     _controller = AnimationController(
       vsync: this,
-      duration: const Duration(milliseconds: 1200),
-    )..forward();
+      duration: const Duration(milliseconds: 1500),
+    );
 
-    _fade = Tween(begin: 0.0, end: 1.0).animate(
+    _fadeAnimation = Tween<double>(begin: 0.0, end: 1.0).animate(
       CurvedAnimation(parent: _controller, curve: Curves.easeIn),
     );
 
-    _scale = Tween(begin: 0.80, end: 1.0).animate(
-      CurvedAnimation(parent: _controller, curve: Curves.easeOutBack),
-    );
+    _controller.forward();
 
-    _startFlow();
+    // Navigate after 3 seconds
+    _navigate();
   }
 
-  Future<void> _startFlow() async {
+  @override
+  void dispose() {
+    _controller.dispose();
+    super.dispose();
+  }
+
+  Future<void> _navigate() async {
+    // Wait for 3 seconds (splash duration)
     await Future.delayed(const Duration(seconds: 3));
 
-    final auth = Get.find<AuthService>();
-    bool permissionsDone = box.read("permissions_granted") ?? false;
-    bool firstOpen = box.read("first_open") ?? true;
+    // Get auth service
+    final authService = Get.find<AuthService>();
 
-    if (auth.isLoggedIn) {
+    // Check if user is logged in
+    if (authService.isLoggedIn) {
+      // Logged in user → Go to Home directly
       Get.offAllNamed('/home');
       return;
     }
 
-    if (!permissionsDone) {
-      box.write("permissions_granted", true);
+    // Check if onboarding is completed
+    final hasCompletedOnboarding = _storage.read('onboarding_completed') ?? false;
+
+    if (hasCompletedOnboarding) {
+      // Returning user (onboarding done but not logged in)
+      // → Go to Permissions then Login
       Get.offAllNamed('/permissions');
-      return;
+    } else {
+      // First time user → Go to Welcome Screen
+      Get.offAllNamed('/welcome');
     }
-
-    if (firstOpen) {
-      box.write("first_open", false);
-      Get.offAllNamed('/terms'); // CORRECT
-      return;
-    }
-
-
-    Get.offAllNamed('/login');
   }
 
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      backgroundColor: const Color(0xFF0F0F1E),
-      body: Center(
+      body: Container(
+        width: double.infinity,
+        decoration: BoxDecoration(
+          gradient: LinearGradient(
+            begin: Alignment.topLeft,
+            end: Alignment.bottomRight,
+            colors: [
+              const Color(0xFF1A1A2E),
+              const Color(0xFF16213E),
+              const Color(0xFF0F3460),
+            ],
+          ),
+        ),
         child: FadeTransition(
-          opacity: _fade,
-          child: ScaleTransition(
-            scale: _scale,
-            child: Image.asset(
-              'assets/Rectangle.png',  // 🔥 Your splash image here
-              width: 250,             // you can adjust dimensions
-              height: 250,
-              fit: BoxFit.contain,
-            ),
+          opacity: _fadeAnimation,
+          child: Column(
+            mainAxisAlignment: MainAxisAlignment.center,
+            children: [
+              // Logo
+              Image.asset(
+                'assets/logo.png',
+                width: 150,
+                height: 150,
+                errorBuilder: (context, error, stackTrace) {
+                  return Container(
+                    width: 150,
+                    height: 150,
+                    decoration: BoxDecoration(
+                      color: const Color(0xFF8B5CF6).withOpacity(0.2),
+                      shape: BoxShape.circle,
+                    ),
+                    child: const Icon(
+                      Icons.location_on,
+                      size: 80,
+                      color: Color(0xFF8B5CF6),
+                    ),
+                  );
+                },
+              ),
+              const SizedBox(height: 30),
+
+              // App Name
+              const Text(
+                'WELCOME TRAVELLER',
+                style: TextStyle(
+                  fontSize: 36,
+                  fontWeight: FontWeight.bold,
+                  color: Colors.white,
+                  letterSpacing: 3,
+                ),
+              ),
+              const SizedBox(height: 10),
+
+              // Tagline
+              const Text(
+                'Your Smart Travel Companion',
+                style: TextStyle(
+                  fontSize: 16,
+                  color: Colors.white70,
+                ),
+              ),
+              const SizedBox(height: 60),
+
+              // Loading Indicator
+              const SizedBox(
+                height: 30,
+                width: 30,
+                child: CircularProgressIndicator(
+                  color: Color(0xFF8B5CF6),
+                  strokeWidth: 3,
+                ),
+              ),
+            ],
           ),
         ),
       ),

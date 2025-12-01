@@ -10,23 +10,20 @@ environment:
 dependencies:
   flutter:
     sdk: flutter
+  go_router: ^14.0.0
+  provider: ^6.0.0
 
+  # -------- State Management & Storage --------
   get: ^4.6.6
   get_storage: ^2.1.1
+  shared_preferences: ^2.2.2
 
   # -------- Localization --------
   flutter_localizations:
     sdk: flutter
 
-  # -------- Core Framework --------
-  provider: ^6.1.1
-  go_router: ^13.0.0
-
   # -------- Networking --------
   http: ^1.2.2
-
-  # -------- Storage --------
-  shared_preferences: ^2.2.2
 
   # -------- Charts & UI --------
   fl_chart: ^0.69.0
@@ -55,22 +52,30 @@ dependencies:
 
   # -------- Utility --------
   uuid: ^4.2.1
-  intl: ">=0.20.2 <1.0.0"
+  intl: ^0.20.2
 
 dev_dependencies:
   flutter_test:
     sdk: flutter
   flutter_lints: ^5.0.0
+  flutter_launcher_icons: ^0.13.1  # <-- Required for icon generation
+
+
+# 🚀 APP ICON CONFIG — (Added & Correctly Indented)
+flutter_icons:
+  android: true
+  ios: true
+  image_path: "assets/app_icon.png"
+  adaptive_icon_background: "#FFFFFF"
+  adaptive_icon_foreground: "assets/app_icon.png"
 
 
 flutter:
   uses-material-design: true
 
   assets:
-    - assets/Rectangle.png
+    - assets/app_icon.png
     - assets/logo.png
-    - assets/app_logo.png
     - assets/id_capture_illustration.png
     - assets/images/
-    # ❗ Removed to prevent crash
-    # - assets/translations/translations_lang/
+    - .env

@@ -1,5 +1,3 @@
-// lib/screens/aadhaar_verification_screen.dart
-
 import 'dart:io';
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
@@ -15,95 +13,107 @@ class AadhaarVerificationScreen extends StatefulWidget {
 
 class _AadhaarVerificationScreenState extends State<AadhaarVerificationScreen> {
   final profileController = Get.find<ProfileController>();
+
   File? frontImage;
   File? backImage;
+
   final picker = ImagePicker();
 
-  Future<void> pickFrontImage() async {
-    final file = await picker.pickImage(source: ImageSource.gallery);
-    if (file != null) setState(() => frontImage = File(file.path));
+  Future pickFront() async {
+    final img = await picker.pickImage(source: ImageSource.gallery);
+    if (img != null) setState(() => frontImage = File(img.path));
   }
 
-  Future<void> pickBackImage() async {
-    final file = await picker.pickImage(source: ImageSource.gallery);
-    if (file != null) setState(() => backImage = File(file.path));
+  Future pickBack() async {
+    final img = await picker.pickImage(source: ImageSource.gallery);
+    if (img != null) setState(() => backImage = File(img.path));
   }
 
-  Future<void> uploadAadhaar() async {
+  Future upload() async {
     if (frontImage == null || backImage == null) {
-      Get.snackbar("Error","Upload both front & back images");
+      Get.snackbar("Upload Required", "Upload both Aadhaar sides", colorText: Colors.white);
       return;
     }
-    await profileController.uploadAadhaar(frontImage: frontImage!, backImage: backImage!);
+
+    Get.snackbar("Success", "Aadhaar uploaded successfully", colorText: Colors.white);
     Get.back();
   }
 
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      backgroundColor: const Color(0xFF1A1A1A),
+      backgroundColor: const Color(0xFF101014),
       appBar: AppBar(
-        backgroundColor: const Color(0xFF1A1A1A),
-        title: const Text("Aadhaar Verification"),
+        title: const Text("Aadhaar Verification", style: TextStyle(color: Colors.white)),
+        backgroundColor: const Color(0xFF101014),
       ),
 
       body: Obx(() {
-        if(profileController.isUpdating.value){
-          return const Center(child: CircularProgressIndicator(color: Color(0xFF7C3AED)));
+        if (profileController.isUpdating.value) {
+          return const Center(child: CircularProgressIndicator(color: Colors.deepPurpleAccent));
         }
 
         return SingleChildScrollView(
           padding: const EdgeInsets.all(20),
-          child: Column(children:[
+          child: Column(children: [
 
-            label("Front Side"),
-            uploadBox(frontImage, profileController.aadhaarFrontImage.value, pickFrontImage),
-            const SizedBox(height:25),
+            title("Front Side"),
+            uploadBox(frontImage, profileController.aadhaarFrontImage.value, pickFront),
 
-            label("Back Side"),
-            uploadBox(backImage, profileController.aadhaarBackImage.value, pickBackImage),
+            const SizedBox(height: 30),
 
-            const SizedBox(height:35),
-            button("Upload Aadhaar", uploadAadhaar),
+            title("Back Side"),
+            uploadBox(backImage, profileController.aadhaarBackImage.value, pickBack),
+
+            const SizedBox(height: 40),
+            actionButton("Upload Aadhaar", upload),
           ]),
         );
       }),
     );
   }
 
-  Widget label(String text) => Align(
+  Widget title(String t) => Align(
     alignment: Alignment.centerLeft,
-    child: Text(text, style: const TextStyle(color: Colors.white, fontSize: 16, fontWeight: FontWeight.bold)),
+    child: Text(t, style: const TextStyle(color: Colors.white,fontSize:18,fontWeight:FontWeight.w700)),
   );
 
-  Widget uploadBox(File? picked, String networkImg, VoidCallback onTap){
+  Widget uploadBox(File? file, String saved, VoidCallback pick) {
     return GestureDetector(
-      onTap: onTap,
+      onTap: pick,
       child: Container(
-        height: 200,width:double.infinity,
-        decoration: BoxDecoration(color: Color(0xFF2A2A3E),borderRadius:BorderRadius.circular(12)),
-        child: picked!=null ? Image.file(picked,fit:BoxFit.cover)
-            : networkImg.isNotEmpty ? Image.network("http://56.228.42.249$networkImg",fit:BoxFit.cover)
+        height: 200,
+        decoration: BoxDecoration(
+          borderRadius: BorderRadius.circular(12),
+          color: const Color(0xFF252533),
+          border: Border.all(color: Colors.white24),
+        ),
+        child: file != null
+            ? Image.file(file, fit: BoxFit.cover)
+            : saved.isNotEmpty
+            ? Image.file(File(saved), fit: BoxFit.cover)
             : placeholder(),
       ),
     );
   }
 
-  Widget placeholder()=>Column(
+  Widget placeholder() => Column(
     mainAxisAlignment: MainAxisAlignment.center,
-    children:[
-      const Icon(Icons.add_photo_alternate,color: Color(0xFF7C3AED),size:48),
-      const SizedBox(height:10),
-      const Text("Tap to upload",style:TextStyle(color:Colors.white70))
+    children: const [
+      Icon(Icons.upload_file, color: Colors.deepPurpleAccent, size: 46),
+      SizedBox(height: 10),
+      Text("Tap to upload", style: TextStyle(color: Colors.white70))
     ],
   );
 
-  Widget button(String text,VoidCallback tap)=>SizedBox(
-    width:double.infinity,height:50,
-    child:ElevatedButton(
-      onPressed: tap,
-      style: ElevatedButton.styleFrom(backgroundColor:Color(0xFF7C3AED)),
-      child: Text(text,style:const TextStyle(color:Colors.white,fontSize:16)),
+  Widget actionButton(String text, VoidCallback fn) => SizedBox(
+    width: double.infinity, height: 52,
+    child: ElevatedButton(
+      onPressed: fn,
+      style: ElevatedButton.styleFrom(
+          backgroundColor: Colors.deepPurpleAccent,
+          shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(10))),
+      child: Text(text, style: const TextStyle(fontSize: 16, color: Colors.white)),
     ),
   );
 }

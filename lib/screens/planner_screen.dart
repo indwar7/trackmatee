@@ -1,6 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
-import 'package:trackmate_app/screens/places/location_search_screen.dart';
+import 'package:trackmate_app/screens/location_search_screen.dart';
 import 'package:intl/intl.dart';
 
 class PlannerScreen extends StatefulWidget {

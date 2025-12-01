@@ -25,7 +25,7 @@ import 'package:trackmate_app/screens/user/trusted_contacts_screen.dart';
 import 'package:trackmate_app/screens/verification/user_verification_screen.dart';
 import 'package:trackmate_app/screens/capture_id_screen.dart';
 import 'package:trackmate_app/screens/id_capture_tips_screen.dart';
-import 'package:trackmate_app/screens/id_status_screen.dart';
+import 'package:trackmate_app/screens/verification/id_status_screen.dart';
 
 class AppPages {
   static const initial = '/splash';

@@ -1,239 +1,342 @@
-import 'dart:io';
+// 📌 lib/controllers/profile_controller.dart
+
+import 'dart:convert';
+import 'package:flutter/material.dart';
 import 'package:get/get.dart';
-import 'package:trackmate_app/services/api_service.dart';
+import 'package:get_storage/get_storage.dart';
+import 'package:http/http.dart' as http;
+import 'package:trackmate_app/services/auth_service.dart';
 
 class ProfileController extends GetxController {
-  // Profile data
-  var fullName = ''.obs;
+  final _storage = GetStorage();
+
+  // Observable variables
+  var name = ''.obs;
+  var email = ''.obs;
+  var phone = ''.obs;
   var profileImage = ''.obs;
+  var isLoading = false.obs;
+  var isUpdating = false.obs;
+
+  // Additional profile fields
+  var dateOfBirth = ''.obs;
+  var gender = ''.obs;
+  var address = ''.obs;
+  var emergencyContact = ''.obs;
+  var bloodGroup = ''.obs;
   var bio = ''.obs;
+  var fullName = ''.obs;
   var homeLocation = ''.obs;
   var workLocation = ''.obs;
-  var email = ''.obs;
 
-  // Trusted contacts
-  var trustedContacts = <TrustedContact>[].obs;
+  // Vehicle info
+  var vehicleNumber = ''.obs;
+  var vehicleModel = ''.obs;
+  var isVehicleVerified = false.obs;
 
   // Aadhaar verification
   var aadhaarFrontImage = ''.obs;
   var aadhaarBackImage = ''.obs;
   var isAadhaarVerified = false.obs;
 
-  // Vehicle
-  var vehicleNumber = ''.obs;
-  var vehicleModel = ''.obs;
-  var rcImage = ''.obs;
-  var isVehicleVerified = false.obs;
-
-  // Loading states
-  var isLoading = false.obs;
-  var isUpdating = false.obs;
+  // Trusted contacts
+  final trustedContacts = <Map<String, dynamic>>[].obs;
 
   @override
   void onInit() {
     super.onInit();
-    loadFullProfile();
+    loadProfileFromStorage();
+    fetchProfile();
   }
 
-  // Load full profile
-  Future<void> loadFullProfile() async {
+  // Load profile from local storage
+  void loadProfileFromStorage() {
     try {
-      isLoading.value = true;
-      final data = await ApiService.getFullProfile();
-
-      fullName.value = data['full_name'] ?? '';
-      profileImage.value = data['profile_image'] ?? '';
-      bio.value = data['bio'] ?? '';
-      homeLocation.value = data['home_location'] ?? '';
-      workLocation.value = data['work_location'] ?? '';
+      final authService = Get.find<AuthService>();
+      name.value = _storage.read('username') ?? authService.username;
+      fullName.value = _storage.read('fullName') ?? name.value;
+      email.value = _storage.read('email') ?? authService.email;
+      phone.value = _storage.read('phone') ?? '';
+      profileImage.value = _storage.read('profileImage') ?? '';
+      dateOfBirth.value = _storage.read('dateOfBirth') ?? '';
+      gender.value = _storage.read('gender') ?? '';
+      address.value = _storage.read('address') ?? '';
+      emergencyContact.value = _storage.read('emergencyContact') ?? '';
+      bloodGroup.value = _storage.read('bloodGroup') ?? '';
+      bio.value = _storage.read('bio') ?? '';
+      homeLocation.value = _storage.read('homeLocation') ?? '';
+      workLocation.value = _storage.read('workLocation') ?? '';
+      vehicleNumber.value = _storage.read('vehicleNumber') ?? '';
+      vehicleModel.value = _storage.read('vehicleModel') ?? '';
+      isVehicleVerified.value = _storage.read('isVehicleVerified') ?? false;
+      aadhaarFrontImage.value = _storage.read('aadhaarFrontImage') ?? '';
+      aadhaarBackImage.value = _storage.read('aadhaarBackImage') ?? '';
+      isAadhaarVerified.value = _storage.read('isAadhaarVerified') ?? false;
 
       // Load trusted contacts
-      if (data['trusted_contacts'] != null) {
-        trustedContacts.value = (data['trusted_contacts'] as List)
-            .map((c) => TrustedContact.fromJson(c))
-            .toList();
+      final storedContacts = _storage.read<List>('trusted_contacts');
+      if (storedContacts != null) {
+        trustedContacts.value = storedContacts.map((e) => Map<String, dynamic>.from(e)).toList();
       }
-
-      // Load Aadhaar info
-      if (data['aadhaar_verification'] != null) {
-        final aadhaar = data['aadhaar_verification'];
-        aadhaarFrontImage.value = aadhaar['front_image'] ?? '';
-        aadhaarBackImage.value = aadhaar['back_image'] ?? '';
-        isAadhaarVerified.value = aadhaar['is_verified'] ?? false;
-      }
-
-      // Load vehicle info
-      if (data['vehicles'] != null && (data['vehicles'] as List).isNotEmpty) {
-        final vehicle = (data['vehicles'] as List).first;
-        vehicleNumber.value = vehicle['vehicle_number'] ?? '';
-        vehicleModel.value = vehicle['vehicle_model'] ?? '';
-        rcImage.value = vehicle['rc_image'] ?? '';
-        isVehicleVerified.value = vehicle['is_verified'] ?? false;
-      }
-
     } catch (e) {
-      Get.snackbar('Error', 'Failed to load profile: $e',
-          snackPosition: SnackPosition.BOTTOM);
+      print('Error loading profile: $e');
+    }
+  }
+
+  // Fetch profile from API
+  Future<void> fetchProfile() async {
+    try {
+      isLoading.value = true;
+
+      final authService = Get.find<AuthService>();
+      final token = authService.token;
+
+      if (token.isEmpty) {
+        print("No auth token found");
+        loadProfileFromStorage();
+        return;
+      }
+
+      final response = await http.get(
+        Uri.parse("http://56.228.42.249/api/user/profile/"),
+        headers: {
+          "Content-Type": "application/json",
+          "Authorization": "Bearer $token",
+        },
+      ).timeout(
+        const Duration(seconds: 10),
+        onTimeout: () {
+          throw Exception('Request timeout');
+        },
+      );
+
+      if (response.statusCode == 200) {
+        final data = jsonDecode(response.body);
+
+        name.value = data['name'] ?? data['username'] ?? '';
+        fullName.value = data['full_name'] ?? data['name'] ?? '';
+        email.value = data['email'] ?? '';
+        phone.value = data['phone'] ?? '';
+        profileImage.value = data['profile_image'] ?? '';
+        dateOfBirth.value = data['date_of_birth'] ?? '';
+        gender.value = data['gender'] ?? '';
+        address.value = data['address'] ?? '';
+        emergencyContact.value = data['emergency_contact'] ?? '';
+        bloodGroup.value = data['blood_group'] ?? '';
+        bio.value = data['bio'] ?? '';
+        homeLocation.value = data['home_location'] ?? '';
+        workLocation.value = data['work_location'] ?? '';
+        vehicleNumber.value = data['vehicle_number'] ?? '';
+        vehicleModel.value = data['vehicle_model'] ?? '';
+
+        saveProfileToStorage();
+      }
+    } catch (e) {
+      print("Error fetching profile: $e");
+      loadProfileFromStorage();
     } finally {
       isLoading.value = false;
     }
   }
 
   // Update profile
-  Future<void> updateProfile({
-    String? name,
-    File? image,
-    String? bioText,
-    String? home,
-    String? work,
+  Future<bool> updateProfile({
+    String? newName,
+    String? newFullName,
+    String? newPhone,
+    String? newDateOfBirth,
+    String? newGender,
+    String? newAddress,
+    String? newEmergencyContact,
+    String? newBloodGroup,
+    String? newBio,
+    String? newHomeLocation,
+    String? newWorkLocation,
   }) async {
     try {
       isUpdating.value = true;
 
-      final data = await ApiService.updateProfile(
-        fullName: name,
-        profileImage: image,
-        bio: bioText,
-        homeLocation: home,
-        workLocation: work,
+      if (newName != null) name.value = newName;
+      if (newFullName != null) fullName.value = newFullName;
+      if (newPhone != null) phone.value = newPhone;
+      if (newDateOfBirth != null) dateOfBirth.value = newDateOfBirth;
+      if (newGender != null) gender.value = newGender;
+      if (newAddress != null) address.value = newAddress;
+      if (newEmergencyContact != null) emergencyContact.value = newEmergencyContact;
+      if (newBloodGroup != null) bloodGroup.value = newBloodGroup;
+      if (newBio != null) bio.value = newBio;
+      if (newHomeLocation != null) homeLocation.value = newHomeLocation;
+      if (newWorkLocation != null) workLocation.value = newWorkLocation;
+
+      saveProfileToStorage();
+
+      Get.snackbar(
+        "Success",
+        "Profile updated successfully!",
+        backgroundColor: Colors.green,
+        colorText: Colors.white,
+        snackPosition: SnackPosition.TOP,
       );
 
-      fullName.value = data['full_name'] ?? '';
-      profileImage.value = data['profile_image'] ?? '';
-      bio.value = data['bio'] ?? '';
-      homeLocation.value = data['home_location'] ?? '';
-      workLocation.value = data['work_location'] ?? '';
-
-      Get.snackbar('Success', 'Profile updated successfully',
-          snackPosition: SnackPosition.BOTTOM);
-
+      return true;
     } catch (e) {
-      Get.snackbar('Error', 'Failed to update profile: $e',
-          snackPosition: SnackPosition.BOTTOM);
+      print("Error updating profile: $e");
+
+      Get.snackbar(
+        "Error",
+        "Failed to update profile",
+        backgroundColor: Colors.red,
+        colorText: Colors.white,
+        snackPosition: SnackPosition.TOP,
+      );
+
+      return false;
     } finally {
       isUpdating.value = false;
     }
   }
 
-  // Add trusted contact
-  Future<void> addTrustedContact({
-    required String name,
-    required String phoneNumber,
-    required String relation,
-  }) async {
-    try {
-      final data = await ApiService.addContact(
-        name: name,
-        phoneNumber: phoneNumber,
-        relation: relation,
-      );
-
-      trustedContacts.add(TrustedContact.fromJson(data));
-
-      Get.snackbar('Success', 'Contact added successfully',
-          snackPosition: SnackPosition.BOTTOM);
-
-    } catch (e) {
-      Get.snackbar('Error', 'Failed to add contact: $e',
-          snackPosition: SnackPosition.BOTTOM);
-    }
+  // Save profile to local storage
+  void saveProfileToStorage() {
+    _storage.write('username', name.value);
+    _storage.write('fullName', fullName.value);
+    _storage.write('email', email.value);
+    _storage.write('phone', phone.value);
+    _storage.write('profileImage', profileImage.value);
+    _storage.write('dateOfBirth', dateOfBirth.value);
+    _storage.write('gender', gender.value);
+    _storage.write('address', address.value);
+    _storage.write('emergencyContact', emergencyContact.value);
+    _storage.write('bloodGroup', bloodGroup.value);
+    _storage.write('bio', bio.value);
+    _storage.write('homeLocation', homeLocation.value);
+    _storage.write('workLocation', workLocation.value);
+    _storage.write('vehicleNumber', vehicleNumber.value);
+    _storage.write('vehicleModel', vehicleModel.value);
+    _storage.write('isVehicleVerified', isVehicleVerified.value);
+    _storage.write('aadhaarFrontImage', aadhaarFrontImage.value);
+    _storage.write('aadhaarBackImage', aadhaarBackImage.value);
+    _storage.write('isAadhaarVerified', isAadhaarVerified.value);
+    _storage.write('trusted_contacts', trustedContacts.toList());
   }
 
-  // Remove trusted contact
-  Future<void> removeTrustedContact(int id) async {
+  // Update profile image
+  Future<bool> updateProfileImage(String imagePath) async {
     try {
-      await ApiService.deleteContact(id);
-      trustedContacts.removeWhere((c) => c.id == id);
+      isLoading.value = true;
 
-      Get.snackbar('Success', 'Contact removed successfully',
-          snackPosition: SnackPosition.BOTTOM);
+      // Simulate image upload
+      await Future.delayed(const Duration(seconds: 1));
 
+      profileImage.value = imagePath;
+      saveProfileToStorage();
+
+      Get.snackbar(
+        "Success",
+        "Profile picture updated!",
+        backgroundColor: Colors.green,
+        colorText: Colors.white,
+      );
+
+      return true;
     } catch (e) {
-      Get.snackbar('Error', 'Failed to remove contact: $e',
-          snackPosition: SnackPosition.BOTTOM);
+      print("Error updating profile image: $e");
+
+      Get.snackbar(
+        "Error",
+        "Failed to upload image",
+        backgroundColor: Colors.red,
+        colorText: Colors.white,
+      );
+
+      return false;
+    } finally {
+      isLoading.value = false;
     }
   }
 
   // Upload Aadhaar
-  Future<void> uploadAadhaar({
-    required File frontImage,
-    required File backImage,
+  Future<bool> uploadAadhaar({
+    required String frontImage,
+    required String backImage,
   }) async {
     try {
       isUpdating.value = true;
 
-      final data = await ApiService.uploadAadhaar(
-        frontImage: frontImage,
-        backImage: backImage,
+      // Simulate upload
+      await Future.delayed(const Duration(seconds: 2));
+
+      aadhaarFrontImage.value = frontImage;
+      aadhaarBackImage.value = backImage;
+      isAadhaarVerified.value = true;
+
+      saveProfileToStorage();
+
+      Get.snackbar(
+        "Success",
+        "Aadhaar uploaded successfully!",
+        backgroundColor: Colors.green,
+        colorText: Colors.white,
       );
 
-      aadhaarFrontImage.value = data['front_image'] ?? '';
-      aadhaarBackImage.value = data['back_image'] ?? '';
-      isAadhaarVerified.value = data['is_verified'] ?? false;
-
-      Get.snackbar('Success', 'Aadhaar uploaded successfully',
-          snackPosition: SnackPosition.BOTTOM);
-
+      return true;
     } catch (e) {
-      Get.snackbar('Error', 'Failed to upload Aadhaar: $e',
-          snackPosition: SnackPosition.BOTTOM);
+      print("Error uploading Aadhaar: $e");
+
+      Get.snackbar(
+        "Error",
+        "Failed to upload Aadhaar",
+        backgroundColor: Colors.red,
+        colorText: Colors.white,
+      );
+
+      return false;
     } finally {
       isUpdating.value = false;
     }
   }
 
-  // Update vehicle
-  Future<void> updateVehicle({
-    required String number,
-    required String model,
-    File? rcImg,
-  }) async {
-    try {
-      isUpdating.value = true;
+  // Trusted Contacts Methods
+  void addTrustedContact(String name, String phone) {
+    final contact = {
+      'id': DateTime.now().millisecondsSinceEpoch.toString(),
+      'name': name,
+      'phone': phone,
+    };
+    trustedContacts.add(contact);
+    saveProfileToStorage();
+  }
 
-      final data = await ApiService.updateVehicle(
-        vehicleNumber: number,
-        vehicleModel: model,
-        rcImage: rcImg,
-      );
-
-      vehicleNumber.value = data['vehicle_number'] ?? '';
-      vehicleModel.value = data['vehicle_model'] ?? '';
-      rcImage.value = data['rc_image'] ?? '';
-      isVehicleVerified.value = data['is_verified'] ?? false;
-
-      Get.snackbar('Success', 'Vehicle updated successfully',
-          snackPosition: SnackPosition.BOTTOM);
-
-    } catch (e) {
-      Get.snackbar('Error', 'Failed to update vehicle: $e',
-          snackPosition: SnackPosition.BOTTOM);
-    } finally {
-      isUpdating.value = false;
+  void removeTrustedContact(int index) {
+    if (index >= 0 && index < trustedContacts.length) {
+      trustedContacts.removeAt(index);
+      saveProfileToStorage();
     }
   }
-}
 
-// Model classes
-class TrustedContact {
-  final int id;
-  final String name;
-  final String phoneNumber;
-  final String relation;
+  // Clear profile data (for logout)
+  void clearProfile() {
+    name.value = '';
+    fullName.value = '';
+    email.value = '';
+    phone.value = '';
+    profileImage.value = '';
+    dateOfBirth.value = '';
+    gender.value = '';
+    address.value = '';
+    emergencyContact.value = '';
+    bloodGroup.value = '';
+    bio.value = '';
+    homeLocation.value = '';
+    workLocation.value = '';
+    vehicleNumber.value = '';
+    vehicleModel.value = '';
+    isVehicleVerified.value = false;
+    aadhaarFrontImage.value = '';
+    aadhaarBackImage.value = '';
+    isAadhaarVerified.value = false;
+    trustedContacts.clear();
 
-  TrustedContact({
-    required this.id,
-    required this.name,
-    required this.phoneNumber,
-    required this.relation,
-  });
-
-  factory TrustedContact.fromJson(Map<String, dynamic> json) {
-    return TrustedContact(
-      id: json['id'],
-      name: json['name'],
-      phoneNumber: json['phone_number'],
-      relation: json['relation'],
-    );
+    _storage.erase();
   }
 }

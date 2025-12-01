@@ -15,8 +15,8 @@ class BookingScreen extends StatelessWidget {
       appBar: AppBar(
         title: const Text('Select Booking Type'),
         elevation: 0,
-        backgroundColor: Colors.white,
-        foregroundColor: Colors.black,
+        backgroundColor: Colors.deepPurple[200],
+        foregroundColor: Colors.black87,
       ),
       body: ListView(
         padding: const EdgeInsets.all(16),
@@ -25,7 +25,7 @@ class BookingScreen extends StatelessWidget {
             title: 'Flight Booking',
             subtitle: 'Book domestic and international flights',
             icon: Icons.flight,
-            color: const Color(0xFF1A73E8),
+            color: Colors.black87,
             onTap: () {
               Navigator.push(
                 context,
@@ -40,7 +40,7 @@ class BookingScreen extends StatelessWidget {
             title: 'Hotel Booking',
             subtitle: 'Find and book hotels worldwide',
             icon: Icons.hotel,
-            color: const Color(0xFF4CAF50),
+            color: Colors.black87,
             onTap: () {
               Navigator.push(
                 context,
@@ -55,7 +55,7 @@ class BookingScreen extends StatelessWidget {
             title: 'Bus Booking',
             subtitle: 'Book bus tickets across cities',
             icon: Icons.directions_bus,
-            color: const Color(0xFFFF9800),
+            color: Colors.black87,
             onTap: () {
               Navigator.push(
                 context,
@@ -70,7 +70,7 @@ class BookingScreen extends StatelessWidget {
             title: 'Cab Booking',
             subtitle: 'Book cabs for local and outstation',
             icon: Icons.local_taxi,
-            color: const Color(0xFF9C27B0),
+            color: Colors.black87,
             onTap: () {
               Navigator.push(
                 context,
@@ -85,7 +85,7 @@ class BookingScreen extends StatelessWidget {
             title: 'Train Booking',
             subtitle: 'Book train tickets easily',
             icon: Icons.train,
-            color: const Color(0xFFE91E63),
+            color: Colors.black87,
             onTap: () {
               Navigator.push(
                 context,

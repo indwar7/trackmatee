@@ -1,77 +1,64 @@
-import 'package:flutter/material.dart';
+// lib/services/auth_service.dart
+import 'package:get/get.dart';
+import 'package:get_storage/get_storage.dart';
 
-class AuthProvider with ChangeNotifier {
-  String? _userId;
-  String? _phoneNumber;
-  String? _email;
-  bool _isVerified = false;
-  bool _isLoading = false;
-  String? _errorMessage;
+class AuthService extends GetxController {
+  final _storage = GetStorage();
 
-  // Getters
-  String? get userId => _userId;
-  String? get phoneNumber => _phoneNumber;
-  String? get email => _email;
-  bool get isVerified => _isVerified;
-  bool get isLoading => _isLoading;
-  String? get errorMessage => _errorMessage;
-  bool get isAuthenticated => _userId != null && _isVerified;
+  var isAuthenticated = false.obs;
+  var userId = ''.obs;
+  var userName = ''.obs;
+  var userEmail = ''.obs;
+  var phoneNumber = ''.obs;
 
-  // Login with phone
-  Future<void> loginWithPhone(String phoneNumber) async {
-    _isLoading = true;
-    _errorMessage = null;
-    notifyListeners();
+  @override
+  void onInit() {
+    super.onInit();
+    _loadUserData();
+  }
 
-    try {
-      // TODO: Call your auth API
-      _phoneNumber = phoneNumber;
-      _isLoading = false;
-      notifyListeners();
-    } catch (e) {
-      _errorMessage = e.toString();
-      _isLoading = false;
-      notifyListeners();
+  void _loadUserData() {
+    final storedUserId = _storage.read('userId');
+    if (storedUserId != null) {
+      userId.value = storedUserId;
+      userName.value = _storage.read('userName') ?? '';
+      userEmail.value = _storage.read('userEmail') ?? '';
+      phoneNumber.value = _storage.read('phoneNumber') ?? '';
+      isAuthenticated.value = true;
     }
   }
 
-  // Verify OTP
-  Future<bool> verifyOtp(String otp, String verificationType) async {
-    _isLoading = true;
-    _errorMessage = null;
-    notifyListeners();
-
-    try {
-      // TODO: Call your OTP verification API
-      _isVerified = true;
-      _isLoading = false;
-      notifyListeners();
-      return true;
-    } catch (e) {
-      _errorMessage = e.toString();
-      _isLoading = false;
-      notifyListeners();
-      return false;
-    }
-  }
-
-  // Set user data after verification
-  void setUserData({
-    required String userId,
+  Future<void> login({
     required String email,
-  }) {
-    _userId = userId;
-    _email = email;
-    notifyListeners();
+    required String password,
+  }) async {
+    try {
+      // TODO: Call your API
+      // For now, just mock login
+      userId.value = 'user_123';
+      userName.value = 'Tanvee Saxena';
+      userEmail.value = email;
+      isAuthenticated.value = true;
+
+      // Save to storage
+      await _storage.write('userId', userId.value);
+      await _storage.write('userName', userName.value);
+      await _storage.write('userEmail', userEmail.value);
+
+      Get.offAllNamed('/home');
+    } catch (e) {
+      Get.snackbar('Error', 'Login failed: $e');
+    }
   }
 
-  // Logout
-  void logout() {
-    _userId = null;
-    _phoneNumber = null;
-    _email = null;
-    _isVerified = false;
-    _errorMessage = null;
-    notifyListeners();
+  Future<void> logout() async {
+    userId.value = '';
+    userName.value = '';
+    userEmail.value = '';
+    phoneNumber.value = '';
+    isAuthenticated.value = false;
+
+    await _storage.erase();
+    Get.offAllNamed('/login');
   }
 }

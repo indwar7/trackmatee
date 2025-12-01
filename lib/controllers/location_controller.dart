@@ -1,47 +1,52 @@
 import 'package:get/get.dart';
-import 'package:geolocator/geolocator.dart';
-import 'package:trackmate_app/services/location_service.dart';
-import 'package:geocoding/geocoding.dart';
+
+class LocationModel {
+  final String city;
+  final String code;
+
+  LocationModel({required this.city, required this.code});
+}
+
+class AddressModel {
+  final String address;
+  final String city;
+
+  AddressModel({required this.address, required this.city});
+}
 
 class LocationController extends GetxController {
-  final LocationService _locationService = LocationService();
-  Position? currentPosition;
-  String? currentAddress;
-  var isLoading = false.obs;
-  
-  RxString get currentLocation => (currentAddress ?? 'Loading...').obs;
+  var fromLocation = LocationModel(city: 'DELHI', code: 'NDLS').obs;
+  var toLocation = LocationModel(city: 'Gurgaon', code: 'GRG').obs;
 
-  @override
-  void onInit() {
-    super.onInit();
-    getCurrentLocation();
+  var homeAddress = AddressModel(
+    address: 'Shanti Nagar-3',
+    city: 'Delhi, India',
+  ).obs;
+
+  var workAddress = AddressModel(
+    address: 'Cyber city phase 3, Gurgaon',
+    city: 'Haryana, India',
+  ).obs;
+
+  void swapLocations() {
+    final temp = fromLocation.value;
+    fromLocation.value = toLocation.value;
+    toLocation.value = temp;
   }
 
-  Future<void> getCurrentLocation() async {
-    try {
-      isLoading(true);
-      currentPosition = await _locationService.getCurrentLocation();
-      await _getAddressFromLatLng();
-      update();
-    } catch (e) {
-      print(e);
-    } finally {
-      isLoading(false);
-    }
+  void updateFromLocation(String city, String code) {
+    fromLocation.value = LocationModel(city: city, code: code);
   }
 
-  Future<void> _getAddressFromLatLng() async {
-    if (currentPosition != null) {
-      try {
-        List<Placemark> placemarks = await placemarkFromCoordinates(
-          currentPosition!.latitude,
-          currentPosition!.longitude,
-        );
-        Placemark place = placemarks[0];
-        currentAddress = "${place.locality}, ${place.postalCode}, ${place.country}";
-      } catch (e) {
-        print(e);
-      }
-    }
+  void updateToLocation(String city, String code) {
+    toLocation.value = LocationModel(city: city, code: code);
+  }
+
+  void updateHomeAddress(String address, String city) {
+    homeAddress.value = AddressModel(address: address, city: city);
+  }
+
+  void updateWorkAddress(String address, String city) {
+    workAddress.value = AddressModel(address: address, city: city);
   }
 }
