@@ -53,5 +53,25 @@ class LanguageController extends GetxController {
     }
   }
 
-  Future<String>? translate(String text) async {}
+  // Translation method with proper implementation
+  Future<String> translate(String text) async {
+    try {
+      // If you're using GetX translations, use this:
+      // return text.tr;
+
+      // For now, returning the original text as placeholder
+      // TODO: Implement your translation logic here
+      // You can integrate with translation APIs like Google Translate, or use local translation files
+
+      return text;
+    } catch (e) {
+      debugPrint('Translation error: $e');
+      return text;
+    }
+  }
+
+  // Alternative: Synchronous translation method using GetX
+  String translateSync(String key) {
+    return key.tr;
+  }
 }

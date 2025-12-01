@@ -1,402 +1,645 @@
 import 'package:flutter/material.dart';
+import 'package:get/get.dart';
+import '../../services/auth_service.dart';
+import '../../controllers/location_controller.dart';
 
-class HomeScreen extends StatefulWidget {
+class HomeScreen extends StatelessWidget {
   const HomeScreen({super.key});
 
   @override
-  State<HomeScreen> createState() => _HomeScreenState();
-}
-
-class _HomeScreenState extends State<HomeScreen> {
-  int _selectedTab = 0;
-
-  // color palette (based on your screenshot)
-  static const Color backgroundDark = Color(0xFF0F0F1E);
-  static const Color cardDark = Color(0xFF1E1E20);
-  static const Color lavender = Color(0xFFEDE9FF);
-  static const Color accentPurple = Color(0xFF8B5CF6);
-  static const Color brightBlue = Color(0xFF2F5BFF);
-
-  void _onNavTap(int index) {
-    setState(() {
-      _selectedTab = index;
-    });
-    // Navigate to placeholder screens for tabs that aren't Home
-    switch (index) {
-      case 0:
-      // already home
-        break;
-      case 1:
-        Navigator.pushNamed(context, '/planner');
-        break;
-      case 2:
-        Navigator.pushNamed(context, '/maps');
-        break;
-      case 3:
-        Navigator.pushNamed(context, '/profile');
-        break;
-    }
-  }
-
-  Widget _topSearchCard() {
-    return Container(
-      padding: const EdgeInsets.all(14),
-      decoration: BoxDecoration(
-        color: cardDark,
-        borderRadius: BorderRadius.circular(12),
-        border: Border.all(color: Colors.white12),
-      ),
-      child: Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
-          // Search bar
-          Container(
-            padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
-            decoration: BoxDecoration(
-              color: Colors.white,
-              borderRadius: BorderRadius.circular(10),
-            ),
-            child: Row(
-              children: const [
-                Icon(Icons.search, color: Colors.black54),
-                SizedBox(width: 10),
-                Expanded(
-                  child: Text(
-                    "Where are you going?",
-                    style: TextStyle(color: Colors.black54),
-                  ),
-                ),
-              ],
-            ),
-          ),
-          const SizedBox(height: 12),
-          Row(
-            children: [
-              const Icon(Icons.location_on_outlined, color: Colors.white70, size: 18),
-              const SizedBox(width: 8),
-              const Expanded(
-                child: Text('Home\nDelhi, India', style: TextStyle(color: Colors.white70)),
-              ),
-              Container(
-                padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 6),
-                decoration: BoxDecoration(
-                  color: Colors.black12,
-                  borderRadius: BorderRadius.circular(8),
-                ),
-                child: Row(
-                  children: const [
-                    Icon(Icons.work_outline, size: 16, color: Colors.white70),
-                    SizedBox(width: 6),
-                    Text('Work\nAdd Shortcut', style: TextStyle(color: Colors.white70, fontSize: 12)),
-                  ],
-                ),
-              )
-            ],
-          )
-        ],
-      ),
-    );
-  }
-
-  Widget _statCard() {
-    return Container(
-      padding: const EdgeInsets.all(14),
-      decoration: BoxDecoration(
-        color: lavender,
-        borderRadius: BorderRadius.circular(12),
-      ),
-      child: Column(
-        children: [
-          Row(
-            children: const [
-              Expanded(
-                child: Text('25%\nmore than previous months', style: TextStyle(color: Colors.black87)),
-              ),
-              SizedBox(width: 8),
-              Column(
-                crossAxisAlignment: CrossAxisAlignment.end,
-                children: [
-                  Text('250 g/km', style: TextStyle(color: Colors.black87, fontWeight: FontWeight.bold)),
-                  Text('Monthly carbon emission', style: TextStyle(color: Colors.black54, fontSize: 12)),
-                ],
-              )
-            ],
-          ),
-          const SizedBox(height: 10),
-          // mini bar chart (simple)
-          SizedBox(
-            height: 36,
-            child: Row(
-              mainAxisAlignment: MainAxisAlignment.spaceBetween,
-              children: List.generate(12, (i) {
-                double height = (i == 6) ? 28 : 18 + (i % 3) * 4;
-                return Container(
-                  width: 8,
-                  height: height,
-                  decoration: BoxDecoration(
-                    color: i == 6 ? accentPurple : brightBlue.withOpacity(0.45),
-                    borderRadius: BorderRadius.circular(6),
-                  ),
-                );
-              }),
-            ),
-          )
-        ],
-      ),
-    );
-  }
-
-  Widget _tile({
-    required Color color,
-    required Widget child,
-    required VoidCallback onTap,
-    double height = 90,
-  }) {
-    return GestureDetector(
-      onTap: onTap,
-      child: Container(
-        height: height,
-        decoration: BoxDecoration(
-          color: color,
-          borderRadius: BorderRadius.circular(12),
-        ),
-        padding: const EdgeInsets.all(12),
-        child: child,
-      ),
-    );
-  }
-
-  Widget _gridSection() {
-    return Wrap(
-      spacing: 12,
-      runSpacing: 12,
-      children: [
-        // Auto Trip Tracking (bigger card)
-        SizedBox(
-          width: 220,
-          child: _tile(
-            color: const Color(0xFF2E2E31),
-            height: 100,
-            onTap: () => Navigator.pushNamed(context, '/trip_history'),
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: const [
-                Text('AUTO\nTRIP\nTRACKING', style: TextStyle(color: Colors.white, fontWeight: FontWeight.w700)),
-                Spacer(),
-                Align(alignment: Alignment.bottomRight, child: Icon(Icons.location_on, color: Colors.white)),
-              ],
-            ),
-          ),
-        ),
-
-        SizedBox(
-          width: 140,
-          child: _tile(
-            color: brightBlue,
-            onTap: () => Navigator.pushNamed(context, '/trip_history'),
-            child: const Center(
-              child: Text('Trip History', style: TextStyle(color: Colors.white, fontWeight: FontWeight.w700)),
-            ),
-          ),
-        ),
-
-        SizedBox(
-          width: 100,
-          child: _tile(
-            color: accentPurple,
-            onTap: () => Navigator.pushNamed(context, '/cost_calculator'),
-            child: const Center(
-              child: RotatedBox(
-                quarterTurns: 3,
-                child: Text('Cost Calculator', textAlign: TextAlign.center, style: TextStyle(color: Colors.white, fontWeight: FontWeight.w700)),
-              ),
-            ),
-          ),
-        ),
-
-        SizedBox(
-          width: 100,
-          child: _tile(
-            color: const Color(0xFFFFFFFF),
-            onTap: () => Navigator.pushNamed(context, '/packing_checklist'),
-            child: const Center(
-              child: Text('AI\nPacking\nchecklist', textAlign: TextAlign.center, style: TextStyle(color: Colors.black87, fontWeight: FontWeight.w700)),
-            ),
-          ),
-        ),
-
-        SizedBox(
-          width: 100,
-          child: _tile(
-            color: const Color(0xFFFFFFFF),
-            onTap: () => Navigator.pushNamed(context, '/plan_ride'),
-            child: const Center(
-              child: Text('Plan a\nRide', textAlign: TextAlign.center, style: TextStyle(color: Colors.black87, fontWeight: FontWeight.w700)),
-            ),
-          ),
-        ),
-
-        SizedBox(
-          width: 100,
-          child: _tile(
-            color: const Color(0xFFFFFFFF),
-            onTap: () => Navigator.pushNamed(context, '/safety_tools'),
-            child: const Center(
-              child: Text('Safety\nTools', textAlign: TextAlign.center, style: TextStyle(color: Colors.black87, fontWeight: FontWeight.w700)),
-            ),
-          ),
-        ),
-
-        SizedBox(
-          width: 100,
-          child: _tile(
-            color: const Color(0xFF5A5A5E),
-            onTap: () => Navigator.pushNamed(context, '/saved_routes'),
-            child: const Center(
-              child: Text('Saved\nRoutes', textAlign: TextAlign.center, style: TextStyle(color: Colors.white, fontWeight: FontWeight.w700)),
-            ),
-          ),
-        ),
-      ],
-    );
-  }
-
-  @override
   Widget build(BuildContext context) {
-    // reference screenshot path (your uploaded file). Keep for visual matching:
-    // /mnt/data/Screenshot 2025-11-20 at 11.29.14 AM.png
+    final _ = Get.find<AuthService>();
+    final locationController = Get.put(LocationController());
+    final userName = 'Tanvee Saxena';
 
     return Scaffold(
-      backgroundColor: backgroundDark,
+      backgroundColor: const Color(0xFF0F172A),
       body: SafeArea(
         child: SingleChildScrollView(
-          padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 16),
-          child: Column(
-            crossAxisAlignment: CrossAxisAlignment.start,
-            children: [
-              // Greeting row
-              Row(
-                mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                children: [
-                  Column(
-                    crossAxisAlignment: CrossAxisAlignment.start,
-                    children: const [
-                      Text('Good Morning,', style: TextStyle(color: Colors.white70)),
-                      SizedBox(height: 6),
-                      Text('Tanvee Saxena', style: TextStyle(color: Colors.white, fontSize: 22, fontWeight: FontWeight.bold)),
-                    ],
-                  ),
-                  // small icons area
-                  Row(
-                    children: [
-                      // translate-like icon (square)
-                      Container(
-                        margin: const EdgeInsets.only(left: 12),
-                        padding: const EdgeInsets.all(6),
-                        decoration: BoxDecoration(
-                          color: cardDark,
-                          borderRadius: BorderRadius.circular(8),
+          child: Padding(
+            padding: const EdgeInsets.all(20.0),
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+
+                // HEADER ---------------------------------------------------------
+                Row(
+                  mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                  children: [
+                    Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        const Text(
+                          'Greetings,',
+                          style: TextStyle(
+                            color: Colors.white70,
+                            fontSize: 22,
+                            fontWeight: FontWeight.w400,
+                          ),
                         ),
-                        child: const Icon(Icons.translate, color: Colors.white, size: 18),
+                        Text(
+                          userName,
+                          style: const TextStyle(
+                            color: Colors.white,
+                            fontSize: 25,
+                            fontWeight: FontWeight.bold,
+                          ),
+                        ),
+                      ],
+                    ),
+                    Container(
+                      padding: const EdgeInsets.all(12),
+                      decoration: BoxDecoration(
+                        color: const Color(0xFF7C3AED),
+                        borderRadius: BorderRadius.circular(12),
                       ),
+                      child: const Icon(
+                        Icons.translate,
+                        color: Colors.white,
+                        size: 24,
+                      ),
+                    ),
+                  ],
+                ),
+
+                const SizedBox(height: 24),
+
+                // SEARCH ROUTE CARD ----------------------------------------------
+                Container(
+                  padding: const EdgeInsets.all(20),
+                  decoration: BoxDecoration(
+                    color: Colors.white,
+                    borderRadius: BorderRadius.circular(20),
+                  ),
+                  child: Column(
+                    children: [
+
+                      // SEARCH BAR ------------------------------------------------
+                      GestureDetector(
+                        onTap: () => Get.toNamed('/location-search'),
+                        child: Container(
+                          padding: const EdgeInsets.symmetric(horizontal: 16,
+                              vertical: 12),
+                          decoration: BoxDecoration(
+                            color: Colors.white,
+                            borderRadius: BorderRadius.circular(12),
+                            border: Border.all(color: Colors.grey.shade300),
+                          ),
+                          child: Obx(() =>
+                              Row(
+                                children: [
+                                  const Icon(Icons.search, size: 24),
+                                  const SizedBox(width: 12),
+
+                                  // FROM ------------------------------------------------
+                                  Expanded(
+                                    child: Column(
+                                      crossAxisAlignment: CrossAxisAlignment
+                                          .start,
+                                      children: [
+                                        Text('From',
+                                            style: TextStyle(
+                                                color: Colors.black87,
+                                                fontSize: 13)),
+                                        Text(
+                                          locationController.fromLocation.value
+                                              .city,
+                                          style: const TextStyle(
+                                            fontSize: 18,
+                                            fontWeight: FontWeight.bold,
+                                            color: Colors.black87,
+                                          ),
+                                        ),
+                                        Text(
+                                          locationController.fromLocation.value
+                                              .code,
+                                          style: TextStyle(
+                                              color: Colors.black87,
+                                              fontSize: 11),
+                                        ),
+                                      ],
+                                    ),
+                                  ),
+
+                                  // SWAP ------------------------------------------------
+                                  GestureDetector(
+                                    onTap: () =>
+                                        locationController.swapLocations(),
+                                    child: Container(
+                                      padding: const EdgeInsets.all(8),
+                                      decoration: BoxDecoration(
+                                        color: Colors.black87,
+                                        borderRadius: BorderRadius.circular(8),
+                                      ),
+                                      child: const Icon(
+                                          Icons.swap_horiz, size: 26,
+                                          color: Colors.white),
+                                    ),
+                                  ),
+
+                                  const SizedBox(width: 12),
+
+                                  // TO --------------------------------------------------
+                                  Expanded(
+                                    child: Column(
+                                      crossAxisAlignment: CrossAxisAlignment
+                                          .start,
+                                      children: [
+                                        Text('To',
+                                            style: TextStyle(
+                                                color: Colors.grey[600],
+                                                fontSize: 13)),
+                                        Text(
+                                          locationController.toLocation.value
+                                              .city,
+                                          style: const TextStyle(
+                                            fontSize: 18,
+                                            fontWeight: FontWeight.bold,
+                                            color: Colors.black87,
+                                          ),
+                                        ),
+                                        Text(
+                                          locationController.toLocation.value
+                                              .code,
+                                          style: TextStyle(
+                                              color: Colors.black87,
+                                              fontSize: 11),
+                                        ),
+                                      ],
+                                    ),
+                                  ),
+                                ],
+                              )),
+                        ),
+                      ),
+
+                      const SizedBox(height: 16),
+                      Divider(color: Colors.grey[300]),
+                      const SizedBox(height: 16),
+
+                      // HOME + WORK -----------------------------------------------
+                      Obx(() =>
+                          Row(
+                            children: [
+
+                              // HOME --------------------------------------------------
+                              Expanded(
+                                child: GestureDetector(
+                                  onTap: () =>
+                                      Get.toNamed('/edit-address',
+                                          arguments: {'type': 'home'}),
+                                  child: Row(
+                                    children: [
+                                      const Icon(Icons.home, size: 24,
+                                          color: Colors.black87),
+                                      const SizedBox(width: 12),
+                                      Expanded(
+                                        child: Column(
+                                          crossAxisAlignment: CrossAxisAlignment
+                                              .start,
+                                          children: [
+                                            const Text(
+                                              'Home',
+                                              style: TextStyle(
+                                                fontWeight: FontWeight.bold,
+                                                fontSize: 17,
+                                                color: Colors.black87,
+                                              ),
+                                            ),
+                                            Text(
+                                              locationController.homeAddress
+                                                  .value.address,
+                                              style: const TextStyle(
+                                                  color: Colors.black87,
+                                                  fontSize: 11),
+                                              maxLines: 1,
+                                              overflow: TextOverflow.ellipsis,
+                                            ),
+                                            Text(
+                                              locationController.homeAddress
+                                                  .value.city,
+                                              style: const TextStyle(
+                                                  color: Colors.black87,
+                                                  fontSize: 11),
+                                            ),
+                                          ],
+                                        ),
+                                      ),
+                                    ],
+                                  ),
+                                ),
+                              ),
+
+                              const SizedBox(width: 16),
+
+                              // WORK --------------------------------------------------
+                              Expanded(
+                                child: GestureDetector(
+                                  onTap: () =>
+                                      Get.toNamed('/edit-address',
+                                          arguments: {'type': 'work'}),
+                                  child: Row(
+                                    children: [
+                                      const Icon(Icons.work, size: 24,
+                                          color: Colors.black87),
+                                      const SizedBox(width: 12),
+                                      Expanded(
+                                        child: Column(
+                                          crossAxisAlignment: CrossAxisAlignment
+                                              .start,
+                                          children: [
+                                            const Text(
+                                              'Work',
+                                              style: TextStyle(
+                                                fontWeight: FontWeight.bold,
+                                                fontSize: 17,
+                                                color: Colors.black87,
+                                              ),
+                                            ),
+                                            Text(
+                                              locationController.workAddress
+                                                  .value.address,
+                                              style: const TextStyle(
+                                                  color: Colors.black87,
+                                                  fontSize: 11),
+                                              maxLines: 1,
+                                              overflow: TextOverflow.ellipsis,
+                                            ),
+                                            Text(
+                                              locationController.workAddress
+                                                  .value.city,
+                                              style: const TextStyle(
+                                                  color: Colors.black87,
+                                                  fontSize: 11),
+                                            ),
+                                          ],
+                                        ),
+                                      ),
+                                    ],
+                                  ),
+                                ),
+                              ),
+                            ],
+                          )),
                     ],
                   ),
-                ],
-              ),
+                ),
 
-              const SizedBox(height: 16),
-              _topSearchCard(),
-              const SizedBox(height: 14),
-              _statCard(),
-              const SizedBox(height: 12),
-              // grid section (tiles)
-              _gridSection(),
-              const SizedBox(height: 18),
+                const SizedBox(height: 20),
 
-              // DISCOVER title
-              Row(
-                mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                children: const [
-                  Text('DISCOVER', style: TextStyle(color: Colors.white, fontSize: 18, fontWeight: FontWeight.w700)),
-                  Text('See all', style: TextStyle(color: Colors.white70)),
-                ],
-              ),
-              const SizedBox(height: 12),
+                // CARBON EMISSION -----------------------------------------------
+                Container(
+                  padding: const EdgeInsets.all(20),
+                  decoration: BoxDecoration(color: Colors.white,
+                      borderRadius: BorderRadius.circular(20)),
+                  child: Column(children: [
+                    Row(mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                        children: [
+                          Column(
+                            crossAxisAlignment: CrossAxisAlignment.start,
+                            children: [
+                              const Text('25%', style: TextStyle(
+                                  color: Color(0xFF7C3AED),
+                                  fontSize: 38,
+                                  fontWeight: FontWeight.bold)),
+                              Text('more than previous month',
+                                  style: TextStyle(
+                                      color: Colors.grey[600], fontSize: 17))
+                            ],
+                          ),
+                          Column(crossAxisAlignment: CrossAxisAlignment.end,
+                              children: [
+                                const Text('250 g/km',
+                                    style: TextStyle(fontSize: 25,
+                                        fontWeight: FontWeight.bold,
+                                        color: Colors.black87)),
+                                Text('Monthly Carbon', style: TextStyle(
+                                    color: Colors.grey[600], fontSize: 13)),
+                                Text('emission', style: TextStyle(
+                                    color: Colors.grey[600], fontSize: 13)),
+                              ]),
+                        ]),
 
-              // Example discover cards (simplified)
-              Column(
-                children: List.generate(3, (i) {
-                  return Container(
-                    margin: const EdgeInsets.only(bottom: 12),
-                    height: 90,
+                    const SizedBox(height: 20),
+
+                    // Purple Bars (One darker) -----------------------------------
+                    Row(
+                      mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                      crossAxisAlignment: CrossAxisAlignment.end,
+                      children: List.generate(12, (i) {
+                        final heights = [
+                          30.0,
+                          40.0,
+                          45.0,
+                          50.0,
+                          55.0,
+                          60.0,
+                          65.0,
+                          68.0,
+                          70.0,
+                          74.0,
+                          78.0,
+                          80.0
+                        ];
+                        return Container(
+                          width: 18,
+                          height: heights[i],
+                          decoration: BoxDecoration(
+                            color: i == 7
+                                ? const Color(0xFF7C3AED)
+                                : const Color(0xFFE9D5FF),
+                            borderRadius: BorderRadius.circular(4),
+                          ),
+                        );
+                      }),
+                    ),
+                  ]), // 🔥 FIXED: Added missing closing bracket here
+                ),
+
+                const SizedBox(height: 20),
+
+                // HANDPICKED -----------------------------------------------------
+                // HANDPICKED -----------------------------------------------------
+                GestureDetector(
+                  onTap: () => Get.toNamed('/discover'),   // << ADDED TAP NAVIGATION
+                  child: Container(
+                    padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 16),
                     decoration: BoxDecoration(
-                      color: const Color(0xFF1A1A1C),
-                      borderRadius: BorderRadius.circular(12),
-                      border: Border.all(color: Colors.white10),
+                      color: Colors.white,
+                      borderRadius: BorderRadius.circular(20),
                     ),
                     child: Row(
                       children: [
-                        Container(width: 80, margin: const EdgeInsets.all(8), decoration: BoxDecoration(color: Colors.black, borderRadius: BorderRadius.circular(8))),
-                        const Expanded(
-                          child: Padding(
-                            padding: EdgeInsets.symmetric(horizontal: 8, vertical: 8),
-                            child: Column(
-                              crossAxisAlignment: CrossAxisAlignment.start,
-                              children: [
-                                Text('Title', style: TextStyle(color: Colors.white, fontWeight: FontWeight.bold)),
-                                SizedBox(height: 6),
-                                Text('Subtitle / description', style: TextStyle(color: Colors.white70)),
-                              ],
-                            ),
+                        Container(
+                          padding: const EdgeInsets.all(14),
+                          decoration: BoxDecoration(
+                            color: Colors.grey[100],
+                            borderRadius: BorderRadius.circular(12),
                           ),
+                          child: const Icon(Icons.favorite_border, size: 28),
                         ),
-                        const Padding(
-                          padding: EdgeInsets.symmetric(horizontal: 10),
-                          child: Icon(Icons.favorite_border, color: Colors.white54),
-                        )
+                        const SizedBox(width: 16),
+                        const Column(
+                          crossAxisAlignment: CrossAxisAlignment.start,
+                          children: [
+                            Text(
+                              'Handpicked',
+                              style: TextStyle(
+                                fontSize: 22,
+                                fontWeight: FontWeight.bold,
+                                color: Colors.black87,
+                              ),
+                            ),
+                            Text(
+                              'collection for you',
+                              style: TextStyle(
+                                fontSize: 20,
+                                fontWeight: FontWeight.bold,
+                                color: Colors.black87,
+                              ),
+                            ),
+                          ],
+                        ),
                       ],
                     ),
-                  );
-                }),
-              ),
+                  ),
+                ),
 
-              const SizedBox(height: 80), // space for bottom nav
-            ],
+
+                // BUTTON ROW -----------------------------------------------------
+                Row(children: [
+
+                  // AUTO TRACKING
+                  Expanded(
+                    flex: 6,
+                    child: GestureDetector(
+                      onTap: () => Get.toNamed('/auto-trip-tracking'),
+                      child: Container(
+                        height: 120, padding: const EdgeInsets.all(20),
+                        decoration: BoxDecoration(color: Color(0xFF475569),
+                            borderRadius: BorderRadius.circular(20)),
+                        child: Row(mainAxisAlignment: MainAxisAlignment
+                            .spaceBetween, children: [
+                          const Column(
+                            crossAxisAlignment: CrossAxisAlignment.start,
+                            mainAxisAlignment: MainAxisAlignment.center,
+                            children: [
+                              Text('AUTO', style: TextStyle(color: Colors.white,
+                                  fontSize: 16,
+                                  fontWeight: FontWeight.bold)),
+                              Text('TRIP', style: TextStyle(color: Colors.white,
+                                  fontSize: 16,
+                                  fontWeight: FontWeight.bold)),
+                              Text('TRACKING', style: TextStyle(
+                                  color: Colors.white,
+                                  fontSize: 16,
+                                  fontWeight: FontWeight.bold)),
+                            ],
+                          ),
+                          Container(
+                            padding: const EdgeInsets.all(12),
+                            decoration: BoxDecoration(color: Colors.white24,
+                                borderRadius: BorderRadius.circular(12)),
+                            child: const Icon(
+                                Icons.location_on, color: Colors.white,
+                                size: 32),
+                          )
+                        ]),
+                      ),
+                    ),
+                  ),
+
+                  const SizedBox(width: 16),
+
+                  // TRIP HISTORY
+                  Expanded(
+                    flex: 4,
+                    child: GestureDetector(
+                      onTap: () => Get.toNamed('/trip-history'),
+                      child: Container(
+                        height: 120, padding: const EdgeInsets.all(20),
+                        decoration: BoxDecoration(color: Color(0xFF7C3AED),
+                            borderRadius: BorderRadius.circular(20)),
+                        child: const Center(child: Text(
+                            'Trip History', style: TextStyle(
+                            color: Colors.white,
+                            fontSize: 18,
+                            fontWeight: FontWeight.bold))),
+                      ),
+                    ),
+                  ),
+                ]),
+
+                const SizedBox(height: 16),
+
+                // COST CALC + RIGHT SIDE
+                Row(children: [
+
+                  // COST CALC
+                  Expanded(
+                    flex: 4,
+                    child: GestureDetector(
+                      onTap: () => Get.toNamed('/cost-calculator'),
+                      child: Container(
+                        height: 260, padding: const EdgeInsets.all(20),
+                        decoration: BoxDecoration(color: Color(0xFF7C3AED),
+                            borderRadius: BorderRadius.circular(20)),
+                        child: Column(
+                          mainAxisAlignment: MainAxisAlignment.center,
+                          children: [
+                            Container(
+                              padding: const EdgeInsets.all(16),
+                              decoration: BoxDecoration(color: Colors.white24,
+                                  borderRadius: BorderRadius.circular(16)),
+                              child: const Icon(
+                                  Icons.calculate, color: Colors.white,
+                                  size: 40),
+                            ),
+                            const SizedBox(height: 16),
+                            const Text('Cost Calculator',
+                                style: TextStyle(color: Colors.white,
+                                    fontSize: 18,
+                                    fontWeight: FontWeight.bold))
+                          ],
+                        ),
+                      ),
+                    ),
+                  ),
+
+                  const SizedBox(width: 16),
+
+                  // RIGHT SIDE PANELS
+                  Expanded(
+                    flex: 6,
+                    child: Column(children: [
+
+                      // PLAN A TRIP
+                      GestureDetector(
+                        onTap: () => Get.toNamed('/planner'),
+                        child: Container(
+                          height: 122, padding: const EdgeInsets.all(20),
+                          decoration: BoxDecoration(color: Colors.white,
+                              borderRadius: BorderRadius.circular(20)),
+                          child: const Center(child: Text('Plan a\nTrip',
+                              style: TextStyle(fontSize: 28,
+                                  fontWeight: FontWeight.bold,
+                                  color: Colors.black87,
+                                  height: 1.2),
+                              textAlign: TextAlign.center)),
+                        ),
+                      ),
+
+                      const SizedBox(height: 16),
+
+                      // AI ASSISTANT
+                      GestureDetector(
+                        onTap: () => Get.toNamed('/ai-chatbot'),
+                        child: Container(
+                          height: 122, padding: const EdgeInsets.all(20),
+                          decoration: BoxDecoration(color: Color(0xFF475569),
+                              borderRadius: BorderRadius.circular(20)),
+                          child: Row(children: [
+                            Container(
+                              padding: const EdgeInsets.all(14),
+                              decoration: BoxDecoration(color: Colors.white24,
+                                  borderRadius: BorderRadius.circular(12)),
+                              child: const Icon(
+                                  Icons.smart_toy, color: Colors.white,
+                                  size: 32),
+                            ),
+                            const SizedBox(width: 16),
+                            const Expanded(child: Column(
+                              crossAxisAlignment: CrossAxisAlignment.start,
+                              mainAxisAlignment: MainAxisAlignment.center,
+                              children: [
+                                Text('Any questions?', style: TextStyle(
+                                    color: Colors.white,
+                                    fontSize: 16,
+                                    fontWeight: FontWeight.bold)),
+                                SizedBox(height: 4),
+                                Text('Ask your own AI personal assistant',
+                                    style: TextStyle(
+                                        color: Colors.white70, fontSize: 11),
+                                    maxLines: 2),
+                              ],
+                            ))
+                          ]),
+                        ),
+                      ),
+                    ]),
+                  ),
+                ]),
+
+                const SizedBox(height: 32),
+
+                // DISCOVER HEADER
+                Row(
+                  mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                  children: [
+                    const Text('DISCOVER',
+                        style: TextStyle(color: Colors.white,
+                            fontSize: 22,
+                            fontWeight: FontWeight.bold,
+                            letterSpacing: 1.5)),
+                    TextButton(
+                        onPressed: () => Get.toNamed('/discover'),
+                        child: const Text('See all', style: TextStyle(
+                            color: Colors.white70, fontSize: 18)))
+                  ],
+                ),
+
+                const SizedBox(height: 16),
+
+                // DISCOVER IMAGE CARD
+                Container(
+                  height: 200,
+                  clipBehavior: Clip.antiAlias,
+                  decoration: BoxDecoration(
+                      borderRadius: BorderRadius.circular(20)),
+                  child: Stack(children: [
+
+                    ClipRRect(
+                      borderRadius: BorderRadius.circular(20),
+                      child: Image.asset(
+                        "assets/images/jaipur.png",
+                        width: double.infinity,
+                        height: double.infinity,
+                        fit: BoxFit.cover,
+                      ),
+                    ),
+
+                    Positioned(
+                      top: 16, right: 16,
+                      child: Container(
+                        padding: const EdgeInsets.all(8),
+                        decoration: const BoxDecoration(color: Colors.white,
+                            shape: BoxShape.circle),
+                        child: const Icon(Icons.favorite, color: Colors.red,
+                            size: 20),
+                      ),
+                    ),
+
+                    Positioned(bottom: 16, left: 0, right: 0,
+                      child: Row(mainAxisAlignment: MainAxisAlignment.center,
+                          children: List.generate(3, (i) =>
+                              Container(
+                                margin: const EdgeInsets.symmetric(
+                                    horizontal: 4),
+                                width: 80, height: 8,
+                                decoration: BoxDecoration(
+                                  color: i == 0 ? Colors.white : Colors.white54,
+                                  borderRadius: BorderRadius.circular(4),
+                                ),
+                              ))),
+                    ),
+                  ]),
+                ),
+
+                const SizedBox(height: 32),
+              ],
+            ),
           ),
         ),
-      ),
-
-      // bottom navigation
-      bottomNavigationBar: BottomAppBar(
-        color: backgroundDark,
-        elevation: 10,
-        child: Padding(
-          padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 10),
-          child: Row(
-            mainAxisAlignment: MainAxisAlignment.spaceBetween,
-            children: [
-              _navItem(icon: Icons.home, label: 'Home', index: 0),
-              _navItem(icon: Icons.calendar_today, label: 'Planner', index: 1),
-              _navItem(icon: Icons.location_on, label: 'Maps', index: 2),
-              _navItem(icon: Icons.person, label: 'Profile', index: 3),
-            ],
-          ),
-        ),
-      ),
-    );
-  }
-
-  Widget _navItem({required IconData icon, required String label, required int index}) {
-    final selected = _selectedTab == index;
-    return InkWell(
-      onTap: () => _onNavTap(index),
-      child: Column(
-        mainAxisSize: MainAxisSize.min,
-        children: [
-          Icon(icon, color: selected ? const Color(0xFF8B5CF6) : Colors.white70),
-          const SizedBox(height: 4),
-          Text(label, style: TextStyle(color: selected ? const Color(0xFF8B5CF6) : Colors.white70, fontSize: 12)),
-        ],
       ),
     );
   }

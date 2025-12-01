@@ -1,9 +1,6 @@
-import 'package:flutter/material.dart';
-import 'package:go_router/go_router.dart';
-import 'package:provider/provider.dart';
-
-// PROVIDERS
-import '../providers/auth_provider.dart';
+import 'package:flutter/cupertino.dart';
+import 'package:get/get.dart';
+import '../services/auth_service.dart';
 
 // AUTH SCREENS
 import '../screens/aadhaar_verification_screen.dart';
@@ -16,89 +13,84 @@ import '../screens/capture_id_screen.dart';
 import '../screens/id_capture_tips_screen.dart';
 import '../screens/verification/user_verification_screen.dart';
 
-// MAIN
-import '../screens/dashboard_screen.dart';
+// MAIN SCREENS
+import '../screens/onboarding/home_screen.dart'; // Changed from dashboard_screen
 import '../screens/trips/maps_screen.dart';
-import '../screens/trips/trip_maps_screen.dart';
 
-import 'app_routes.dart';
+class AppRoutes {
+  static const String login = '/login';
+  static const String otpVerification = '/otp-verification';
+  static const String otpVerificationReset = '/otp-verification-reset';
+  static const String home = '/home'; // Changed from dashboard
+  static const String idCaptureTips = '/id-tips';
+  static const String captureId = '/capture-id';
+  static const String aadharVerification = '/aadhaar-verification';
+  static const String userVerification = '/user-verification';
+  static const String mapsScreen = '/maps';
+  static const String tripMapsScreen = '/trip-maps';
 
-class AppRouter {
-  static final GoRouter router = GoRouter(
-    redirect: (context, state) {
-      final authProvider = context.read<AuthProvider>();
+  static List<GetPage> routes = [
+    GetPage(
+      name: login,
+      page: () => const LoginScreen(),
+    ),
+    GetPage(
+      name: otpVerification,
+      page: () => const OtpVerificationScreen(),
+    ),
+    GetPage(
+      name: otpVerificationReset,
+      page: () => const OtpVerificationResetScreen(),
+    ),
+    GetPage(
+      name: home,
+      page: () => const HomeScreen(), // Changed from DashboardScreen
 
-      final allowed = [
-        AppRoutes.login,
-        AppRoutes.otpVerification,
-        AppRoutes.otpVerificationReset
-      ];
+    ),
+    GetPage(
+      name: idCaptureTips,
+      page: () => const IdCaptureTipsScreen(),
 
-      if (!authProvider.isAuthenticated &&
-          !allowed.contains(state.matchedLocation)) {
-        return AppRoutes.login;
-      }
+    ),
+    GetPage(
+      name: captureId,
+      page: () => CaptureIdScreen(isFront: true),
 
-      if (authProvider.isAuthenticated &&
-          state.matchedLocation == AppRoutes.login) {
-        return AppRoutes.dashboard;
-      }
-      return null;
-    },
+    ),
+    GetPage(
+      name: aadharVerification,
+      page: () => const AadhaarVerificationScreen(),
 
-    routes: [
+    ),
+    GetPage(
+      name: userVerification,
+      page: () => const UserVerificationScreen(),
 
-      GoRoute(
-        path: AppRoutes.login,
-        builder: (_, __) => const LoginScreen(),
-      ),
+    ),
+    GetPage(
+      name: mapsScreen,
+      page: () => const MapsScreen(),
 
-      // SIGNUP OTP
-      GoRoute(
-        path: AppRoutes.otpVerification,
-        builder: (_, __) => const OtpVerificationScreen(), // ✔ class name matched
-      ),
+    ),
+    GetPage(
+      name: tripMapsScreen,
+      page: () => const MapsScreen(), // Using the same MapsScreen since TripMapsScreen doesn't exist
 
-      // RESET OTP
-      GoRoute(
-        path: AppRoutes.otpVerificationReset,
-        builder: (_, __) => const OtpVerificationResetScreen(),
-      ),
+    ),
+  ];
+}
+class AuthGuard extends GetMiddleware {
+  @override
+  RouteSettings? redirect(String? route) {
+    try {
+      final auth = Get.find<AuthService>(); // must be initialized in main()
 
-      GoRoute(
-        path: AppRoutes.dashboard,
-        builder: (_, __) => const DashboardScreen(),
-      ),
+      return auth.isLoggedIn
+          ? null
+          : const RouteSettings(name: AppRoutes.login);
 
-      GoRoute(
-        path: AppRoutes.idCaptureTips,
-        builder: (_, __) => const IdCaptureTipsScreen(),
-      ),
-
-      GoRoute(
-        path: AppRoutes.captureId,
-        builder: (_, __) => const CaptureIdScreen(isFront: true),
-      ),
-
-      GoRoute(
-        path: AppRoutes.aadharVerification,
-        builder: (_, __) => const AadhaarVerificationScreen(),
-      ),
-
-      GoRoute(
-        path: AppRoutes.userVerification,
-        builder: (_, __) => const UserVerificationScreen(),
-      ),
-
-      GoRoute(
-        path: AppRoutes.mapsScreen,
-        builder: (_, __) => const MapsScreen(),
-      ),
-
-      GoRoute(
-        path: AppRoutes.tripMapsScreen,
-        builder: (_, __) => const TripMapsScreen(),
-      ),
-    ],
-  );
+    } catch (_) {
+      return const RouteSettings(name: AppRoutes.login);
+    }
+  }
 }
