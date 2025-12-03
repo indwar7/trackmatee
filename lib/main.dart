@@ -136,7 +136,7 @@ class TrackMateApp extends StatelessWidget {
         GetPage(name: "/forgot-otp", page: () => const ForgotOtpVerifyScreen()),
 
         /// MAIN SCREENS
-        GetPage(name: "/AI-checklist", page: () => const AiChecklistScreen()),
+        //GetPage(name: "/AI-checklist", page: () => const AiChecklistScreen()),
         GetPage(name: "/discover", page: () => const DiscoverScreen()),
         GetPage(name: "/my-stats", page: () => const MyStatsScreen()),
         GetPage(name: "/maps", page: () => const MapsScreen()),
@@ -178,6 +178,3 @@ class TrackMateApp extends StatelessWidget {
   }
 }
 
-class AiChecklistScreen {
-  const AiChecklistScreen();
-}
