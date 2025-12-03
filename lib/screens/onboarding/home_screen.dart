@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 import '../../services/auth_service.dart';
 import '../../controllers/location_controller.dart';
+import 'package:trackmate_app/screens/chat_screen/chat_screen.dart';
 
 class HomeScreen extends StatelessWidget {
   const HomeScreen({super.key});
@@ -533,7 +534,7 @@ class HomeScreen extends StatelessWidget {
 
                       // AI ASSISTANT
                       GestureDetector(
-                        onTap: () => Get.toNamed('/ai-chatbot'),
+                        onTap: () => Navigator.push(context, MaterialPageRoute(builder: (context) => ChatScreen())),
                         child: Container(
                           height: 122, padding: const EdgeInsets.all(20),
                           decoration: BoxDecoration(color: Color(0xFF475569),
