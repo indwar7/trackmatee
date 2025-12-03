@@ -92,26 +92,26 @@ class _SplashScreenState extends State<SplashScreen> with SingleTickerProviderSt
             mainAxisAlignment: MainAxisAlignment.center,
             children: [
               // Logo
-              Image.asset(
-                'assets/logo.png',
-                width: 150,
-                height: 150,
-                errorBuilder: (context, error, stackTrace) {
-                  return Container(
-                    width: 150,
-                    height: 150,
-                    decoration: BoxDecoration(
-                      color: const Color(0xFF8B5CF6).withOpacity(0.2),
-                      shape: BoxShape.circle,
-                    ),
-                    child: const Icon(
-                      Icons.location_on,
-                      size: 80,
-                      color: Color(0xFF8B5CF6),
-                    ),
-                  );
-                },
-              ),
+              // Image.asset(
+              //   'assets/logo.png',
+              //   width: 150,
+              //   height: 150,
+              //   errorBuilder: (context, error, stackTrace) {
+              //     return Container(
+              //       width: 150,
+              //       height: 150,
+              //       decoration: BoxDecoration(
+              //         color: const Color(0xFF8B5CF6).withOpacity(0.2),
+              //         shape: BoxShape.circle,
+              //       ),
+              //       child: const Icon(
+              //         Icons.location_on,
+              //         size: 80,
+              //         color: Color(0xFF8B5CF6),
+              //       ),
+              //     );
+              //   },
+              // ),
               const SizedBox(height: 30),
 
               // App Name

@@ -1,6 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
-import 'package:trackmate_app/controllers/saved_places_controller.dart';
+
 import 'package:trackmate_app/screens/location_search_screen.dart';
 
 class AddHomeScreen extends StatefulWidget {
@@ -15,7 +15,7 @@ class _AddHomeScreenState extends State<AddHomeScreen> {
 
   @override
   Widget build(BuildContext context) {
-    final savedPlacesController = Get.find<SavedPlacesController>();
+    // final savedPlacesController = Get.find<SavedPlacesController>();
 
     return Scaffold(
       backgroundColor: const Color(0xFF1A1A1A),
@@ -56,7 +56,7 @@ class _AddHomeScreenState extends State<AddHomeScreen> {
             ElevatedButton(
               onPressed: () {
                 if (_selectedLocation != null) {
-                  savedPlacesController.saveHomeAddress(_selectedLocation!);
+                  // savedPlacesController.saveHomeAddress(_selectedLocation!);
                   Get.back();
                 }
               },

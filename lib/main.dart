@@ -10,11 +10,11 @@ import 'package:get_storage/get_storage.dart';
 import 'package:trackmate_app/controllers/profile_controller.dart';
 import 'package:trackmate_app/controllers/language_controller.dart';
 import 'package:trackmate_app/controllers/location_controller.dart';
-import 'package:trackmate_app/controllers/saved_places_controller.dart';
+
 
 // =============== SERVICES ===============
 import 'package:trackmate_app/services/auth_service.dart';
-import 'package:trackmate_app/services/localization_service.dart';
+
 
 // =============== ONBOARDING ===============
 import 'package:trackmate_app/screens/onboarding/splash_screen.dart';
@@ -89,7 +89,7 @@ Future<void> main() async {
   Get.put(ProfileController(), permanent: true);
   Get.put(LanguageController(), permanent: true);
   Get.put(LocationController(), permanent: true);
-  Get.lazyPut(() => SavedPlacesController());
+  // Get.lazyPut(() => SavedPlacesController());
 
   runApp(const TrackMateApp());
 }
@@ -108,8 +108,8 @@ class TrackMateApp extends StatelessWidget {
       title: "TrackMate",
       debugShowCheckedModeBanner: false,
 
-      translations: LocalizationService(),
-      locale: LocalizationService.fallbackLocale,
+      // translations: LocalizationService(),
+      // locale: LocalizationService.fallbackLocale,
       fallbackLocale: const Locale('en','US'),
 
       initialRoute: "/",

@@ -1,10 +1,6 @@
 // bookings/booking_screen.dart
 import 'package:flutter/material.dart';
-import 'flight_booking_screen.dart';
-import 'hotel_booking_screen.dart';
-import 'bus_booking_screen.dart';
-import 'cab_booking_screen.dart';
-import 'train_booking_screen.dart';
+
 
 class BookingScreen extends StatelessWidget {
   const BookingScreen({Key? key}) : super(key: key);
@@ -27,12 +23,12 @@ class BookingScreen extends StatelessWidget {
             icon: Icons.flight,
             color: Colors.black87,
             onTap: () {
-              Navigator.push(
-                context,
-                MaterialPageRoute(
-                  builder: (context) => const FlightBookingScreen(),
-                ),
-              );
+              // Navigator.push(
+              //   context,
+              //   MaterialPageRoute(
+              //     builder: (context) => const FlightBookingScreen(),
+              //   ),
+              // );
             },
           ),
           const SizedBox(height: 16),
@@ -42,12 +38,12 @@ class BookingScreen extends StatelessWidget {
             icon: Icons.hotel,
             color: Colors.black87,
             onTap: () {
-              Navigator.push(
-                context,
-                MaterialPageRoute(
-                  builder: (context) => const HotelBookingScreen(),
-                ),
-              );
+              // Navigator.push(
+              //   context,
+              //   MaterialPageRoute(
+              //     builder: (context) => const HotelBookingScreen(),
+              //   ),
+              // );
             },
           ),
           const SizedBox(height: 16),
@@ -57,12 +53,12 @@ class BookingScreen extends StatelessWidget {
             icon: Icons.directions_bus,
             color: Colors.black87,
             onTap: () {
-              Navigator.push(
-                context,
-                MaterialPageRoute(
-                  builder: (context) => const BusBookingScreen(),
-                ),
-              );
+              // Navigator.push(
+              //   context,
+              //   MaterialPageRoute(
+              //     builder: (context) => const BusBookingScreen(),
+              //   ),
+              // );
             },
           ),
           const SizedBox(height: 16),
@@ -72,12 +68,12 @@ class BookingScreen extends StatelessWidget {
             icon: Icons.local_taxi,
             color: Colors.black87,
             onTap: () {
-              Navigator.push(
-                context,
-                MaterialPageRoute(
-                  builder: (context) => const CabBookingScreen(),
-                ),
-              );
+              // Navigator.push(
+              //   context,
+              //   MaterialPageRoute(
+              //     builder: (context) => const CabBookingScreen(),
+              //   ),
+              // );
             },
           ),
           const SizedBox(height: 16),
@@ -87,12 +83,12 @@ class BookingScreen extends StatelessWidget {
             icon: Icons.train,
             color: Colors.black87,
             onTap: () {
-              Navigator.push(
-                context,
-                MaterialPageRoute(
-                  builder: (context) => const TrainBookingScreen(),
-                ),
-              );
+                  // Navigator.push(
+                  //   context,
+                  //   MaterialPageRoute(
+                  //     builder: (context) => const TrainBookingScreen(),
+                  //   ),
+                  // );
             },
           ),
         ],

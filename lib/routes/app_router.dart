@@ -15,7 +15,7 @@ import '../screens/verification/user_verification_screen.dart';
 
 // MAIN SCREENS
 import '../screens/onboarding/home_screen.dart'; // Changed from dashboard_screen
-import '../screens/trips/maps_screen.dart';
+
 
 class AppRoutes {
   static const String login = '/login';
@@ -67,16 +67,16 @@ class AppRoutes {
       page: () => const UserVerificationScreen(),
 
     ),
-    GetPage(
-      name: mapsScreen,
-      page: () => const MapsScreen(),
+    // GetPage(
+    //   name: mapsScreen,
+    //   page: () => const MapsScreen(),
 
-    ),
-    GetPage(
-      name: tripMapsScreen,
-      page: () => const MapsScreen(), // Using the same MapsScreen since TripMapsScreen doesn't exist
+    // ),
+    // GetPage(
+    //   name: tripMapsScreen,
+    //   page: () => const MapsScreen(), // Using the same MapsScreen since TripMapsScreen doesn't exist
 
-    ),
+    // ),
   ];
 }
 class AuthGuard extends GetMiddleware {

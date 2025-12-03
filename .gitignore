@@ -91,3 +91,5 @@ app.*.map.json
 *.aab
 *.aar
 
+# FVM Version Cache
+.fvm/

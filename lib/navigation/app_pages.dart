@@ -12,13 +12,9 @@ import 'package:trackmate_app/screens/auth/forgot_otp_screen.dart';     // 🔥 
 import 'package:trackmate_app/screens/maps_screen.dart';
 import 'package:trackmate_app/screens/onboarding/splash_screen.dart';
 import 'package:trackmate_app/screens/onboarding/welcome_screen.dart';
-import 'package:trackmate_app/screens/onboarding/language_selection_screen.dart';
-import 'package:trackmate_app/screens/onboarding/permission_screens.dart';
+
 import 'package:trackmate_app/screens/onboarding/terms_of_use_screen.dart';
-import 'package:trackmate_app/screens/travel/travel_home_screen.dart';
-import 'package:trackmate_app/screens/travel/flights_screen.dart';
-import 'package:trackmate_app/screens/travel/hotels_screen.dart';
-import 'package:trackmate_app/screens/travel/tours_screen.dart';
+
 import 'package:trackmate_app/screens/user/settings_screen.dart';
 import 'package:trackmate_app/screens/user/support_screen.dart';
 import 'package:trackmate_app/screens/user/trusted_contacts_screen.dart';
@@ -26,6 +22,7 @@ import 'package:trackmate_app/screens/verification/user_verification_screen.dart
 import 'package:trackmate_app/screens/capture_id_screen.dart';
 import 'package:trackmate_app/screens/id_capture_tips_screen.dart';
 import 'package:trackmate_app/screens/verification/id_status_screen.dart';
+import 'package:trackmate_app/screens/onboarding/permissions_screen.dart';
 
 class AppPages {
   static const initial = '/splash';
@@ -35,7 +32,7 @@ class AppPages {
     // ---------------- Onboarding ----------------
     GetPage(name: '/splash', page: () => const SplashScreen()),
     GetPage(name: '/welcome', page: () => const WelcomeScreen()),
-    GetPage(name: '/language-selection', page: () => const LanguageSelectionScreen()),
+    // GetPage(name: '/language-selection', page: () => const LanguageSelectionScreen()),
     GetPage(name: '/permissions', page: () => const LocationPermissionScreen()),   // 🔥 FIXED
     GetPage(name: '/terms', page: () => const TermsOfUseScreen()),
 
@@ -54,10 +51,10 @@ class AppPages {
     GetPage(name: '/maps', page: () => const MapsScreen()),
 
     // ---------------- TRAVEL ----------------
-    GetPage(name: '/travel', page: () => const TravelHomeScreen()),
-    GetPage(name: '/flights', page: () => const FlightsScreen()),
-    GetPage(name: '/hotels', page: () => const HotelsScreen()),
-    GetPage(name: '/tours', page: () => const ToursScreen()),
+    // GetPage(name: '/travel', page: () => const TravelHomeScreen()),
+    // GetPage(name: '/flights', page: () => const FlightsScreen()),
+    // GetPage(name: '/hotels', page: () => const HotelsScreen()),
+    // GetPage(name: '/tours', page: () => const ToursScreen()),
 
     // ---------------- USER ----------------
     GetPage(name: '/profile', page: () => const ProfileScreen()),
