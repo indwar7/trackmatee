@@ -7,6 +7,7 @@ import 'live_tracking_screen.dart';
 import 'manual_trip_screen.dart';
 import 'planned_trip_screen.dart';
 import 'trip_history_screen.dart';
+import 'map_screen.dart'; // Add this import
 
 class HomeScreen extends StatefulWidget {
   const HomeScreen({super.key});
@@ -91,83 +92,102 @@ class _HomeScreenState extends State<HomeScreen> {
         title: const Text("TrackMate"),
         centerTitle: true,
       ),
-      body: Padding(
-        padding: const EdgeInsets.all(20),
-        child: Column(
-          mainAxisAlignment: MainAxisAlignment.center,
-          crossAxisAlignment: CrossAxisAlignment.stretch,
-          children: [
-            const Icon(Icons.location_on, size: 80, color: Color(0xFF00adb5)),
-            const SizedBox(height: 20),
-            const Text(
-              'Track Your Journey',
-              textAlign: TextAlign.center,
-              style: TextStyle(
-                fontSize: 24,
-                fontWeight: FontWeight.bold,
-                color: Colors.white,
+      body: SingleChildScrollView(
+        child: Padding(
+          padding: const EdgeInsets.all(20),
+          child: Column(
+            mainAxisAlignment: MainAxisAlignment.center,
+            crossAxisAlignment: CrossAxisAlignment.stretch,
+            children: [
+              const SizedBox(height: 20),
+              const Icon(Icons.location_on, size: 80, color: Color(0xFF00adb5)),
+              const SizedBox(height: 20),
+              const Text(
+                'Track Your Journey',
+                textAlign: TextAlign.center,
+                style: TextStyle(
+                  fontSize: 24,
+                  fontWeight: FontWeight.bold,
+                  color: Colors.white,
+                ),
               ),
-            ),
-            const SizedBox(height: 60),
+              const SizedBox(height: 40),
 
-            // Show Resume button if ongoing trip exists
-            if (_ongoingTripId != null) ...[
-              _buildResumeButton(),
+              // Show Resume button if ongoing trip exists
+              if (_ongoingTripId != null) ...[
+                _buildResumeButton(),
+                const SizedBox(height: 16),
+              ],
+
+              _buildMenuButton(
+                icon: Icons.play_circle_fill,
+                title: _ongoingTripId != null ? "Start New Trip" : "Start Trip",
+                subtitle: _ongoingTripId != null
+                    ? "End current trip first"
+                    : "Begin live tracking",
+                color: const Color(0xFF00adb5),
+                onTap: _ongoingTripId != null ? null : _startTrip,
+              ),
               const SizedBox(height: 16),
+
+              _buildMenuButton(
+                icon: Icons.edit_location_alt,
+                title: "Save Untracked Trip",
+                subtitle: "Add trip manually",
+                color: const Color(0xFFe94560),
+                onTap: () {
+                  Navigator.push(
+                    context,
+                    MaterialPageRoute(builder: (_) => const ManualTripScreen()),
+                  );
+                },
+              ),
+              const SizedBox(height: 16),
+
+              _buildMenuButton(
+                icon: Icons.schedule,
+                title: "Plan a Trip",
+                subtitle: "Schedule future trips",
+                color: const Color(0xFFf39c12),
+                onTap: () {
+                  Navigator.push(
+                    context,
+                    MaterialPageRoute(builder: (_) => const PlannedTripScreen()),
+                  );
+                },
+              ),
+              const SizedBox(height: 16),
+
+              _buildMenuButton(
+                icon: Icons.history,
+                title: "Trip History",
+                subtitle: "View past trips",
+                color: const Color(0xFF8e44ad),
+                onTap: () {
+                  Navigator.push(
+                    context,
+                    MaterialPageRoute(builder: (_) => const TripHistoryScreen()),
+                  );
+                },
+              ),
+              const SizedBox(height: 16),
+
+              // NEW: Map Button
+              _buildMenuButton(
+                icon: Icons.map,
+                title: "Map",
+                subtitle: "View and search locations",
+                color: const Color(0xFF27ae60),
+                onTap: () {
+                  Navigator.push(
+                    context,
+                    MaterialPageRoute(builder: (_) => const MapScreen()),
+                  );
+                },
+              ),
+              const SizedBox(height: 20),
             ],
-
-            _buildMenuButton(
-              icon: Icons.play_circle_fill,
-              title: _ongoingTripId != null ? "Start New Trip" : "Start Trip",
-              subtitle: _ongoingTripId != null
-                  ? "End current trip first"
-                  : "Begin live tracking",
-              color: const Color(0xFF00adb5),
-              onTap: _ongoingTripId != null ? null : _startTrip,
-            ),
-            const SizedBox(height: 16),
-
-            _buildMenuButton(
-              icon: Icons.edit_location_alt,
-              title: "Save Untracked Trip",
-              subtitle: "Add trip manually",
-              color: const Color(0xFFe94560),
-              onTap: () {
-                Navigator.push(
-                  context,
-                  MaterialPageRoute(builder: (_) => const ManualTripScreen()),
-                );
-              },
-            ),
-            const SizedBox(height: 16),
-
-            _buildMenuButton(
-              icon: Icons.schedule,
-              title: "Plan a Trip",
-              subtitle: "Schedule future trips",
-              color: const Color(0xFFf39c12),
-              onTap: () {
-                Navigator.push(
-                  context,
-                  MaterialPageRoute(builder: (_) => const PlannedTripScreen()),
-                );
-              },
-            ),
-            const SizedBox(height: 16),
-
-            _buildMenuButton(
-              icon: Icons.history,
-              title: "Trip History",
-              subtitle: "View past trips",
-              color: const Color(0xFF8e44ad),
-              onTap: () {
-                Navigator.push(
-                  context,
-                  MaterialPageRoute(builder: (_) => const TripHistoryScreen()),
-                );
-              },
-            ),
-          ],
+          ),
         ),
       ),
     );

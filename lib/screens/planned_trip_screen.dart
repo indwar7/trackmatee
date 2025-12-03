@@ -29,6 +29,8 @@ class _PlannedTripScreenState extends State<PlannedTripScreen> {
   final _tripNameController = TextEditingController();
   final _descriptionController = TextEditingController();
   final _budgetController = TextEditingController();
+  final _startLocationController = TextEditingController();
+  final _endLocationController = TextEditingController();
 
   String? _modeOfTravel;
   String? _tripPurpose;
@@ -37,6 +39,13 @@ class _PlannedTripScreenState extends State<PlannedTripScreen> {
   DateTime? _endDate;
 
   bool _isLoading = false;
+  List<PlaceSuggestion> _startSuggestions = [];
+  List<PlaceSuggestion> _endSuggestions = [];
+  bool _showStartSuggestions = false;
+  bool _showEndSuggestions = false;
+
+  // Add your Google Maps API key here
+  static const String _googleApiKey = 'AIzaSyCvuze7W6e4S_5bSAEuX9K0GJCPMvvVNTQ';
 
   final List<Map<String, dynamic>> _modes = [
     {'value': 'car', 'label': '🚗 Car'},
@@ -63,6 +72,8 @@ class _PlannedTripScreenState extends State<PlannedTripScreen> {
     _tripNameController.dispose();
     _descriptionController.dispose();
     _budgetController.dispose();
+    _startLocationController.dispose();
+    _endLocationController.dispose();
     super.dispose();
   }
 
@@ -72,120 +83,8 @@ class _PlannedTripScreenState extends State<PlannedTripScreen> {
       appBar: AppBar(
         title: const Text('Plan a Trip'),
         centerTitle: true,
-        actions: [
-          if (_showForm)
-            IconButton(
-              icon: const Icon(Icons.map),
-              onPressed: () => setState(() => _showForm = false),
-            ),
-        ],
       ),
-      body: _showForm ? _buildForm() : _buildMapView(),
-    );
-  }
-
-  Widget _buildMapView() {
-    return Stack(
-      children: [
-        FutureBuilder<LatLng>(
-          future: _getCurrentLocation(),
-          builder: (context, snapshot) {
-            if (!snapshot.hasData) {
-              return const Center(child: CircularProgressIndicator());
-            }
-
-            return GoogleMap(
-              initialCameraPosition: CameraPosition(
-                target: snapshot.data!,
-                zoom: 12,
-              ),
-              onMapCreated: (controller) {
-                _mapController = controller;
-              },
-              onTap: _onMapTap,
-              markers: _markers,
-              myLocationEnabled: true,
-              myLocationButtonEnabled: true,
-            );
-          },
-        ),
-
-        Positioned(
-          top: 16,
-          left: 16,
-          right: 16,
-          child: _buildInstructionsCard(),
-        ),
-
-        if (_startPoint != null && _endPoint != null)
-          Positioned(
-            bottom: 30,
-            left: 16,
-            right: 16,
-            child: CustomButton(
-              text: 'Continue to Details',
-              onPressed: () => setState(() => _showForm = true),
-              color: const Color(0xFFf39c12),
-            ),
-          ),
-      ],
-    );
-  }
-
-  Widget _buildInstructionsCard() {
-    return Container(
-      padding: const EdgeInsets.all(16),
-      decoration: BoxDecoration(
-        color: const Color(0xFF16213e),
-        borderRadius: BorderRadius.circular(12),
-        boxShadow: [
-          BoxShadow(
-            color: Colors.black.withOpacity(0.3),
-            blurRadius: 10,
-          ),
-        ],
-      ),
-      child: Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
-          Text(
-            _startPoint == null
-                ? '📍 Tap to select START location'
-                : _endPoint == null
-                ? '📍 Tap to select DESTINATION'
-                : '✅ Route selected!',
-            style: const TextStyle(
-              color: Color(0xFFf39c12),
-              fontWeight: FontWeight.bold,
-              fontSize: 16,
-            ),
-          ),
-          if (_startAddress != null) ...[
-            const SizedBox(height: 8),
-            Text(
-              'Start: $_startAddress',
-              style: TextStyle(
-                color: Colors.white.withOpacity(0.8),
-                fontSize: 12,
-              ),
-              maxLines: 2,
-              overflow: TextOverflow.ellipsis,
-            ),
-          ],
-          if (_endAddress != null) ...[
-            const SizedBox(height: 4),
-            Text(
-              'Destination: $_endAddress',
-              style: TextStyle(
-                color: Colors.white.withOpacity(0.8),
-                fontSize: 12,
-              ),
-              maxLines: 2,
-              overflow: TextOverflow.ellipsis,
-            ),
-          ],
-        ],
-      ),
+      body: _buildForm(),
     );
   }
 
@@ -195,9 +94,15 @@ class _PlannedTripScreenState extends State<PlannedTripScreen> {
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.stretch,
         children: [
-          // Route Summary Card
-          _buildRouteCard(),
+          // Location Input Section
+          _buildLocationInputSection(),
           const SizedBox(height: 24),
+
+          // Show map preview if both locations are selected
+          if (_startPoint != null && _endPoint != null) ...[
+            _buildMapPreview(),
+            const SizedBox(height: 24),
+          ],
 
           // Trip Name
           TextField(
@@ -303,87 +208,196 @@ class _PlannedTripScreenState extends State<PlannedTripScreen> {
           ),
           const SizedBox(height: 32),
 
-          // Buttons
-          Row(
-            children: [
-              Expanded(
-                child: OutlinedButton(
-                  onPressed: () => setState(() => _showForm = false),
-                  style: OutlinedButton.styleFrom(
-                    padding: const EdgeInsets.symmetric(vertical: 16),
-                    side: const BorderSide(color: Color(0xFFf39c12)),
-                    shape: RoundedRectangleBorder(
-                      borderRadius: BorderRadius.circular(12),
-                    ),
-                  ),
-                  child: const Text(
-                    'Back to Map',
-                    style: TextStyle(color: Color(0xFFf39c12)),
-                  ),
-                ),
-              ),
-              const SizedBox(width: 16),
-              Expanded(
-                flex: 2,
-                child: CustomButton(
-                  text: 'Save Plan',
-                  onPressed: _submitForm,
-                  isLoading: _isLoading,
-                  color: const Color(0xFFf39c12),
-                ),
-              ),
-            ],
+          // Submit Button
+          CustomButton(
+            text: 'Save Plan',
+            onPressed: _submitForm,
+            isLoading: _isLoading,
+            color: const Color(0xFFf39c12),
           ),
         ],
       ),
     );
   }
 
-  Widget _buildRouteCard() {
+  Widget _buildLocationInputSection() {
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        _buildSectionTitle('Route Details *'),
+        const SizedBox(height: 12),
+
+        // Start Location Input
+        _buildLocationTextField(
+          controller: _startLocationController,
+          label: 'Start Location',
+          icon: Icons.location_on,
+          iconColor: Colors.green,
+          onChanged: (value) => _onStartLocationChanged(value),
+          onTap: () => setState(() => _showStartSuggestions = true),
+        ),
+
+        // Start Location Suggestions
+        if (_showStartSuggestions && _startSuggestions.isNotEmpty)
+          _buildSuggestionsList(_startSuggestions, true),
+
+        const SizedBox(height: 16),
+
+        // End Location Input
+        _buildLocationTextField(
+          controller: _endLocationController,
+          label: 'Destination',
+          icon: Icons.location_on,
+          iconColor: Colors.orange,
+          onChanged: (value) => _onEndLocationChanged(value),
+          onTap: () => setState(() => _showEndSuggestions = true),
+        ),
+
+        // End Location Suggestions
+        if (_showEndSuggestions && _endSuggestions.isNotEmpty)
+          _buildSuggestionsList(_endSuggestions, false),
+
+        const SizedBox(height: 12),
+
+        // Use Current Location Button
+        TextButton.icon(
+          onPressed: _useCurrentLocation,
+          icon: const Icon(Icons.my_location, color: Color(0xFFf39c12)),
+          label: const Text(
+            'Use current location as start',
+            style: TextStyle(color: Color(0xFFf39c12)),
+          ),
+        ),
+      ],
+    );
+  }
+
+  Widget _buildLocationTextField({
+    required TextEditingController controller,
+    required String label,
+    required IconData icon,
+    required Color iconColor,
+    required Function(String) onChanged,
+    required VoidCallback onTap,
+  }) {
+    return TextField(
+      controller: controller,
+      style: const TextStyle(color: Colors.white),
+      onChanged: onChanged,
+      onTap: onTap,
+      decoration: InputDecoration(
+        labelText: label,
+        labelStyle: const TextStyle(color: Colors.white70),
+        hintText: 'Enter location...',
+        hintStyle: TextStyle(color: Colors.white.withOpacity(0.3)),
+        prefixIcon: Icon(icon, color: iconColor),
+        suffixIcon: controller.text.isNotEmpty
+            ? IconButton(
+          icon: const Icon(Icons.clear, color: Colors.white54),
+          onPressed: () {
+            controller.clear();
+            if (label.contains('Start')) {
+              setState(() {
+                _startPoint = null;
+                _startAddress = null;
+                _startSuggestions.clear();
+                _showStartSuggestions = false;
+                _updateMarkers();
+              });
+            } else {
+              setState(() {
+                _endPoint = null;
+                _endAddress = null;
+                _endSuggestions.clear();
+                _showEndSuggestions = false;
+                _updateMarkers();
+              });
+            }
+          },
+        )
+            : null,
+        filled: true,
+        fillColor: const Color(0xFF16213e),
+        border: OutlineInputBorder(
+          borderRadius: BorderRadius.circular(12),
+          borderSide: BorderSide.none,
+        ),
+      ),
+    );
+  }
+
+  Widget _buildSuggestionsList(List<PlaceSuggestion> suggestions, bool isStart) {
     return Container(
-      padding: const EdgeInsets.all(16),
+      margin: const EdgeInsets.only(top: 8),
+      decoration: BoxDecoration(
+        color: const Color(0xFF16213e),
+        borderRadius: BorderRadius.circular(12),
+        boxShadow: [
+          BoxShadow(
+            color: Colors.black.withOpacity(0.3),
+            blurRadius: 10,
+          ),
+        ],
+      ),
+      child: ListView.separated(
+        shrinkWrap: true,
+        physics: const NeverScrollableScrollPhysics(),
+        itemCount: suggestions.length,
+        separatorBuilder: (context, index) => Divider(
+          color: Colors.white.withOpacity(0.1),
+          height: 1,
+        ),
+        itemBuilder: (context, index) {
+          final suggestion = suggestions[index];
+          return ListTile(
+            leading: const Icon(Icons.location_on, color: Color(0xFFf39c12)),
+            title: Text(
+              suggestion.mainText,
+              style: const TextStyle(
+                color: Colors.white,
+                fontWeight: FontWeight.w500,
+              ),
+            ),
+            subtitle: Text(
+              suggestion.secondaryText,
+              style: TextStyle(
+                color: Colors.white.withOpacity(0.6),
+                fontSize: 12,
+              ),
+            ),
+            onTap: () => _selectPlace(suggestion, isStart),
+          );
+        },
+      ),
+    );
+  }
+
+  Widget _buildMapPreview() {
+    return Container(
+      height: 200,
       decoration: BoxDecoration(
         color: const Color(0xFF16213e),
         borderRadius: BorderRadius.circular(12),
         border: Border.all(color: const Color(0xFFf39c12).withOpacity(0.3)),
       ),
-      child: Column(
-        children: [
-          _buildRouteRow('📍 From', _startAddress ?? 'Unknown'),
-          const SizedBox(height: 8),
-          const Icon(Icons.arrow_downward, color: Color(0xFFf39c12)),
-          const SizedBox(height: 8),
-          _buildRouteRow('📍 To', _endAddress ?? 'Unknown'),
-        ],
+      child: ClipRRect(
+        borderRadius: BorderRadius.circular(12),
+        child: GoogleMap(
+          initialCameraPosition: CameraPosition(
+            target: _startPoint!,
+            zoom: 12,
+          ),
+          markers: _markers,
+          onMapCreated: (controller) {
+            _mapController = controller;
+            _adjustCameraToMarkers();
+          },
+          myLocationEnabled: true,
+          myLocationButtonEnabled: false,
+          zoomControlsEnabled: false,
+          mapToolbarEnabled: false,
+        ),
       ),
-    );
-  }
-
-  Widget _buildRouteRow(String label, String value) {
-    return Row(
-      children: [
-        SizedBox(
-          width: 70,
-          child: Text(
-            label,
-            style: TextStyle(
-              color: Colors.white.withOpacity(0.6),
-              fontSize: 12,
-            ),
-          ),
-        ),
-        Expanded(
-          child: Text(
-            value,
-            style: const TextStyle(
-              color: Colors.white,
-              fontWeight: FontWeight.w500,
-            ),
-            maxLines: 2,
-            overflow: TextOverflow.ellipsis,
-          ),
-        ),
-      ],
     );
   }
 
@@ -562,85 +576,184 @@ class _PlannedTripScreenState extends State<PlannedTripScreen> {
     );
   }
 
-  Future<LatLng> _getCurrentLocation() async {
+  // Location Search Functions
+  Future<void> _onStartLocationChanged(String value) async {
+    if (value.length < 3) {
+      setState(() {
+        _startSuggestions.clear();
+        _showStartSuggestions = false;
+      });
+      return;
+    }
+
+    final suggestions = await _fetchPlaceSuggestions(value);
+    setState(() {
+      _startSuggestions = suggestions;
+      _showStartSuggestions = true;
+    });
+  }
+
+  Future<void> _onEndLocationChanged(String value) async {
+    if (value.length < 3) {
+      setState(() {
+        _endSuggestions.clear();
+        _showEndSuggestions = false;
+      });
+      return;
+    }
+
+    final suggestions = await _fetchPlaceSuggestions(value);
+    setState(() {
+      _endSuggestions = suggestions;
+      _showEndSuggestions = true;
+    });
+  }
+
+  Future<List<PlaceSuggestion>> _fetchPlaceSuggestions(String input) async {
     try {
-      final position = await LocationService.getCurrentLocation();
-      return LatLng(position.latitude, position.longitude);
+      final url = Uri.parse(
+        'https://maps.googleapis.com/maps/api/place/autocomplete/json'
+            '?input=$input'
+            '&key=$_googleApiKey'
+            '&components=country:in', // Restrict to India, remove if not needed
+      );
+
+      final response = await http.get(url);
+
+      if (response.statusCode == 200) {
+        final data = jsonDecode(response.body);
+        final predictions = data['predictions'] as List;
+
+        return predictions.map((pred) {
+          return PlaceSuggestion(
+            placeId: pred['place_id'],
+            mainText: pred['structured_formatting']['main_text'],
+            secondaryText: pred['structured_formatting']['secondary_text'] ?? '',
+            description: pred['description'],
+          );
+        }).toList();
+      }
     } catch (e) {
-      return const LatLng(28.6139, 77.2090);
+      print('Error fetching suggestions: $e');
+    }
+    return [];
+  }
+
+  Future<void> _selectPlace(PlaceSuggestion suggestion, bool isStart) async {
+    try {
+      // Get place details to fetch coordinates
+      final url = Uri.parse(
+        'https://maps.googleapis.com/maps/api/place/details/json'
+            '?place_id=${suggestion.placeId}'
+            '&fields=geometry'
+            '&key=$_googleApiKey',
+      );
+
+      final response = await http.get(url);
+
+      if (response.statusCode == 200) {
+        final data = jsonDecode(response.body);
+        final location = data['result']['geometry']['location'];
+        final latLng = LatLng(location['lat'], location['lng']);
+
+        setState(() {
+          if (isStart) {
+            _startPoint = latLng;
+            _startAddress = suggestion.description;
+            _startLocationController.text = suggestion.description;
+            _startSuggestions.clear();
+            _showStartSuggestions = false;
+          } else {
+            _endPoint = latLng;
+            _endAddress = suggestion.description;
+            _endLocationController.text = suggestion.description;
+            _endSuggestions.clear();
+            _showEndSuggestions = false;
+          }
+          _updateMarkers();
+        });
+      }
+    } catch (e) {
+      print('Error selecting place: $e');
+      _showError('Failed to get location details');
     }
   }
 
-  void _onMapTap(LatLng position) async {
-    if (_startPoint == null) {
+  Future<void> _useCurrentLocation() async {
+    try {
+      final position = await LocationService.getCurrentLocation();
+      final latLng = LatLng(position.latitude, position.longitude);
       final address = await LocationService.getAddressFromCoordinates(
         position.latitude,
         position.longitude,
       );
+
       setState(() {
-        _startPoint = position;
+        _startPoint = latLng;
         _startAddress = address;
-        _markers.add(
-          Marker(
-            markerId: const MarkerId('start'),
-            position: position,
-            icon: BitmapDescriptor.defaultMarkerWithHue(BitmapDescriptor.hueGreen),
-            infoWindow: const InfoWindow(title: 'Start'),
-          ),
-        );
+        _startLocationController.text = address;
+        _updateMarkers();
       });
-    } else if (_endPoint == null) {
-      final address = await LocationService.getAddressFromCoordinates(
-        position.latitude,
-        position.longitude,
+    } catch (e) {
+      _showError('Failed to get current location');
+    }
+  }
+
+  void _updateMarkers() {
+    _markers.clear();
+
+    if (_startPoint != null) {
+      _markers.add(
+        Marker(
+          markerId: const MarkerId('start'),
+          position: _startPoint!,
+          icon: BitmapDescriptor.defaultMarkerWithHue(BitmapDescriptor.hueGreen),
+          infoWindow: InfoWindow(title: 'Start', snippet: _startAddress),
+        ),
       );
+    }
 
-      setState(() {
-        _endPoint = position;
-        _endAddress = address;
-        _markers.add(
-          Marker(
-            markerId: const MarkerId('end'),
-            position: position,
-            icon: BitmapDescriptor.defaultMarkerWithHue(BitmapDescriptor.hueOrange),
-            infoWindow: const InfoWindow(title: 'Destination'),
-          ),
-        );
-      });
+    if (_endPoint != null) {
+      _markers.add(
+        Marker(
+          markerId: const MarkerId('end'),
+          position: _endPoint!,
+          icon: BitmapDescriptor.defaultMarkerWithHue(BitmapDescriptor.hueOrange),
+          infoWindow: InfoWindow(title: 'Destination', snippet: _endAddress),
+        ),
+      );
+    }
 
-      // Adjust camera
-      _mapController?.animateCamera(
+    if (_startPoint != null && _endPoint != null) {
+      _adjustCameraToMarkers();
+    }
+  }
+
+  void _adjustCameraToMarkers() {
+    if (_startPoint != null && _endPoint != null && _mapController != null) {
+      _mapController!.animateCamera(
         CameraUpdate.newLatLngBounds(
           LatLngBounds(
             southwest: LatLng(
-              _startPoint!.latitude < position.latitude
+              _startPoint!.latitude < _endPoint!.latitude
                   ? _startPoint!.latitude
-                  : position.latitude,
-              _startPoint!.longitude < position.longitude
+                  : _endPoint!.latitude,
+              _startPoint!.longitude < _endPoint!.longitude
                   ? _startPoint!.longitude
-                  : position.longitude,
+                  : _endPoint!.longitude,
             ),
             northeast: LatLng(
-              _startPoint!.latitude > position.latitude
+              _startPoint!.latitude > _endPoint!.latitude
                   ? _startPoint!.latitude
-                  : position.latitude,
-              _startPoint!.longitude > position.longitude
+                  : _endPoint!.latitude,
+              _startPoint!.longitude > _endPoint!.longitude
                   ? _startPoint!.longitude
-                  : position.longitude,
+                  : _endPoint!.longitude,
             ),
           ),
-          100,
+          50,
         ),
       );
-    } else {
-      // Reset
-      setState(() {
-        _startPoint = null;
-        _endPoint = null;
-        _startAddress = null;
-        _endAddress = null;
-        _markers.clear();
-      });
     }
   }
 
@@ -692,7 +805,7 @@ class _PlannedTripScreenState extends State<PlannedTripScreen> {
 
   Future<void> _submitForm() async {
     if (_startPoint == null || _endPoint == null) {
-      _showError('Please select route locations');
+      _showError('Please select start and destination locations');
       return;
     }
 
@@ -762,4 +875,19 @@ class _PlannedTripScreenState extends State<PlannedTripScreen> {
       SnackBar(content: Text(message), backgroundColor: Colors.red),
     );
   }
+}
+
+// Model class for place suggestions
+class PlaceSuggestion {
+  final String placeId;
+  final String mainText;
+  final String secondaryText;
+  final String description;
+
+  PlaceSuggestion({
+    required this.placeId,
+    required this.mainText,
+    required this.secondaryText,
+    required this.description,
+  });
 }

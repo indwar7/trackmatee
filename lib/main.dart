@@ -17,7 +17,7 @@ class MyApp extends StatelessWidget {
         Provider(
           create: (_) {
             final api = ApiService();
-            api.setToken('eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJ0b2tlbl90eXBlIjoiYWNjZXNzIiwiZXhwIjoxNzY0NjQ5MDU5LCJpYXQiOjE3NjQ2NDgxNTksImp0aSI6IjllYWNmZjkxNjE1MzQ0MjRiZmZjNTM2MzZkZmM3NjVlIiwidXNlcl9pZCI6IjIifQ.Koy1WrAF7j7_lS5XsbQfgo4EFwD9kqKTOPbXeC6cPfw');
+            api.setToken('eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJ0b2tlbl90eXBlIjoiYWNjZXNzIiwiZXhwIjoxNzY0NzgzMzgwLCJpYXQiOjE3NjQ3ODI0ODAsImp0aSI6ImNjMzk3OTY2NjUzNzRjNzJiOTZmZGE3YTZhMzI5YzkyIiwidXNlcl9pZCI6IjExIn0.aIhZzu1GWNZcbOM5lN5LgzBKHp1z9h4SaA8agsKw_ZQ');
             return api;
           },
         )
