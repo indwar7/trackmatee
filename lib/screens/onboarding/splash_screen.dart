@@ -12,7 +12,8 @@ class SplashScreen extends StatefulWidget {
   State<SplashScreen> createState() => _SplashScreenState();
 }
 
-class _SplashScreenState extends State<SplashScreen> with SingleTickerProviderStateMixin {
+class _SplashScreenState extends State<SplashScreen>
+    with SingleTickerProviderStateMixin {
   late AnimationController _controller;
   late Animation<double> _fadeAnimation;
   final _storage = GetStorage();
@@ -33,7 +34,7 @@ class _SplashScreenState extends State<SplashScreen> with SingleTickerProviderSt
 
     _controller.forward();
 
-    // Navigate after 3 seconds
+    // Navigate after delay
     _navigate();
   }
 
@@ -44,28 +45,25 @@ class _SplashScreenState extends State<SplashScreen> with SingleTickerProviderSt
   }
 
   Future<void> _navigate() async {
-    // Wait for 3 seconds (splash duration)
+    // Wait for 3 seconds
     await Future.delayed(const Duration(seconds: 3));
 
-    // Get auth service
     final authService = Get.find<AuthService>();
 
-    // Check if user is logged in
+    // If logged in → go to home
     if (authService.isLoggedIn) {
-      // Logged in user → Go to Home directly
       Get.offAllNamed('/home');
       return;
     }
 
-    // Check if onboarding is completed
-    final hasCompletedOnboarding = _storage.read('onboarding_completed') ?? false;
+    final hasCompletedOnboarding =
+        _storage.read('onboarding_completed') ?? false;
 
     if (hasCompletedOnboarding) {
-      // Returning user (onboarding done but not logged in)
-      // → Go to Permissions then Login
+      // Returning user → permissions → login
       Get.offAllNamed('/permissions');
     } else {
-      // First time user → Go to Welcome Screen
+      // First-time user → welcome
       Get.offAllNamed('/welcome');
     }
   }
@@ -75,14 +73,14 @@ class _SplashScreenState extends State<SplashScreen> with SingleTickerProviderSt
     return Scaffold(
       body: Container(
         width: double.infinity,
-        decoration: BoxDecoration(
+        decoration: const BoxDecoration(
           gradient: LinearGradient(
             begin: Alignment.topLeft,
             end: Alignment.bottomRight,
             colors: [
-              const Color(0xFF1A1A2E),
-              const Color(0xFF16213E),
-              const Color(0xFF0F3460),
+              Color(0xFF1A1A2E),
+              Color(0xFF2A2A3E),
+              Color(0xFF8B5CF6),
             ],
           ),
         ),
@@ -91,39 +89,41 @@ class _SplashScreenState extends State<SplashScreen> with SingleTickerProviderSt
           child: Column(
             mainAxisAlignment: MainAxisAlignment.center,
             children: [
-              // Logo
-              // Image.asset(
-              //   'assets/logo.png',
-              //   width: 150,
-              //   height: 150,
-              //   errorBuilder: (context, error, stackTrace) {
-              //     return Container(
-              //       width: 150,
-              //       height: 150,
-              //       decoration: BoxDecoration(
-              //         color: const Color(0xFF8B5CF6).withOpacity(0.2),
-              //         shape: BoxShape.circle,
-              //       ),
-              //       child: const Icon(
-              //         Icons.location_on,
-              //         size: 80,
-              //         color: Color(0xFF8B5CF6),
-              //       ),
-              //     );
-              //   },
-              // ),
+              // App Icon / Logo
+              Image.asset(
+                'assets/Rectangle.png',
+                width: 150,
+                height: 150,
+                errorBuilder: (context, error, stackTrace) {
+                  return Container(
+                    width: 150,
+                    height: 150,
+                    decoration: BoxDecoration(
+                      color: const Color(0xFF8B5CF6).withOpacity(0.2),
+                      shape: BoxShape.circle,
+                    ),
+                    child: const Icon(
+                      Icons.location_on,
+                      size: 80,
+                      color: Color(0xFF8B5CF6),
+                    ),
+                  );
+                },
+              ),
+
               const SizedBox(height: 30),
 
-              // App Name
+              // Title
               const Text(
                 'WELCOME TRAVELLER',
                 style: TextStyle(
-                  fontSize: 36,
-                  fontWeight: FontWeight.bold,
+                  fontSize: 30,
+                  fontWeight: FontWeight.bold,  // ✅ FIXED
                   color: Colors.white,
                   letterSpacing: 3,
                 ),
               ),
+
               const SizedBox(height: 10),
 
               // Tagline
@@ -134,9 +134,10 @@ class _SplashScreenState extends State<SplashScreen> with SingleTickerProviderSt
                   color: Colors.white70,
                 ),
               ),
+
               const SizedBox(height: 60),
 
-              // Loading Indicator
+              // Loader
               const SizedBox(
                 height: 30,
                 width: 30,

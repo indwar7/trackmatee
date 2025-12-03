@@ -42,10 +42,10 @@ class WelcomeScreen extends StatelessWidget {
 
               // Title
               const Text(
-                'Welcome Traveller',
+                'Welcome, Pathfinder. Your journey begins now.',
                 style: TextStyle(
                   color: Colors.white,
-                  fontSize: 36,
+                  fontSize: 18,
                   fontWeight: FontWeight.bold,
                 ),
                 textAlign: TextAlign.center,

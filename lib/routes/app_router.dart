@@ -1,5 +1,6 @@
 import 'package:flutter/cupertino.dart';
 import 'package:get/get.dart';
+import '../screens/maps_screen.dart';
 import '../services/auth_service.dart';
 
 // AUTH SCREENS
@@ -14,76 +15,44 @@ import '../screens/id_capture_tips_screen.dart';
 import '../screens/verification/user_verification_screen.dart';
 
 // MAIN SCREENS
-import '../screens/onboarding/home_screen.dart'; // Changed from dashboard_screen
-
+import '../screens/onboarding/home_screen.dart';
 
 class AppRoutes {
+  // ---------------- ROUTE NAMES ----------------
   static const String login = '/login';
   static const String otpVerification = '/otp-verification';
   static const String otpVerificationReset = '/otp-verification-reset';
-  static const String home = '/home'; // Changed from dashboard
+  static const String home = '/home';
   static const String idCaptureTips = '/id-tips';
   static const String captureId = '/capture-id';
   static const String aadharVerification = '/aadhaar-verification';
   static const String userVerification = '/user-verification';
   static const String mapsScreen = '/maps';
-  static const String tripMapsScreen = '/trip-maps';
 
-  static List<GetPage> routes = [
-    GetPage(
-      name: login,
-      page: () => const LoginScreen(),
-    ),
-    GetPage(
-      name: otpVerification,
-      page: () => const OtpVerificationScreen(),
-    ),
-    GetPage(
-      name: otpVerificationReset,
-      page: () => const OtpVerificationResetScreen(),
-    ),
-    GetPage(
-      name: home,
-      page: () => const HomeScreen(), // Changed from DashboardScreen
+  // ---------------- ROUTES ----------------
+  static final List<GetPage> routes = [
+    GetPage(name: login, page: () => const LoginScreen()),
+    GetPage(name: otpVerification, page: () => const OtpVerificationScreen()),
+    GetPage(name: otpVerificationReset, page: () => const OtpVerificationResetScreen()),
+    GetPage(name: home, page: () => const HomeScreen()),
 
-    ),
-    GetPage(
-      name: idCaptureTips,
-      page: () => const IdCaptureTipsScreen(),
+    // ID Verification
+    GetPage(name: idCaptureTips, page: () => const IdCaptureTipsScreen()),
+    GetPage(name: captureId, page: () => CaptureIdScreen(isFront: true)),
+    GetPage(name: aadharVerification, page: () => const AadhaarVerificationScreen()),
+    GetPage(name: userVerification, page: () => const UserVerificationScreen()),
 
-    ),
-    GetPage(
-      name: captureId,
-      page: () => CaptureIdScreen(isFront: true),
-
-    ),
-    GetPage(
-      name: aadharVerification,
-      page: () => const AadhaarVerificationScreen(),
-
-    ),
-    GetPage(
-      name: userVerification,
-      page: () => const UserVerificationScreen(),
-
-    ),
-    // GetPage(
-    //   name: mapsScreen,
-    //   page: () => const MapsScreen(),
-
-    // ),
-    // GetPage(
-    //   name: tripMapsScreen,
-    //   page: () => const MapsScreen(), // Using the same MapsScreen since TripMapsScreen doesn't exist
-
-    // ),
+    // Maps
+    GetPage(name: mapsScreen, page: () => const MapsScreen()),
   ];
 }
+
+// ---------------- AUTH GUARD ----------------
 class AuthGuard extends GetMiddleware {
   @override
   RouteSettings? redirect(String? route) {
     try {
-      final auth = Get.find<AuthService>(); // must be initialized in main()
+      final auth = Get.find<AuthService>();
 
       return auth.isLoggedIn
           ? null
