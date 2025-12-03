@@ -6,6 +6,7 @@ import 'package:provider/provider.dart';
 import '../services/location_service.dart';
 import '../services/api_service.dart';
 import '../widgets/custom_button.dart';
+import 'saved_planned_trips_screen.dart';
 
 class PlannedTripScreen extends StatefulWidget {
   const PlannedTripScreen({super.key});
@@ -45,7 +46,7 @@ class _PlannedTripScreenState extends State<PlannedTripScreen> {
   bool _showEndSuggestions = false;
 
   // Add your Google Maps API key here
-  static const String _googleApiKey = 'AIzaSyCvuze7W6e4S_5bSAEuX9K0GJCPMvvVNTQ';
+  static const String _googleApiKey = 'AIzaSyA6uK1raTG6fNpw5twxbX0tfveW6Rd5YNE';
 
   final List<Map<String, dynamic>> _modes = [
     {'value': 'car', 'label': '🚗 Car'},
@@ -233,7 +234,10 @@ class _PlannedTripScreenState extends State<PlannedTripScreen> {
           label: 'Start Location',
           icon: Icons.location_on,
           iconColor: Colors.green,
-          onChanged: (value) => _onStartLocationChanged(value),
+          onChanged: (value) {
+            _onStartLocationChanged(value);
+            setState(() {});
+          },
           onTap: () => setState(() => _showStartSuggestions = true),
         ),
 
@@ -249,7 +253,10 @@ class _PlannedTripScreenState extends State<PlannedTripScreen> {
           label: 'Destination',
           icon: Icons.location_on,
           iconColor: Colors.orange,
-          onChanged: (value) => _onEndLocationChanged(value),
+          onChanged: (value) {
+            _onEndLocationChanged(value);
+            setState(() {});
+          },
           onTap: () => setState(() => _showEndSuggestions = true),
         ),
 
@@ -653,29 +660,43 @@ class _PlannedTripScreenState extends State<PlannedTripScreen> {
 
       if (response.statusCode == 200) {
         final data = jsonDecode(response.body);
+
+        // Add this debug print
+        print('Place details response: $data');
+
         final location = data['result']['geometry']['location'];
         final latLng = LatLng(location['lat'], location['lng']);
 
-        setState(() {
-          if (isStart) {
-            _startPoint = latLng;
-            _startAddress = suggestion.description;
-            _startLocationController.text = suggestion.description;
-            _startSuggestions.clear();
-            _showStartSuggestions = false;
-          } else {
-            _endPoint = latLng;
-            _endAddress = suggestion.description;
-            _endLocationController.text = suggestion.description;
-            _endSuggestions.clear();
-            _showEndSuggestions = false;
-          }
-          _updateMarkers();
-        });
+        if (mounted) {  // ADD THIS CHECK
+          setState(() {
+            if (isStart) {
+              _startPoint = latLng;
+              _startAddress = suggestion.description;
+              _startLocationController.text = suggestion.description;
+              _startSuggestions.clear();
+              _showStartSuggestions = false;
+            } else {
+              _endPoint = latLng;
+              _endAddress = suggestion.description;
+              _endLocationController.text = suggestion.description;
+              _endSuggestions.clear();
+              _showEndSuggestions = false;
+            }
+            _updateMarkers();
+          });
+
+          // Add this debug print
+          print('Start Point: $_startPoint, End Point: $_endPoint');
+        }
+      } else {
+        print('Error response: ${response.body}');
+        throw Exception('Failed: ${response.statusCode}');
       }
     } catch (e) {
       print('Error selecting place: $e');
-      _showError('Failed to get location details');
+      if (mounted) {
+        _showError('Failed to get location details');
+      }
     }
   }
 
@@ -688,14 +709,22 @@ class _PlannedTripScreenState extends State<PlannedTripScreen> {
         position.longitude,
       );
 
-      setState(() {
-        _startPoint = latLng;
-        _startAddress = address;
-        _startLocationController.text = address;
-        _updateMarkers();
-      });
+      if (mounted) {  // ADD THIS CHECK
+        setState(() {
+          _startPoint = latLng;
+          _startAddress = address;
+          _startLocationController.text = address;
+          _updateMarkers();
+        });
+
+        // Add this debug print
+        print('Current location set: $_startPoint');
+      }
     } catch (e) {
-      _showError('Failed to get current location');
+      print('Error getting current location: $e');
+      if (mounted) {
+        _showError('Failed to get current location: $e');
+      }
     }
   }
 
@@ -844,15 +873,32 @@ class _PlannedTripScreenState extends State<PlannedTripScreen> {
         if (budget != null) body['estimated_budget'] = budget;
       }
 
+      print('Sending request to: ${ApiService.baseUrl}/trips/create-planned/');
+      print('Request body: ${jsonEncode(body)}');
+
       final response = await http.post(
         Uri.parse('${ApiService.baseUrl}/trips/create-planned/'),
-        headers: api.headers,
+        headers: {
+          ...api.headers,
+          'Content-Type': 'application/json',  // Make sure this is set
+        },
         body: jsonEncode(body),
       );
 
-      if (response.statusCode == 201) {
+      print('Response status: ${response.statusCode}');
+      print('Response body: ${response.body}');
+
+      if (response.statusCode == 201 || response.statusCode == 200) {
         if (mounted) {
-          Navigator.pop(context);
+          // Navigate to saved trips screen
+          Navigator.pushReplacement(
+            context,
+            MaterialPageRoute(
+              builder: (context) => const SavedPlannedTripsScreen(),
+            ),
+          );
+
+          // Show success message
           ScaffoldMessenger.of(context).showSnackBar(
             const SnackBar(
               content: Text('Trip planned successfully!'),
@@ -860,6 +906,7 @@ class _PlannedTripScreenState extends State<PlannedTripScreen> {
             ),
           );
         }
+
       } else {
         throw Exception('Failed: ${response.statusCode}');
       }
