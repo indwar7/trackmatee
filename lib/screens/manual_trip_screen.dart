@@ -27,6 +27,12 @@ class _ManualTripScreenState extends State<ManualTripScreen> {
   final _startController = TextEditingController();
   final _endController = TextEditingController();
 
+  // Search state
+  bool _isSearchingStart = false;
+  bool _isSearchingEnd = false;
+  List<dynamic> _startSuggestions = [];
+  List<dynamic> _endSuggestions = [];
+
   // Form display
   bool _showForm = false;
 
@@ -41,10 +47,10 @@ class _ManualTripScreenState extends State<ManualTripScreen> {
   final _companionsController = TextEditingController(text: '0');
   final _fuelTypeController = TextEditingController(text: 'Petrol');
   final _fuelCostController = TextEditingController();
-  final _averageController = TextEditingController();
   final _parkingController = TextEditingController();
   final _tollController = TextEditingController();
   final _ticketController = TextEditingController();
+  final _totalCostController = TextEditingController();
 
   bool _isLoading = false;
   Set<Marker> _markers = {};
@@ -54,6 +60,7 @@ class _ManualTripScreenState extends State<ManualTripScreen> {
   void initState() {
     super.initState();
     _getCurrentLocation();
+    _testConnection();
   }
 
   Future<void> _getCurrentLocation() async {
@@ -71,6 +78,193 @@ class _ManualTripScreenState extends State<ManualTripScreen> {
       );
     } catch (e) {
       debugPrint('Error getting location: $e');
+    }
+  }
+
+  Future<void> _searchStartLocation(String query) async {
+    if (query.isEmpty) {
+      setState(() {
+        _startSuggestions = [];
+        _isSearchingStart = false;
+      });
+      return;
+    }
+
+    setState(() => _isSearchingStart = true);
+
+    try {
+      final suggestions = await LocationService.searchLocation(query);
+      setState(() {
+        _startSuggestions = suggestions;
+        _isSearchingStart = false;
+      });
+    } catch (e) {
+      setState(() => _isSearchingStart = false);
+      debugPrint('Error searching location: $e');
+    }
+  }
+
+  Future<void> _searchEndLocation(String query) async {
+    if (query.isEmpty) {
+      setState(() {
+        _endSuggestions = [];
+        _isSearchingEnd = false;
+      });
+      return;
+    }
+
+    setState(() => _isSearchingEnd = true);
+
+    try {
+      final suggestions = await LocationService.searchLocation(query);
+      setState(() {
+        _endSuggestions = suggestions;
+        _isSearchingEnd = false;
+      });
+    } catch (e) {
+      setState(() => _isSearchingEnd = false);
+      debugPrint('Error searching location: $e');
+    }
+  }
+
+  void _selectStartLocation(dynamic place) {
+    final lat = place['geometry']['location']['lat'];
+    final lng = place['geometry']['location']['lng'];
+    final address = place['formatted_address'] ?? place['description'];
+
+    setState(() {
+      _startLocation = LatLng(lat, lng);
+      _startController.text = address;
+      _startSuggestions = [];
+
+      _markers.removeWhere((m) => m.markerId.value == 'start');
+      _markers.add(
+        Marker(
+          markerId: const MarkerId('start'),
+          position: _startLocation!,
+          icon: BitmapDescriptor.defaultMarkerWithHue(BitmapDescriptor.hueGreen),
+          infoWindow: const InfoWindow(title: 'Start'),
+        ),
+      );
+    });
+
+    _mapController?.animateCamera(
+      CameraUpdate.newLatLngZoom(_startLocation!, 14),
+    );
+
+    if (_endLocation != null) {
+      _drawRoute();
+      setState(() => _showForm = true);
+    }
+  }
+
+  void _selectEndLocation(dynamic place) {
+    final lat = place['geometry']['location']['lat'];
+    final lng = place['geometry']['location']['lng'];
+    final address = place['formatted_address'] ?? place['description'];
+
+    setState(() {
+      _endLocation = LatLng(lat, lng);
+      _endController.text = address;
+      _endSuggestions = [];
+
+      _markers.removeWhere((m) => m.markerId.value == 'end');
+      _markers.add(
+        Marker(
+          markerId: const MarkerId('end'),
+          position: _endLocation!,
+          icon: BitmapDescriptor.defaultMarkerWithHue(BitmapDescriptor.hueRed),
+          infoWindow: const InfoWindow(title: 'End'),
+        ),
+      );
+    });
+
+    _mapController?.animateCamera(
+      CameraUpdate.newLatLngZoom(_endLocation!, 14),
+    );
+
+    if (_startLocation != null) {
+      _drawRoute();
+      setState(() => _showForm = true);
+    }
+  }
+
+  double _calculateCO2() {
+    if (_distanceController.text.isEmpty || _modeController.text.isEmpty) {
+      return 0;
+    }
+
+    final distance = double.tryParse(_distanceController.text) ?? 0;
+    final mode = _modeController.text.toLowerCase();
+
+    // CO2 emission factors (kg CO2 per km)
+    const Map<String, double> emissionFactors = {
+      'car': 0.21,
+      'bike': 0.0,
+      'bus': 0.089,
+      'train': 0.041,
+      'walk': 0.0,
+      'metro': 0.028,
+      'auto': 0.15,
+    };
+
+    final factor = emissionFactors[mode] ?? 0.21;
+    return distance * factor;
+  }
+
+  void _updateCO2() {
+    final co2 = _calculateCO2();
+    _co2Controller.text = co2.toStringAsFixed(2);
+  }
+
+  void _calculateTotalCost() {
+    double total = 0;
+
+    if (_fuelCostController.text.isNotEmpty) {
+      total += double.tryParse(_fuelCostController.text) ?? 0;
+    }
+    if (_parkingController.text.isNotEmpty) {
+      total += double.tryParse(_parkingController.text) ?? 0;
+    }
+    if (_tollController.text.isNotEmpty) {
+      total += double.tryParse(_tollController.text) ?? 0;
+    }
+    if (_ticketController.text.isNotEmpty) {
+      total += double.tryParse(_ticketController.text) ?? 0;
+    }
+
+    _totalCostController.text = total.toStringAsFixed(2);
+  }
+  Future<void> _testConnection() async {
+    try {
+      final api = context.read<ApiService>();
+      final response = await http.get(
+        Uri.parse('${ApiService.baseUrl}/trips/'),
+        headers: api.headers,
+      );
+      print('✅ Connection test: ${response.statusCode}');
+      print('Response: ${response.body}');
+
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(
+            content: Text('Connection successful! Status: ${response.statusCode}'),
+            backgroundColor: Colors.green,
+          ),
+        );
+      }
+    } catch (e) {
+      print('❌ Connection failed: $e');
+
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(
+            content: Text('Connection failed: $e'),
+            backgroundColor: Colors.red,
+            duration: const Duration(seconds: 5),
+          ),
+        );
+      }
     }
   }
 
@@ -149,6 +343,7 @@ class _ManualTripScreenState extends State<ManualTripScreen> {
       );
 
       _distanceController.text = (distanceInMeters / 1000).toStringAsFixed(2);
+      _updateCO2();
     }
   }
 
@@ -160,6 +355,8 @@ class _ManualTripScreenState extends State<ManualTripScreen> {
       _polylines.clear();
       _startController.clear();
       _endController.clear();
+      _startSuggestions = [];
+      _endSuggestions = [];
       _showForm = false;
     });
   }
@@ -256,6 +453,11 @@ class _ManualTripScreenState extends State<ManualTripScreen> {
         backgroundColor: const Color(0xFF16213e),
         actions: [
           IconButton(
+            icon: const Icon(Icons.wifi),
+            onPressed: _testConnection,
+            tooltip: 'Test Connection',
+          ),
+          IconButton(
             icon: const Icon(Icons.refresh),
             onPressed: _resetLocations,
             tooltip: 'Reset',
@@ -299,8 +501,8 @@ class _ManualTripScreenState extends State<ManualTripScreen> {
                       ),
                       child: Text(
                         _startLocation == null
-                            ? 'Tap on map to select START location'
-                            : 'Tap on map to select END location',
+                            ? 'Tap on map to select START location or type below'
+                            : 'Tap on map to select END location or type below',
                         style: const TextStyle(color: Colors.white),
                         textAlign: TextAlign.center,
                       ),
@@ -310,24 +512,34 @@ class _ManualTripScreenState extends State<ManualTripScreen> {
             ),
           ),
 
-          // Location Display
+          // Location Display with Search
           Container(
             color: const Color(0xFF16213e),
             padding: const EdgeInsets.all(16),
             child: Column(
               children: [
-                _buildLocationField(
+                // Start Location Search
+                _buildSearchableLocationField(
                   icon: Icons.trip_origin,
                   label: 'Start Location',
                   controller: _startController,
                   color: Colors.green,
+                  suggestions: _startSuggestions,
+                  isSearching: _isSearchingStart,
+                  onChanged: _searchStartLocation,
+                  onSuggestionSelected: _selectStartLocation,
                 ),
                 const SizedBox(height: 8),
-                _buildLocationField(
+                // End Location Search
+                _buildSearchableLocationField(
                   icon: Icons.location_on,
                   label: 'End Location',
                   controller: _endController,
                   color: Colors.red,
+                  suggestions: _endSuggestions,
+                  isSearching: _isSearchingEnd,
+                  onChanged: _searchEndLocation,
+                  onSuggestionSelected: _selectEndLocation,
                 ),
               ],
             ),
@@ -358,13 +570,16 @@ class _ManualTripScreenState extends State<ManualTripScreen> {
                       _buildFormField('Distance (km)', _distanceController,
                         icon: Icons.straighten,
                         keyboardType: TextInputType.number,
+                        onChanged: (value) => _updateCO2(),
                       ),
                       _buildFormField('CO2 Emitted (kg)', _co2Controller,
                         icon: Icons.cloud,
                         keyboardType: TextInputType.number,
+                        readOnly: true,
                       ),
                       _buildFormField('Mode of Travel', _modeController,
                         icon: Icons.directions_car,
+                        onChanged: (value) => _updateCO2(),
                       ),
                       _buildFormField('Trip Purpose', _purposeController,
                         icon: Icons.description,
@@ -379,22 +594,27 @@ class _ManualTripScreenState extends State<ManualTripScreen> {
                       _buildFormField('Fuel Cost', _fuelCostController,
                         icon: Icons.attach_money,
                         keyboardType: TextInputType.number,
-                      ),
-                      _buildFormField('Average (km/l)', _averageController,
-                        icon: Icons.speed,
-                        keyboardType: TextInputType.number,
+                        onChanged: (value) => _calculateTotalCost(),
                       ),
                       _buildFormField('Parking Cost', _parkingController,
                         icon: Icons.local_parking,
                         keyboardType: TextInputType.number,
+                        onChanged: (value) => _calculateTotalCost(),
                       ),
                       _buildFormField('Toll Cost', _tollController,
                         icon: Icons.toll,
                         keyboardType: TextInputType.number,
+                        onChanged: (value) => _calculateTotalCost(),
                       ),
                       _buildFormField('Ticket Cost', _ticketController,
                         icon: Icons.confirmation_number,
                         keyboardType: TextInputType.number,
+                        onChanged: (value) => _calculateTotalCost(),
+                      ),
+                      _buildFormField('Total Cost', _totalCostController,
+                        icon: Icons.account_balance_wallet,
+                        keyboardType: TextInputType.number,
+                        readOnly: true,
                       ),
                       const SizedBox(height: 20),
                       ElevatedButton(
@@ -423,37 +643,121 @@ class _ManualTripScreenState extends State<ManualTripScreen> {
     );
   }
 
-  Widget _buildLocationField({
+  Widget _buildSearchableLocationField({
     required IconData icon,
     required String label,
     required TextEditingController controller,
     required Color color,
+    required List<dynamic> suggestions,
+    required bool isSearching,
+    required Function(String) onChanged,
+    required Function(dynamic) onSuggestionSelected,
   }) {
-    return Container(
-      padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
-      decoration: BoxDecoration(
-        color: const Color(0xFF0f0f1e),
-        borderRadius: BorderRadius.circular(8),
-      ),
-      child: Row(
-        children: [
-          Icon(icon, color: color, size: 20),
-          const SizedBox(width: 12),
-          Expanded(
-            child: Text(
-              controller.text.isEmpty ? label : controller.text,
-              style: TextStyle(
-                color: controller.text.isEmpty
-                    ? Colors.white.withOpacity(0.5)
-                    : Colors.white,
-                fontSize: 14,
+    return Column(
+      children: [
+        Container(
+          padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
+          decoration: BoxDecoration(
+            color: const Color(0xFF0f0f1e),
+            borderRadius: BorderRadius.circular(8),
+          ),
+          child: Row(
+            children: [
+              Icon(icon, color: color, size: 20),
+              const SizedBox(width: 12),
+              Expanded(
+                child: TextField(
+                  controller: controller,
+                  onChanged: onChanged,
+                  style: const TextStyle(color: Colors.white, fontSize: 14),
+                  decoration: InputDecoration(
+                    hintText: label,
+                    hintStyle: TextStyle(
+                      color: Colors.white.withOpacity(0.5),
+                      fontSize: 14,
+                    ),
+                    border: InputBorder.none,
+                    isDense: true,
+                    contentPadding: EdgeInsets.zero,
+                  ),
+                ),
               ),
-              maxLines: 1,
-              overflow: TextOverflow.ellipsis,
+              if (isSearching)
+                const SizedBox(
+                  width: 16,
+                  height: 16,
+                  child: CircularProgressIndicator(
+                    strokeWidth: 2,
+                    color: Color(0xFF00adb5),
+                  ),
+                ),
+            ],
+          ),
+        ),
+        if (suggestions.isNotEmpty)
+          Container(
+            margin: const EdgeInsets.only(top: 4),
+            constraints: const BoxConstraints(maxHeight: 200),
+            decoration: BoxDecoration(
+              color: const Color(0xFF1a1a2e),
+              borderRadius: BorderRadius.circular(8),
+              border: Border.all(
+                color: const Color(0xFF00adb5).withOpacity(0.3),
+              ),
+            ),
+            child: Material(
+              color: Colors.transparent,
+              child: ListView.separated(
+                shrinkWrap: true,
+                padding: const EdgeInsets.symmetric(vertical: 4),
+                itemCount: suggestions.length > 5 ? 5 : suggestions.length,
+                separatorBuilder: (context, index) => Divider(
+                  color: Colors.white.withOpacity(0.1),
+                  height: 1,
+                  thickness: 0.5,
+                ),
+                itemBuilder: (context, index) {
+                  final place = suggestions[index];
+                  final String placeDescription = place['description'] ??
+                      place['formatted_address'] ??
+                      'Unknown location';
+
+                  return InkWell(
+                    onTap: () => onSuggestionSelected(place),
+                    child: Container(
+                      padding: const EdgeInsets.symmetric(
+                        horizontal: 16,
+                        vertical: 12,
+                      ),
+                      child: Row(
+                        children: [
+                          Icon(
+                            Icons.location_on,
+                            color: color,
+                            size: 20,
+                          ),
+                          const SizedBox(width: 12),
+                          Expanded(
+                            child: Text(
+                              placeDescription,
+                              style: const TextStyle(
+                                color: Colors.white,
+                                fontSize: 14,
+                                fontWeight: FontWeight.w400,
+                              ),
+                              maxLines: 2,
+                              overflow: TextOverflow.ellipsis,
+                            ),
+                          ),
+                        ],
+                      ),
+                    ),
+                  );
+                },
+              ),
             ),
           ),
-        ],
-      ),
+      ],
     );
   }
 
@@ -463,21 +767,24 @@ class _ManualTripScreenState extends State<ManualTripScreen> {
         IconData? icon,
         TextInputType? keyboardType,
         VoidCallback? onTap,
+        Function(String)? onChanged,
+        bool readOnly = false,
       }) {
     return Padding(
       padding: const EdgeInsets.only(bottom: 16),
       child: TextField(
         controller: controller,
         keyboardType: keyboardType,
-        readOnly: onTap != null,
+        readOnly: readOnly || onTap != null,
         onTap: onTap,
+        onChanged: onChanged,
         style: const TextStyle(color: Colors.white),
         decoration: InputDecoration(
           labelText: label,
           labelStyle: TextStyle(color: Colors.white.withOpacity(0.7)),
           prefixIcon: icon != null ? Icon(icon, color: const Color(0xFF00adb5)) : null,
           filled: true,
-          fillColor: const Color(0xFF16213e),
+          fillColor: readOnly ? const Color(0xFF16213e).withOpacity(0.5) : const Color(0xFF16213e),
           border: OutlineInputBorder(
             borderRadius: BorderRadius.circular(12),
             borderSide: BorderSide.none,
@@ -554,10 +861,10 @@ class _ManualTripScreenState extends State<ManualTripScreen> {
     _companionsController.dispose();
     _fuelTypeController.dispose();
     _fuelCostController.dispose();
-    _averageController.dispose();
     _parkingController.dispose();
     _tollController.dispose();
     _ticketController.dispose();
+    _totalCostController.dispose();
     super.dispose();
   }
 }

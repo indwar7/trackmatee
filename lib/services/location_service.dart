@@ -5,7 +5,7 @@ import 'package:http/http.dart' as http;
 
 class LocationService {
   // Replace with your actual Google Maps API key
-  static const String _googleApiKey = "AIzaSyCvuze7W6e4S_5bSAEuX9K0GJCPMvvVNTQ";
+  static const String _googleApiKey = "AIzaSyA6uK1raTG6fNpw5twxbX0tfveW6Rd5YNE";
 
   /// Ensure location permissions
   static Future<bool> ensureLocationPermission() async {
