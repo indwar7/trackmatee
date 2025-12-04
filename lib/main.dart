@@ -1,7 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
-import 'screens/home_screen.dart';
-import 'services/api_service.dart';
+import 'screens/onboaarding/home_screen.dart';
+import 'services/services/maps_api_service.dart';
 
 void main() {
   runApp(const MyApp());
