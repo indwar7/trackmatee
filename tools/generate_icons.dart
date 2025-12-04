@@ -1,5 +1,5 @@
 import 'dart:io';
-import 'package:flutter_image_compress/flutter_image_compress.dart';
+// import 'package:flutter_image_compress/flutter_image_compress.dart';
 
 void main() async {
   print("🔧 Generating app icons...");
@@ -25,13 +25,14 @@ Future<void> _makeIcon(String src, String folder, int size) async {
   await Directory(dir).create(recursive: true);
 
   final dest = "$dir/ic_launcher.png";
-  final result = await FlutterImageCompress.compressAndGetFile(
-    src,
-    dest,
-    minWidth: size,
-    minHeight: size,
-    quality: 95,
-  );
+  // final result = await FlutterImageCompress.compressAndGetFile(
+  //   src,
+  //   dest,
+  //   minWidth: size,
+  //   minHeight: size,
+  //   quality: 95,
+  // );
+  final result = null;
 
   print(result != null
       ? "✔ Generated → $dest"

@@ -34,7 +34,7 @@ dependencies:
   smooth_page_indicator: ^1.1.0
   animations: ^2.0.8
   image_picker: ^1.1.1
-  flutter_image_compress: ^2.4.0
+  # flutter_image_compress: ^2.4.0
 
   # -------- Backend & Auth --------
   email_otp_auth: ^1.1.0
