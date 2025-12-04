@@ -35,7 +35,7 @@ class HomeScreen extends StatelessWidget {
                           'Greetings,',
                           style: TextStyle(
                             color: Colors.white70,
-                            fontSize: 16,
+                            fontSize: 18,
                             fontWeight: FontWeight.w400,
                           ),
                         ),
@@ -730,7 +730,7 @@ class HomeScreen extends StatelessWidget {
                               child: Text('Record a trip',
                                   style: TextStyle(
                                       color: Colors.black,
-                                      fontSize: 16,
+                                      fontSize: 17,
                                       fontWeight: FontWeight.bold)),
                             ),
                           ],

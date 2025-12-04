@@ -2,11 +2,10 @@ import 'package:flutter/material.dart';
 
 class ChatScreen extends StatefulWidget {
   final String? initialMessage;
-
-  ChatScreen({this.initialMessage});
+  const ChatScreen({this.initialMessage, super.key});
 
   @override
-  _ChatScreenState createState() => _ChatScreenState();
+  State<ChatScreen> createState() => _ChatScreenState();
 }
 
 class Message {
@@ -17,136 +16,165 @@ class Message {
 
 class _ChatScreenState extends State<ChatScreen> {
   final List<Message> _messages = [];
-  final controller = TextEditingController();
+  final TextEditingController controller = TextEditingController();
+  final ScrollController scrollController = ScrollController();
 
   @override
   void initState() {
     super.initState();
 
-    _messages.add(Message('Hi, my name is Trackro, how may I help you today?', isUser: false));
+    // 👋 AI welcome message
+    _messages.add(
+      Message('👋 Hi, I\'m Trackro — your AI travel assistant!', isUser: false),
+    );
 
+    // if initial message exists
     if (widget.initialMessage != null) {
       _messages.add(Message(widget.initialMessage!, isUser: true));
 
-      Future.delayed(Duration(milliseconds: 500), () {
-        _messages.add(Message("Thanks for asking: '${widget.initialMessage}'. (Mock reply)", isUser: false));
+      Future.delayed(const Duration(milliseconds: 600), () {
+        _messages.add(
+          Message("You asked: \"${widget.initialMessage}\".\n(🤖 Mock AI response)"),
+        );
         setState(() {});
       });
     }
   }
 
+  void _sendMessage() {
+    final text = controller.text.trim();
+    if (text.isEmpty) return;
+
+    // user message
+    setState(() {
+      _messages.add(Message(text, isUser: true));
+      controller.clear();
+    });
+
+    // mock AI reply
+    Future.delayed(const Duration(milliseconds: 700), () {
+      setState(() {
+        _messages.add(
+          Message("Thanks for your question.\nI am thinking... (🤖 mock reply)"),
+        );
+      });
+
+      scrollController.animateTo(
+        scrollController.position.maxScrollExtent + 200,
+        duration: const Duration(milliseconds: 350),
+        curve: Curves.easeOut,
+      );
+    });
+  }
+
   @override
   Widget build(BuildContext context) {
     return Scaffold(
+      backgroundColor: const Color(0xFF0F0F0F),
+
       appBar: AppBar(
-        backgroundColor: Colors.transparent,
+        backgroundColor: const Color(0xFF0F0F0F),
         elevation: 0,
-        leading: Padding(
-          padding: const EdgeInsets.only(left: 12.0),
-          child: CircleAvatar(backgroundColor: Colors.grey[800], child: Icon(Icons.person, color: Colors.white)),
+        title: const Text("AI Assistant", style: TextStyle(color: Colors.white)),
+        leading: const Padding(
+          padding: EdgeInsets.only(left: 12.0),
+          child: CircleAvatar(
+            backgroundColor: Color(0xFF1F1F1F),
+            child: Icon(Icons.android, color: Colors.white),
+          ),
         ),
-        title: Text('Trackro', style: TextStyle(color: Colors.white)),
       ),
+
       body: Column(
         children: [
+
           Expanded(
             child: ListView.builder(
-              padding: EdgeInsets.symmetric(horizontal: 16, vertical: 12),
+              controller: scrollController,
+              padding: const EdgeInsets.all(16),
               itemCount: _messages.length,
-              itemBuilder: (context, i) => ChatBubble(message: _messages[i]),
+              itemBuilder: (context, index) {
+                return _chatBubble(_messages[index]);
+              },
             ),
           ),
-          SafeArea(
-            child: Padding(
-              padding: const EdgeInsets.symmetric(horizontal: 12.0, vertical: 8),
-              child: Row(
-                children: [
-                  Expanded(
-                    child: TextField(
-                      controller: controller,
-                      style: TextStyle(color: Colors.white),
-                      decoration: InputDecoration(
-                        filled: true,
-                        fillColor: Color(0xFF1A1A1A),
-                        hintText: 'Type a message',
-                        hintStyle: TextStyle(color: Colors.grey),
-                        contentPadding: EdgeInsets.symmetric(horizontal: 16, vertical: 14),
-                        border: OutlineInputBorder(borderRadius: BorderRadius.circular(24), borderSide: BorderSide.none),
-                      ),
-                    ),
-                  ),
-                  SizedBox(width: 8),
-                  ElevatedButton(
-                    style: ElevatedButton.styleFrom(shape: CircleBorder(), padding: EdgeInsets.all(12), backgroundColor: Color(0xFF6C4BDB)),
-                    child: Icon(Icons.send, color: Colors.white),
-                    onPressed: () {
-                      final text = controller.text.trim();
-                      if (text.isEmpty) return;
 
-                      _messages.add(Message(text, isUser: true));
-                      setState(() {});
-                      controller.clear();
-
-                      Future.delayed(Duration(milliseconds: 600), () {
-                        _messages.add(Message('Thanks — we got your question: "$text". (Mock reply)', isUser: false));
-                        setState(() {});
-                      });
-                    },
-                  )
-                ],
-              ),
-            ),
-          ),
+          _chatInput(),
         ],
       ),
     );
   }
-}
 
-class ChatBubble extends StatelessWidget {
-  final Message message;
-  const ChatBubble({required this.message});
+  // =====================================================================
+  // CHAT BUBBLE
+  // =====================================================================
 
-  @override
-  Widget build(BuildContext context) {
+  Widget _chatBubble(Message message) {
     final bool isUser = message.isUser;
 
-    final radius = isUser
-        ? BorderRadius.only(
-      topLeft: Radius.circular(14),
-      topRight: Radius.circular(14),
-      bottomLeft: Radius.circular(14),
-    )
-        : BorderRadius.only(
-      topLeft: Radius.circular(14),
-      topRight: Radius.circular(14),
-      bottomRight: Radius.circular(14),
+    return Align(
+      alignment: isUser ? Alignment.centerRight : Alignment.centerLeft,
+      child: Container(
+        margin: const EdgeInsets.symmetric(vertical: 6),
+        padding: const EdgeInsets.all(14),
+        constraints: BoxConstraints(maxWidth: MediaQuery.of(context).size.width * 0.78),
+        decoration: BoxDecoration(
+          color: isUser ? const Color(0xFF292929) : const Color(0xFF1E1E1E),
+          borderRadius: BorderRadius.only(
+            topLeft: const Radius.circular(16),
+            topRight: const Radius.circular(16),
+            bottomLeft: isUser ? const Radius.circular(16) : const Radius.circular(4),
+            bottomRight: isUser ? const Radius.circular(4) : const Radius.circular(16),
+          ),
+        ),
+        child: Text(
+          message.text,
+          style: const TextStyle(color: Colors.white, height: 1.4),
+        ),
+      ),
     );
+  }
 
-    return Padding(
-      padding: const EdgeInsets.symmetric(vertical: 8.0),
+  // =====================================================================
+  // INPUT BAR
+  // =====================================================================
+
+  Widget _chatInput() {
+    return Container(
+      padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 10),
+      color: const Color(0xFF101010),
       child: Row(
-        mainAxisAlignment: isUser ? MainAxisAlignment.end : MainAxisAlignment.start,
         children: [
-          if (!isUser)
-            ...[
-              CircleAvatar(
-                backgroundColor: Colors.transparent,
-                child: Icon(Icons.android, color: Color(0xFF6C4BDB)),
+
+          Expanded(
+            child: TextField(
+              controller: controller,
+              style: const TextStyle(color: Colors.white),
+              decoration: InputDecoration(
+                filled: true,
+                fillColor: const Color(0xFF1A1A1A),
+                hintText: "Type your message…",
+                hintStyle: const TextStyle(color: Colors.grey),
+                contentPadding: const EdgeInsets.symmetric(
+                    horizontal: 18, vertical: 14
+                ),
+                border: OutlineInputBorder(
+                  borderRadius: BorderRadius.circular(24),
+                  borderSide: BorderSide.none,
+                ),
               ),
-              SizedBox(width: 8),
-            ],
-          Flexible(
-            child: Container(
-              padding: EdgeInsets.all(14),
-              decoration: BoxDecoration(
-                color: isUser ? Color(0xFF2E2B2F) : Color(0xFF2C2C2C),
-                borderRadius: radius,
-              ),
-              child: Text(message.text, style: TextStyle(color: Colors.white)),
             ),
           ),
-          if (isUser) SizedBox(width: 8),
+
+          const SizedBox(width: 8),
+
+          GestureDetector(
+            onTap: _sendMessage,
+            child: CircleAvatar(
+              backgroundColor: const Color(0xFF8B5CF6),
+              child: const Icon(Icons.send, color: Colors.white),
+            ),
+          ),
         ],
       ),
     );

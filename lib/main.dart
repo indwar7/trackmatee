@@ -39,6 +39,7 @@ import 'package:trackmate_app/screens/discover/discover_screen.dart';
 import 'package:trackmate_app/screens/maps_screen.dart';
 import 'package:trackmate_app/screens/ai_checklist_screen.dart';
 import 'package:trackmate_app/screens/my_stats_screen.dart';
+import 'package:trackmate_app/screens/chat_screen/chat_screen.dart';
 
 // =============== TRIPS & PLANNER ===============
 import 'package:trackmate_app/screens/trips/planner_screen.dart';
@@ -158,7 +159,7 @@ class TrackMateApp extends StatelessWidget {
         GetPage(name:"/edit-profile", page:()=> const EditProfileScreen()),
         GetPage(name:"/settings", page:()=> const SettingsScreen()),
         GetPage(name:"/support", page:()=> const SupportScreen()),
-        GetPage(name:"/trusted-contacts", page:()=> const TrustedContactsScreen()),
+        GetPage(name:"/trusted-contacts", page:()=>  TrustedContactsScreen()),
         GetPage(name:"/vehicle-info", page:()=> const VehicleInfoScreen()),
 
         /// VERIFICATION
@@ -181,6 +182,8 @@ class TrackMateApp extends StatelessWidget {
         GetPage(name:"/auto-trip-tracking", page:()=> const AutoTripTrackingScreen()),
         GetPage(name:"/cost-calculator", page:()=> const CostCalculatorScreen()),
         GetPage(name:"/my-stats", page:()=> const MyStatsScreen()),
+        GetPage(name: "/ai-chatbot", page: () => ChatScreen()),
+
         GetPage(name:"/ai-checklist", page:()=> const AiChecklistScreen()),
       ],
     );

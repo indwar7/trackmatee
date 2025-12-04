@@ -72,7 +72,7 @@ class SettingsScreen extends StatelessWidget {
                 context,
                 'Work',
                 profileController.workLocation.value,
-                    (value) => profileController.updateProfile(newWorkLocation: value),
+                    (value) => profileController.updateProfile(newWorkLocation: value, newHomeLocation: ''),
               ),
             )),
 

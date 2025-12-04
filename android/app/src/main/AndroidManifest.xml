@@ -8,9 +8,13 @@
     <uses-permission android:name="android.permission.WRITE_EXTERNAL_STORAGE"/>
     <uses-permission android:name="android.permission.CAMERA"/>
     <application
-        android:label="trackmate_app"
+        android:label="Trackmate"
         android:name="${applicationName}"
         android:icon="@mipmap/ic_launcher">
+
+        <meta-data
+            android:name="com.google.android.geo.API_KEY"
+            android:value="AIzaSyA_5g3esmMrnrL3HLtk48CXA7uHKmi0Lvk"/>
         <activity
             android:name=".MainActivity"
             android:exported="true"

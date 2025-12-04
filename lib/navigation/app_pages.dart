@@ -32,13 +32,13 @@ import 'package:trackmate_app/screens/verification/id_status_screen.dart';
 
 import 'package:trackmate_app/screens/my_stats_screen.dart';
 import 'package:trackmate_app/screens/ai_checklist_screen.dart';
-
 import '../screens/cost_calculator_screen.dart';
 
 class AppPages {
-  // 👈 INITIAL ROUTE
+  /// 🚀 Initial screen when app opens
   static const initial = '/splash';
 
+  /// 🚀 All routes used in app
   static final routes = [
 
     // ---------------- Onboarding ----------------
@@ -70,7 +70,7 @@ class AppPages {
     GetPage(name: '/profile', page: () => const ProfileScreen()),
     GetPage(name: '/settings', page: () => const SettingsScreen()),
     GetPage(name: '/support', page: () => const SupportScreen()),
-    GetPage(name: '/trusted-contacts', page: () => const TrustedContactsScreen()),
+    GetPage(name: '/trusted-contacts', page: () =>TrustedContactsScreen()),
 
     // ---------------- VERIFICATION ----------------
     GetPage(name: '/verification', page: () => const UserVerificationScreen()),
