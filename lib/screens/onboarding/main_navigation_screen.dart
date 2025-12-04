@@ -4,7 +4,6 @@ import 'package:trackmate_app/controllers/profile_controller.dart';
 
 // Screens
 import 'home_screen.dart';
-import '../planner_screen.dart';
 import '../maps_screen.dart';
 import '../my_stats_screen.dart'; // ✅ ADDED (Fix MyStatsScreen error)
 
@@ -20,7 +19,7 @@ class _MainNavigationScreenState extends State<MainNavigationScreen> {
 
   final List<Widget> _screens = [
     const HomeScreen(),
-    const PlannerScreen(),
+    Center(child: Text('Planner Coming Soon')),
     const MyStatsScreen(),  // ✅ Works now
     const MapsScreen(),
     const ProfileScreen(),

@@ -230,6 +230,12 @@
       "languageVersion": "3.9"
     },
     {
+      "name": "flutter_polyline_points",
+      "rootUri": "file:///Users/abhayindwar/.pub-cache/hosted/pub.dev/flutter_polyline_points-2.1.0",
+      "packageUri": "lib/",
+      "languageVersion": "3.0"
+    },
+    {
       "name": "flutter_svg",
       "rootUri": "file:///Users/abhayindwar/.pub-cache/hosted/pub.dev/flutter_svg-2.2.2",
       "packageUri": "lib/",

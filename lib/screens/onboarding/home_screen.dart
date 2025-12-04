@@ -1,10 +1,8 @@
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
+
 import '../../services/auth_service.dart';
 import '../../controllers/location_controller.dart';
-import '../../screens/ai_checklist_screen.dart';
-import '../../screens/my_stats_screen.dart';
-import 'package:trackmate_app/screens/chat_screen/chat_screen.dart';
 
 class HomeScreen extends StatelessWidget {
   const HomeScreen({super.key});
@@ -13,1011 +11,708 @@ class HomeScreen extends StatelessWidget {
   Widget build(BuildContext context) {
     final _ = Get.find<AuthService>();
     final locationController = Get.put(LocationController());
-    final userName = 'Tanvee Saxena';
+    final userName = "User";
 
     return Scaffold(
       backgroundColor: const Color(0xFF0A0A0A),
       body: SafeArea(
         child: SingleChildScrollView(
-          child: Padding(
-            padding: const EdgeInsets.symmetric(horizontal: 16.0, vertical: 12.0),
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                // HEADER
-                Row(
-                  mainAxisAlignment: MainAxisAlignment.spaceBetween,
+          padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              // =========================================================
+              // HEADER
+              // =========================================================
+              Row(
+                mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                children: [
+                  Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      const Text(
+                        "Greetings,",
+                        style: TextStyle(
+                          color: Colors.white70,
+                          fontSize: 14,
+                        ),
+                      ),
+                      Text(
+                        userName,
+                        style: const TextStyle(
+                          color: Colors.white,
+                          fontSize: 20,
+                          fontWeight: FontWeight.w600,
+                        ),
+                      ),
+                    ],
+                  ),
+                  GestureDetector(
+                    onTap: () => Get.toNamed('/settings'),
+                    child: Container(
+                      padding: const EdgeInsets.all(10),
+                      decoration: BoxDecoration(
+                        color: const Color(0xFF7C3AED),
+                        borderRadius: BorderRadius.circular(12),
+                      ),
+                      child: const Icon(Icons.translate, color: Colors.white, size: 22),
+                    ),
+                  )
+                ],
+              ),
+
+              const SizedBox(height: 20),
+
+              // =========================================================
+              // SEARCH CARD
+              // =========================================================
+              Container(
+                padding: const EdgeInsets.all(16),
+                decoration: BoxDecoration(
+                  color: const Color(0xFF1E1E1E),
+                  borderRadius: BorderRadius.circular(20),
+                ),
+                child: Column(
                   children: [
-                    Column(
-                      crossAxisAlignment: CrossAxisAlignment.start,
-                      children: [
-                        const Text(
-                          'Greetings,',
+                    // SEARCH BAR
+                    GestureDetector(
+                      onTap: () => Get.toNamed('/location-search'),
+                      child: Container(
+                        padding: const EdgeInsets.symmetric(vertical: 12, horizontal: 14),
+                        decoration: BoxDecoration(
+                          color: Colors.white,
+                          borderRadius: BorderRadius.circular(30),
+                        ),
+                        child: Row(
+                          children: [
+                            const Icon(Icons.search, color: Colors.black87, size: 20),
+                            const SizedBox(width: 10),
+
+                            // FROM
+                            Expanded(
+                              child: Column(
+                                crossAxisAlignment: CrossAxisAlignment.start,
+                                children: [
+                                  const Text(
+                                    "From",
+                                    style: TextStyle(fontSize: 9, color: Colors.black54),
+                                  ),
+                                  Obx(() => Text(
+                                    locationController.fromLocation.value.city,
+                                    style: const TextStyle(
+                                      fontSize: 13,
+                                      fontWeight: FontWeight.w700,
+                                      color: Colors.black,
+                                    ),
+                                  )),
+                                ],
+                              ),
+                            ),
+
+                            // SWAP BTN
+                            GestureDetector(
+                              onTap: () => locationController.swapLocations(),
+                              child: Container(
+                                padding: const EdgeInsets.all(6),
+                                decoration: BoxDecoration(
+                                  color: Colors.black12,
+                                  borderRadius: BorderRadius.circular(8),
+                                ),
+                                child: const Icon(Icons.swap_horiz, color: Colors.black87, size: 18),
+                              ),
+                            ),
+
+                            const SizedBox(width: 10),
+
+                            // TO
+                            Expanded(
+                              child: Column(
+                                crossAxisAlignment: CrossAxisAlignment.start,
+                                children: [
+                                  const Text(
+                                    "To",
+                                    style: TextStyle(fontSize: 9, color: Colors.black54),
+                                  ),
+                                  Obx(() => Text(
+                                    locationController.toLocation.value.city,
+                                    style: const TextStyle(
+                                      fontSize: 13,
+                                      fontWeight: FontWeight.w700,
+                                      color: Colors.black,
+                                    ),
+                                  )),
+                                ],
+                              ),
+                            ),
+                          ],
+                        ),
+                      ),
+                    ),
+
+                    const SizedBox(height: 14),
+
+                    // START BTN
+                    GestureDetector(
+                      onTap: () => Get.toNamed('/map'),
+                      child: Container(
+                        width: double.infinity,
+                        padding: const EdgeInsets.symmetric(vertical: 12),
+                        decoration: BoxDecoration(
+                          color: const Color(0xFFA78BFA),
+                          borderRadius: BorderRadius.circular(25),
+                        ),
+                        child: const Text(
+                          "Start",
+                          textAlign: TextAlign.center,
                           style: TextStyle(
-                            color: Colors.white70,
-                            fontSize: 18,
-                            fontWeight: FontWeight.w400,
+                            fontWeight: FontWeight.w700,
+                            fontSize: 16,
+                            color: Colors.black,
                           ),
                         ),
-                        Text(
-                          userName,
-                          style: const TextStyle(
-                            color: Colors.white,
-                            fontSize: 24,
-                            fontWeight: FontWeight.w600,
+                      ),
+                    ),
+
+                    const SizedBox(height: 14),
+
+                    // HOME / WORK ADDRESSES
+                    Row(
+                      children: [
+                        Expanded(
+                          child: GestureDetector(
+                            onTap: () => Get.toNamed('/edit-address', arguments: {"type": "home"}),
+                            child: Row(
+                              children: const [
+                                Icon(Icons.location_on, color: Colors.white70, size: 16),
+                                SizedBox(width: 6),
+                                Expanded(
+                                  child: Column(
+                                    crossAxisAlignment: CrossAxisAlignment.start,
+                                    children: [
+                                      Text(
+                                        "Home",
+                                        style: TextStyle(
+                                          color: Colors.white,
+                                          fontSize: 12,
+                                          fontWeight: FontWeight.w600,
+                                        ),
+                                      ),
+                                      Text(
+                                        "Sector Name-3 Intraspuram, Delhi, India",
+                                        style: TextStyle(
+                                          color: Colors.white54,
+                                          fontSize: 8,
+                                        ),
+                                        maxLines: 2,
+                                        overflow: TextOverflow.ellipsis,
+                                      ),
+                                    ],
+                                  ),
+                                ),
+                              ],
+                            ),
+                          ),
+                        ),
+                        const SizedBox(width: 12),
+                        Expanded(
+                          child: GestureDetector(
+                            onTap: () => Get.toNamed('/edit-address', arguments: {"type": "work"}),
+                            child: Row(
+                              children: const [
+                                Icon(Icons.work, color: Colors.white70, size: 16),
+                                SizedBox(width: 6),
+                                Expanded(
+                                  child: Column(
+                                    crossAxisAlignment: CrossAxisAlignment.start,
+                                    children: [
+                                      Text(
+                                        "Work",
+                                        style: TextStyle(
+                                          color: Colors.white,
+                                          fontSize: 12,
+                                          fontWeight: FontWeight.w600,
+                                        ),
+                                      ),
+                                      Text(
+                                        "Cyber city plaza-3, Gurgaon Haryana, India",
+                                        style: TextStyle(
+                                          color: Colors.white54,
+                                          fontSize: 8,
+                                        ),
+                                        maxLines: 2,
+                                        overflow: TextOverflow.ellipsis,
+                                      ),
+                                    ],
+                                  ),
+                                ),
+                              ],
+                            ),
                           ),
                         ),
                       ],
                     ),
-                    GestureDetector(
-                      onTap: () {
-                        try {
-                          Get.toNamed('/language-selection');
-                        } catch (e) {
-                          Get.snackbar(
-                            'Info',
-                            'Language selection coming soon',
-                            snackPosition: SnackPosition.BOTTOM,
-                            backgroundColor: Colors.white,
-                            colorText: Colors.black,
-                          );
-                        }
-                      },
-                      child: Container(
-                        padding: const EdgeInsets.all(10),
-                        decoration: BoxDecoration(
-                          color: const Color(0xFF7C3AED),
-                          borderRadius: BorderRadius.circular(10),
-                        ),
-                        child: const Icon(
-                          Icons.translate,
-                          color: Colors.white,
-                          size: 26,
-                        ),
-                      ),
-                    ),
                   ],
                 ),
+              ),
 
-                const SizedBox(height: 20),
+              const SizedBox(height: 16),
 
-                // SEARCH ROUTE CARD
-                Container(
-                  padding: const EdgeInsets.all(18),
+              // =========================================================
+              // ANALYTICS
+              // =========================================================
+              GestureDetector(
+                onTap: () => Get.toNamed('/my-stats'),
+                child: Container(
+                  padding: const EdgeInsets.all(16),
                   decoration: BoxDecoration(
-                    color: const Color(0xFF1E1E1E),
-                    borderRadius: BorderRadius.circular(20),
-                    border: Border.all(color: const Color(0xFF2A2A2A), width: 1),
+                    color: Colors.white,
+                    borderRadius: BorderRadius.circular(18),
                   ),
                   child: Column(
                     children: [
-                      // SEARCH BAR - Fully working
-                      GestureDetector(
-                        onTap: () {
-                          try {
-                            Get.toNamed('/location-search');
-                          } catch (e) {
-                            Get.snackbar(
-                              'Navigation',
-                              'Opening location search...',
-                              snackPosition: SnackPosition.BOTTOM,
-                              backgroundColor: Colors.white,
-                              colorText: Colors.black,
-                            );
-                          }
-                        },
-                        child: Container(
-                          padding: const EdgeInsets.symmetric(
-                              horizontal: 16, vertical: 14),
-                          decoration: BoxDecoration(
-                            color: Colors.white,
-                            borderRadius: BorderRadius.circular(14),
-                          ),
-                          child: Obx(() => Row(
-                            children: [
-                              const Icon(Icons.search,
-                                  size: 24, color: Colors.black87),
-                              const SizedBox(width: 14),
-
-                              // FROM
-                              Expanded(
-                                child: Column(
-                                  crossAxisAlignment:
-                                  CrossAxisAlignment.start,
-                                  children: [
-                                    const Text('From',
-                                        style: TextStyle(
-                                            color: Colors.black54,
-                                            fontSize: 11,
-                                            fontWeight: FontWeight.w500)),
-                                    const SizedBox(height: 2),
-                                    Text(
-                                      locationController
-                                          .fromLocation.value.city,
-                                      style: const TextStyle(
-                                        fontSize: 16,
-                                        fontWeight: FontWeight.bold,
-                                        color: Colors.black,
-                                      ),
-                                    ),
-                                    Text(
-                                      locationController
-                                          .fromLocation.value.code,
-                                      style: const TextStyle(
-                                          color: Colors.black54,
-                                          fontSize: 10,
-                                          fontWeight: FontWeight.w500),
-                                    ),
-                                  ],
+                      Row(
+                        mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        children: [
+                          Column(
+                            crossAxisAlignment: CrossAxisAlignment.start,
+                            children: const [
+                              Text(
+                                "25%",
+                                style: TextStyle(
+                                  color: Color(0xFFA78BFA),
+                                  fontSize: 26,
+                                  fontWeight: FontWeight.bold,
                                 ),
                               ),
-
-                              // SWAP - Working
-                              GestureDetector(
-                                onTap: () {
-                                  locationController.swapLocations();
-                                  Get.snackbar(
-                                    'Swapped',
-                                    'Locations swapped successfully',
-                                    snackPosition: SnackPosition.BOTTOM,
-                                    duration: const Duration(seconds: 1),
-                                    backgroundColor: Colors.green,
-                                    colorText: Colors.white,
-                                  );
-                                },
-                                child: Container(
-                                  padding: const EdgeInsets.all(8),
-                                  decoration: BoxDecoration(
-                                    color: Colors.black12,
-                                    borderRadius: BorderRadius.circular(8),
-                                  ),
-                                  child: const Icon(Icons.swap_horiz,
-                                      size: 22, color: Colors.black87),
-                                ),
-                              ),
-
-                              const SizedBox(width: 14),
-
-                              // TO
-                              Expanded(
-                                child: Column(
-                                  crossAxisAlignment:
-                                  CrossAxisAlignment.start,
-                                  children: [
-                                    const Text('To',
-                                        style: TextStyle(
-                                            color: Colors.black54,
-                                            fontSize: 11,
-                                            fontWeight: FontWeight.w500)),
-                                    const SizedBox(height: 2),
-                                    Text(
-                                      locationController
-                                          .toLocation.value.city,
-                                      style: const TextStyle(
-                                        fontSize: 16,
-                                        fontWeight: FontWeight.bold,
-                                        color: Colors.black,
-                                      ),
-                                    ),
-                                    Text(
-                                      locationController
-                                          .toLocation.value.code,
-                                      style: const TextStyle(
-                                          color: Colors.black54,
-                                          fontSize: 10,
-                                          fontWeight: FontWeight.w500),
-                                    ),
-                                  ],
+                              Text(
+                                "more than previous month",
+                                style: TextStyle(
+                                  fontSize: 9,
+                                  color: Colors.black54,
                                 ),
                               ),
                             ],
-                          )),
-                        ),
-                      ),
-
-                      const SizedBox(height: 16),
-
-                      // START BUTTON - Working
-                      GestureDetector(
-                        onTap: () {
-                          try {
-                            Get.toNamed('/trip-tracking');
-                          } catch (e) {
-                            Get.snackbar(
-                              'Start Trip',
-                              'Starting your trip...',
-                              snackPosition: SnackPosition.BOTTOM,
-                              backgroundColor: const Color(0xFFA78BFA),
-                              colorText: Colors.black,
-                            );
-                          }
-                        },
-                        child: Container(
-                          width: double.infinity,
-                          padding: const EdgeInsets.symmetric(vertical: 14),
-                          decoration: BoxDecoration(
-                            color: const Color(0xFFA78BFA),
-                            borderRadius: BorderRadius.circular(25),
                           ),
-                          child: const Text(
-                            'Start',
-                            textAlign: TextAlign.center,
-                            style: TextStyle(
-                              color: Colors.black,
-                              fontSize: 18,
-                              fontWeight: FontWeight.w600,
-                            ),
-                          ),
-                        ),
-                      ),
-
-                      const SizedBox(height: 16),
-
-                      // HOME + WORK
-                      Obx(() => Row(
-                        children: [
-                          // HOME
-                          Expanded(
-                            child: GestureDetector(
-                              onTap: () {
-                                try {
-                                  Get.toNamed('/edit-address',
-                                      arguments: {'type': 'home'});
-                                } catch (e) {
-                                  Get.snackbar(
-                                    'Home Address',
-                                    'Edit home address',
-                                    snackPosition: SnackPosition.BOTTOM,
-                                  );
-                                }
-                              },
-                              child: Row(
-                                children: [
-                                  const Icon(Icons.location_on_outlined,
-                                      size: 20, color: Colors.white70),
-                                  const SizedBox(width: 10),
-                                  Expanded(
-                                    child: Column(
-                                      crossAxisAlignment:
-                                      CrossAxisAlignment.start,
-                                      children: [
-                                        const Text(
-                                          'Home',
-                                          style: TextStyle(
-                                            fontWeight: FontWeight.w600,
-                                            fontSize: 14,
-                                            color: Colors.white,
-                                          ),
-                                        ),
-                                        Text(
-                                          locationController
-                                              .homeAddress.value.address,
-                                          style: const TextStyle(
-                                              color: Colors.white60,
-                                              fontSize: 10),
-                                          maxLines: 1,
-                                          overflow: TextOverflow.ellipsis,
-                                        ),
-                                        Text(
-                                          locationController
-                                              .homeAddress.value.city,
-                                          style: const TextStyle(
-                                              color: Colors.white60,
-                                              fontSize: 10),
-                                        ),
-                                      ],
-                                    ),
-                                  ),
-                                ],
+                          Column(
+                            crossAxisAlignment: CrossAxisAlignment.end,
+                            children: const [
+                              Text(
+                                "250 g/km",
+                                style: TextStyle(
+                                  fontSize: 13,
+                                  fontWeight: FontWeight.w600,
+                                ),
                               ),
-                            ),
-                          ),
-
-                          const SizedBox(width: 20),
-
-                          // WORK
-                          Expanded(
-                            child: GestureDetector(
-                              onTap: () {
-                                try {
-                                  Get.toNamed('/edit-address',
-                                      arguments: {'type': 'work'});
-                                } catch (e) {
-                                  Get.snackbar(
-                                    'Work Address',
-                                    'Edit work address',
-                                    snackPosition: SnackPosition.BOTTOM,
-                                  );
-                                }
-                              },
-                              child: Row(
-                                children: [
-                                  const Icon(Icons.work_outline,
-                                      size: 20, color: Colors.white70),
-                                  const SizedBox(width: 10),
-                                  Expanded(
-                                    child: Column(
-                                      crossAxisAlignment:
-                                      CrossAxisAlignment.start,
-                                      children: [
-                                        const Text(
-                                          'Work',
-                                          style: TextStyle(
-                                            fontWeight: FontWeight.w600,
-                                            fontSize: 14,
-                                            color: Colors.white,
-                                          ),
-                                        ),
-                                        Text(
-                                          locationController
-                                              .workAddress.value.address,
-                                          style: const TextStyle(
-                                              color: Colors.white60,
-                                              fontSize: 10),
-                                          maxLines: 1,
-                                          overflow: TextOverflow.ellipsis,
-                                        ),
-                                        Text(
-                                          locationController
-                                              .workAddress.value.city,
-                                          style: const TextStyle(
-                                              color: Colors.white60,
-                                              fontSize: 10),
-                                        ),
-                                      ],
-                                    ),
-                                  ),
-                                ],
+                              Text(
+                                "Monthly carbon",
+                                style: TextStyle(
+                                  fontSize: 9,
+                                  color: Colors.black54,
+                                ),
                               ),
-                            ),
+                              Text(
+                                "emission",
+                                style: TextStyle(
+                                  fontSize: 9,
+                                  color: Colors.black54,
+                                ),
+                              ),
+                            ],
                           ),
                         ],
-                      )),
-                    ],
-                  ),
-                ),
-
-                const SizedBox(height: 16),
-
-                // ANALYTICS CARD - Working redirect
-                GestureDetector(
-                  onTap: () {
-                    try {
-                      Get.toNamed('/analytics');
-                    } catch (e) {
-                      try {
-                        Get.toNamed('/my-stats');
-                      } catch (e) {
-                        Get.snackbar(
-                          'Analytics',
-                          'Opening analytics...',
-                          snackPosition: SnackPosition.BOTTOM,
-                        );
-                      }
-                    }
-                  },
-                  child: Container(
-                    padding: const EdgeInsets.all(16),
-                    decoration: BoxDecoration(
-                        color: Colors.white,
-                        borderRadius: BorderRadius.circular(18)),
-                    child: Column(children: [
+                      ),
+                      const SizedBox(height: 12),
                       Row(
-                          mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                          children: [
-                            Column(
-                              crossAxisAlignment: CrossAxisAlignment.start,
-                              children: [
-                                const Text('25%',
-                                    style: TextStyle(
-                                        color: Color(0xFFA78BFA),
-                                        fontSize: 32,
-                                        fontWeight: FontWeight.bold)),
-                                const SizedBox(height: 2),
-                                Text('more than previous month',
-                                    style: TextStyle(
-                                        color: Colors.grey[600],
-                                        fontSize: 11,
-                                        fontWeight: FontWeight.w400))
-                              ],
-                            ),
-                            Column(
-                                crossAxisAlignment: CrossAxisAlignment.end,
-                                children: [
-                                  const Text('250 g/km',
-                                      style: TextStyle(
-                                          fontSize: 20,
-                                          fontWeight: FontWeight.bold,
-                                          color: Colors.black)),
-                                  const SizedBox(height: 2),
-                                  Text('Monthly Carbon',
-                                      style: TextStyle(
-                                          color: Colors.grey[500],
-                                          fontSize: 10,
-                                          fontWeight: FontWeight.w400)),
-                                  Text('emission',
-                                      style: TextStyle(
-                                          color: Colors.grey[500],
-                                          fontSize: 10,
-                                          fontWeight: FontWeight.w400)),
-                                ]),
-                          ]),
-                      const SizedBox(height: 16),
-                      Row(
-                        mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                        mainAxisAlignment: MainAxisAlignment.spaceAround,
                         crossAxisAlignment: CrossAxisAlignment.end,
                         children: List.generate(12, (i) {
-                          final heights = [
-                            28.0, 35.0, 40.0, 45.0, 48.0, 52.0,
-                            56.0, 60.0, 50.0, 55.0, 62.0, 68.0
-                          ];
+                          final heights = [22.0, 28.0, 32.0, 38.0, 40.0, 44.0, 48.0, 52.0, 42.0, 48.0, 54.0, 60.0];
                           return Container(
-                            width: 16,
+                            width: 10,
                             height: heights[i],
                             decoration: BoxDecoration(
-                              color: i == 11
-                                  ? const Color(0xFFA78BFA)
-                                  : const Color(0xFFE9D5FF),
-                              borderRadius: BorderRadius.circular(4),
+                              borderRadius: BorderRadius.circular(5),
+                              color: i == 11 ? const Color(0xFFA78BFA) : const Color(0xFFE9D5FF),
                             ),
                           );
                         }),
                       ),
-                    ]),
+                    ],
                   ),
                 ),
+              ),
 
-                const SizedBox(height: 16),
+              const SizedBox(height: 16),
 
-                // AI CHECKLIST - Working redirect
-                GestureDetector(
-                  onTap: () {
-                    try {
-                      Get.toNamed('/ai-checklist');
-                    } catch (e) {
-                      Get.snackbar(
-                        'AI Checklist',
-                        'Opening AI Checklist...',
-                        snackPosition: SnackPosition.BOTTOM,
-                        backgroundColor: Colors.white,
-                        colorText: Colors.black,
-                      );
-                    }
-                  },
-                  child: Container(
-                    padding: const EdgeInsets.symmetric(
-                        horizontal: 18, vertical: 16),
-                    decoration: BoxDecoration(
-                      color: Colors.white,
-                      borderRadius: BorderRadius.circular(18),
-                    ),
-                    child: Row(
-                      children: [
-                        Container(
-                          padding: const EdgeInsets.all(8),
-                          child: Column(
-                            children: [
-                              Container(
-                                width: 16,
-                                height: 3,
-                                margin: const EdgeInsets.only(bottom: 4),
-                                decoration: BoxDecoration(
-                                  color: Colors.black,
-                                  borderRadius: BorderRadius.circular(2),
-                                ),
-                              ),
-                              Container(
-                                width: 16,
-                                height: 3,
-                                margin: const EdgeInsets.only(bottom: 4),
-                                decoration: BoxDecoration(
-                                  color: Colors.black,
-                                  borderRadius: BorderRadius.circular(2),
-                                ),
-                              ),
-                              Container(
-                                width: 16,
-                                height: 3,
-                                decoration: BoxDecoration(
-                                  color: Colors.black,
-                                  borderRadius: BorderRadius.circular(2),
-                                ),
-                              ),
-                            ],
-                          ),
-                        ),
-                        Container(
-                          padding: const EdgeInsets.all(8),
-                          child: Column(
-                            crossAxisAlignment: CrossAxisAlignment.start,
-                            children: [
-                              Row(
-                                children: [
-                                  Container(
-                                    width: 14,
-                                    height: 14,
-                                    margin: const EdgeInsets.only(bottom: 4),
-                                    decoration: BoxDecoration(
-                                      color: Colors.black,
-                                      borderRadius: BorderRadius.circular(2),
-                                    ),
-                                    child: const Icon(Icons.check,
-                                        color: Colors.white, size: 10),
-                                  ),
-                                ],
-                              ),
-                              Row(
-                                children: [
-                                  Container(
-                                    width: 14,
-                                    height: 14,
-                                    margin: const EdgeInsets.only(bottom: 4),
-                                    decoration: BoxDecoration(
-                                      color: Colors.black,
-                                      borderRadius: BorderRadius.circular(2),
-                                    ),
-                                    child: const Icon(Icons.check,
-                                        color: Colors.white, size: 10),
-                                  ),
-                                ],
-                              ),
-                              Row(
-                                children: [
-                                  Container(
-                                    width: 14,
-                                    height: 14,
-                                    decoration: BoxDecoration(
-                                      border: Border.all(
-                                          color: Colors.black, width: 2),
-                                      borderRadius: BorderRadius.circular(2),
-                                    ),
-                                  ),
-                                ],
-                              ),
-                            ],
-                          ),
-                        ),
-                        const SizedBox(width: 16),
-                        const Text(
-                          'AI Checklist',
-                          style: TextStyle(
-                            fontSize: 20,
-                            fontWeight: FontWeight.bold,
-                            color: Colors.black,
-                          ),
-                        )
-                      ],
-                    ),
+              // =========================================================
+              // AI CHECKLIST
+              // =========================================================
+              GestureDetector(
+                onTap: () => Get.toNamed('/ai-checklist'),
+                child: Container(
+                  padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 14),
+                  decoration: BoxDecoration(
+                    color: Colors.white,
+                    borderRadius: BorderRadius.circular(18),
                   ),
-                ),
-
-                const SizedBox(height: 16),
-
-                // AUTO TRACKING + TRIP HISTORY - Working redirects
-                Row(children: [
-                  Expanded(
-                    flex: 55,
-                    child: GestureDetector(
-                      onTap: () {
-                        try {
-                          Get.toNamed('/auto-trip-tracking');
-                        } catch (e) {
-                          Get.snackbar(
-                            'Auto Trip Tracking',
-                            'Opening auto trip tracking...',
-                            snackPosition: SnackPosition.BOTTOM,
-                          );
-                        }
-                      },
-                      child: Container(
-                        height: 110,
-                        padding: const EdgeInsets.all(16),
-                        decoration: BoxDecoration(
-                            color: const Color(0xFF475569),
-                            borderRadius: BorderRadius.circular(18)),
-                        child: Row(
-                            mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                            children: [
-                              const Column(
-                                crossAxisAlignment: CrossAxisAlignment.start,
-                                mainAxisAlignment: MainAxisAlignment.center,
-                                children: [
-                                  Text('AUTO',
-                                      style: TextStyle(
-                                          color: Colors.white,
-                                          fontSize: 17,
-                                          fontWeight: FontWeight.bold,
-                                          height: 1.2)),
-                                  Text('TRIP',
-                                      style: TextStyle(
-                                          color: Colors.white,
-                                          fontSize: 17,
-                                          fontWeight: FontWeight.bold,
-                                          height: 1.2)),
-                                  Text('TRACKING',
-                                      style: TextStyle(
-                                          color: Colors.white,
-                                          fontSize: 17,
-                                          fontWeight: FontWeight.bold,
-                                          height: 1.2)),
-                                ],
-                              ),
-                              Container(
-                                padding: const EdgeInsets.all(10),
-                                decoration: BoxDecoration(
-                                    color: Colors.white24,
-                                    borderRadius: BorderRadius.circular(10)),
-                                child: const Icon(Icons.location_on,
-                                    color: Colors.white, size: 28),
-                              )
-                            ]),
-                      ),
-                    ),
-                  ),
-
-                  const SizedBox(width: 12),
-
-                  Expanded(
-                    flex: 45,
-                    child: GestureDetector(
-                      onTap: () {
-                        try {
-                          Get.toNamed('/trip-history');
-                        } catch (e) {
-                          Get.snackbar(
-                            'Trip History',
-                            'Opening trip history...',
-                            snackPosition: SnackPosition.BOTTOM,
-                          );
-                        }
-                      },
-                      child: Container(
-                        height: 110,
-                        padding: const EdgeInsets.all(16),
-                        decoration: BoxDecoration(
-                            color: const Color(0xFFA78BFA),
-                            borderRadius: BorderRadius.circular(18)),
-                        child: const Center(
-                            child: Text('Trip History',
-                                textAlign: TextAlign.center,
-                                style: TextStyle(
-                                    color: Colors.black,
-                                    fontSize: 18,
-                                    fontWeight: FontWeight.bold))),
-                      ),
-                    ),
-                  ),
-                ]),
-
-                const SizedBox(height: 12),
-
-                // RECORD A TRIP + RIGHT PANELS - Working redirects
-                Row(children: [
-                  Expanded(
-                    flex: 35,
-                    child: GestureDetector(
-                      onTap: () {
-                        try {
-                          Get.toNamed('/record-trip');
-                        } catch (e) {
-                          Get.snackbar(
-                            'Record Trip',
-                            'Opening trip recorder...',
-                            snackPosition: SnackPosition.BOTTOM,
-                          );
-                        }
-                      },
-                      child: Container(
-                        height: 240,
-                        padding: const EdgeInsets.all(16),
-                        decoration: BoxDecoration(
-                            color: const Color(0xFFA78BFA),
-                            borderRadius: BorderRadius.circular(18)),
-                        child: Column(
-                          mainAxisAlignment: MainAxisAlignment.center,
-                          children: [
-                            Container(
-                              padding: const EdgeInsets.all(14),
-                              decoration: BoxDecoration(
-                                  color: Colors.white24,
-                                  borderRadius: BorderRadius.circular(12)),
-                              child: const Icon(Icons.calendar_today,
-                                  color: Colors.white, size: 32),
-                            ),
-                            const SizedBox(height: 50),
-                            const RotatedBox(
-                              quarterTurns: 3,
-                              child: Text('Record a trip',
-                                  style: TextStyle(
-                                      color: Colors.black,
-                                      fontSize: 17,
-                                      fontWeight: FontWeight.bold)),
-                            ),
-                          ],
-                        ),
-                      ),
-                    ),
-                  ),
-
-                  const SizedBox(width: 12),
-
-                  Expanded(
-                    flex: 65,
-                    child: Column(children: [
-                      GestureDetector(
-                        onTap: () {
-                          try {
-                            Get.toNamed('/planner');
-                          } catch (e) {
-                            Get.snackbar(
-                              'Planner',
-                              'Opening planner...',
-                              snackPosition: SnackPosition.BOTTOM,
-                            );
-                          }
-                        },
-                        child: Container(
-                          height: 114,
-                          padding: const EdgeInsets.all(16),
-                          decoration: BoxDecoration(
-                              color: Colors.white,
-                              borderRadius: BorderRadius.circular(18)),
-                          child: Row(
-                            children: [
-                              Container(
-                                padding: const EdgeInsets.all(10),
-                                decoration: BoxDecoration(
-                                    color: Colors.grey[100],
-                                    borderRadius: BorderRadius.circular(10)),
-                                child:
-                                const Icon(Icons.near_me, size: 32),
-                              ),
-                              const SizedBox(width: 16),
-                              const Expanded(
-                                child: Column(
-                                  crossAxisAlignment: CrossAxisAlignment.start,
-                                  mainAxisAlignment: MainAxisAlignment.center,
-                                  children: [
-                                    Text('Schedule a',
-                                        style: TextStyle(
-                                            fontSize: 18,
-                                            fontWeight: FontWeight.bold,
-                                            color: Colors.black,
-                                            height: 1.2)),
-                                    Text('Trip for later',
-                                        style: TextStyle(
-                                            fontSize: 18,
-                                            fontWeight: FontWeight.bold,
-                                            color: Colors.black,
-                                            height: 1.2)),
-                                  ],
-                                ),
-                              ),
-                            ],
-                          ),
-                        ),
-                      ),
-
-                      const SizedBox(height: 12),
-
-                      GestureDetector(
-                        onTap: () {
-                          try {
-                            Get.toNamed('/ai-chatbot');
-                          } catch (e) {
-                            Get.snackbar(
-                              'AI Assistant',
-                              'Opening AI chatbot...',
-                              snackPosition: SnackPosition.BOTTOM,
-                            );
-                          }
-                        },
-                        child: Container(
-                          height: 114,
-                          padding: const EdgeInsets.all(16),
-                          decoration: BoxDecoration(
-                              color: const Color(0xFF475569),
-                              borderRadius: BorderRadius.circular(18)),
-                          child: Row(children: [
-                            Container(
-                              padding: const EdgeInsets.all(10),
-                              decoration: BoxDecoration(
-                                  color: Colors.white24,
-                                  borderRadius: BorderRadius.circular(10)),
-                              child: const Icon(Icons.smart_toy,
-                                  color: Colors.white, size: 32),
-                            ),
-                            const SizedBox(width: 16),
-                            const Expanded(
-                                child: Column(
-                                  crossAxisAlignment: CrossAxisAlignment.start,
-                                  mainAxisAlignment: MainAxisAlignment.center,
-                                  children: [
-                                    Text('Any questions?',
-                                        style: TextStyle(
-                                            color: Colors.white,
-                                            fontSize: 16,
-                                            fontWeight: FontWeight.bold)),
-                                    SizedBox(height: 4),
-                                    Text('Ask your own AI personal assistant',
-                                        style: TextStyle(
-                                            color: Colors.white70, fontSize: 10),
-                                        maxLines: 2),
-                                  ],
-                                ))
-                          ]),
-                        ),
-                      ),
-                    ]),
-                  ),
-                ]),
-
-                const SizedBox(height: 12),
-
-                // COST CALCULATOR - Working redirect
-                GestureDetector(
-                  onTap: () {
-                    try {
-                      Get.toNamed('/cost-calculator');
-                    } catch (e) {
-                      Get.snackbar(
-                        'Cost Calculator',
-                        'Opening calculator...',
-                        snackPosition: SnackPosition.BOTTOM,
-                      );
-                    }
-                  },
-                  child: Container(
-                    padding: const EdgeInsets.all(18),
-                    decoration: BoxDecoration(
-                        color: Colors.white,
-                        borderRadius: BorderRadius.circular(18)),
-                    child: Row(
-                      children: [
-                        Container(
-                          padding: const EdgeInsets.all(12),
-                          decoration: BoxDecoration(
-                              color: Colors.grey[100],
-                              borderRadius: BorderRadius.circular(10)),
-                          child: const Icon(Icons.calculate_outlined,
-                              size: 32, color: Colors.black),
-                        ),
-                        const SizedBox(width: 16),
-                        const Text('Cost Calculator',
-                            style: TextStyle(
-                                color: Colors.black,
-                                fontSize: 18,
-                                fontWeight: FontWeight.bold)),
-                      ],
-                    ),
-                  ),
-                ),
-
-                const SizedBox(height: 24),
-
-                // DISCOVER - Working redirect
-                Row(
-                  mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                  children: [
-                    const Text('DISCOVER',
+                  child: Row(
+                    children: const [
+                      Icon(Icons.check_box, size: 22),
+                      SizedBox(width: 4),
+                      Icon(Icons.list, size: 22),
+                      SizedBox(width: 10),
+                      Text(
+                        "AI Checklist",
                         style: TextStyle(
-                            color: Colors.white,
-                            fontSize: 18,
-                            fontWeight: FontWeight.bold,
-                            letterSpacing: 1.5)),
-                    TextButton(
-                        onPressed: () {
-                          try {
-                            Get.toNamed('/discover');
-                          } catch (e) {
-                            Get.snackbar(
-                              'Discover',
-                              'Showing all destinations...',
-                              snackPosition: SnackPosition.BOTTOM,
-                            );
-                          }
-                        },
-                        child: const Text('See all',
-                            style:
-                            TextStyle(color: Colors.white70, fontSize: 14)))
-                  ],
-                ),
-
-                const SizedBox(height: 12),
-                // DISCOVER IMAGE CARD
-                Container(
-                  height: 180,
-                  clipBehavior: Clip.antiAlias,
-                  decoration:
-                  BoxDecoration(borderRadius: BorderRadius.circular(18)),
-                  child: Stack(children: [
-                    ClipRRect(
-                      borderRadius: BorderRadius.circular(18),
-                      child: Image.asset(
-                        "assets/images/jaipur.png",
-                        width: double.infinity,
-                        height: double.infinity,
-                        fit: BoxFit.cover,
+                          fontWeight: FontWeight.w600,
+                          fontSize: 16,
+                        ),
                       ),
-                    ),
+                    ],
+                  ),
+                ),
+              ),
 
-                    // Gradient overlay
-                    Container(
-                      decoration: BoxDecoration(
-                        borderRadius: BorderRadius.circular(18),
-                        gradient: LinearGradient(
-                          begin: Alignment.topCenter,
-                          end: Alignment.bottomCenter,
-                          colors: [
-                            Colors.transparent,
-                            Colors.black.withOpacity(0.3),
+              const SizedBox(height: 16),
+
+              // =========================================================
+              // AUTO + HISTORY
+              // =========================================================
+              Row(
+                children: [
+                  // AUTO TRIP TRACKING
+                  Expanded(
+                    flex: 50,
+                    child: GestureDetector(
+                      onTap: () => Get.toNamed('/live-tracking', arguments: {
+                        "tripId": 1,
+                        "startLocation": "Home",
+                      }),
+                      child: Container(
+                        height: 95,
+                        padding: const EdgeInsets.all(12),
+                        decoration: BoxDecoration(
+                          color: const Color(0xFF475569),
+                          borderRadius: BorderRadius.circular(18),
+                        ),
+                        child: Stack(
+                          children: const [
+                            Positioned(
+                              top: 8,
+                              right: 8,
+                              child: Icon(Icons.location_on, color: Colors.white, size: 28),
+                            ),
+                            Positioned(
+                              bottom: 8,
+                              right: 8,
+                              child: Icon(Icons.route, color: Colors.white, size: 20),
+                            ),
+                            Positioned(
+                              left: 0,
+                              top: 0,
+                              bottom: 0,
+                              child: Center(
+                                child: Text(
+                                  "AUTO\nTRIP\nTRACKING",
+                                  style: TextStyle(
+                                    color: Colors.white,
+                                    fontWeight: FontWeight.w700,
+                                    fontSize: 12,
+                                    height: 1.2,
+                                  ),
+                                ),
+                              ),
+                            ),
                           ],
                         ),
                       ),
                     ),
+                  ),
 
-                    // Heart icon
-                    const Positioned(
-                      top: 12,
-                      right: 12,
-                      child: CircleAvatar(
-                        backgroundColor: Colors.white,
-                        radius: 18,
-                        child: Icon(Icons.favorite,
-                            color: Colors.red, size: 20),
+                  const SizedBox(width: 12),
+
+                  // TRIP HISTORY
+                  Expanded(
+                    flex: 50,
+                    child: GestureDetector(
+                      onTap: () => Get.toNamed('/trip-history'),
+                      child: Container(
+                        height: 95,
+                        padding: const EdgeInsets.all(14),
+                        decoration: BoxDecoration(
+                          color: const Color(0xFFA78BFA),
+                          borderRadius: BorderRadius.circular(18),
+                        ),
+                        child: const Center(
+                          child: Text(
+                            "Trip History",
+                            style: TextStyle(
+                              fontWeight: FontWeight.w700,
+                              fontSize: 16,
+                              color: Colors.black,
+                            ),
+                          ),
+                        ),
                       ),
                     ),
+                  ),
+                ],
+              ),
 
-                    // Bottom content
+              const SizedBox(height: 16),
+
+              // =========================================================
+              // RECORD + SCHEDULE + ANY QUESTIONS
+              // =========================================================
+              Row(
+                children: [
+                  // RECORD A TRIP
+                  Expanded(
+                    flex: 30,
+                    child: GestureDetector(
+                      onTap: () => Get.toNamed('/saved-planned-trips'),
+                      child: Container(
+                        height: 215,
+                        decoration: BoxDecoration(
+                          color: const Color(0xFFA78BFA),
+                          borderRadius: BorderRadius.circular(18),
+                        ),
+                        child: Stack(
+                          children: const [
+                            Positioned(
+                              top: 20,
+                              left: 0,
+                              right: 0,
+                              child: Center(
+                                child: Icon(Icons.calendar_today, color: Colors.black, size: 32),
+                              ),
+                            ),
+                            Center(
+                              child: RotatedBox(
+                                quarterTurns: 3,
+                                child: Text(
+                                  "Record a trip",
+                                  style: TextStyle(
+                                    fontWeight: FontWeight.w700,
+                                    fontSize: 14,
+                                    color: Colors.black,
+                                  ),
+                                ),
+                              ),
+                            ),
+                          ],
+                        ),
+                      ),
+                    ),
+                  ),
+
+                  const SizedBox(width: 12),
+
+                  Expanded(
+                    flex: 70,
+                    child: Column(
+                      children: [
+                        // SCHEDULE TRIP
+                        GestureDetector(
+                          onTap: () => Get.toNamed('/manual-trip'),
+                          child: Container(
+                            height: 95,
+                            decoration: BoxDecoration(
+                              color: Colors.white,
+                              borderRadius: BorderRadius.circular(18),
+                            ),
+                            padding: const EdgeInsets.all(14),
+                            child: Row(
+                              children: const [
+                                Icon(Icons.near_me, size: 26),
+                                SizedBox(width: 12),
+                                Expanded(
+                                  child: Text(
+                                    "Schedule a\nTrip for later",
+                                    style: TextStyle(
+                                      fontWeight: FontWeight.w700,
+                                      fontSize: 15,
+                                    ),
+                                  ),
+                                ),
+                              ],
+                            ),
+                          ),
+                        ),
+
+                        const SizedBox(height: 12),
+
+                        // ANY QUESTIONS → CHAT SCREEN
+                        GestureDetector(
+                          onTap: () => Get.toNamed(
+                            '/ai-chatbot',
+                            arguments: {"initialMessage": "Hey! 👋 I need help"},
+                          ),
+                          child: Container(
+                            height: 100,
+                            decoration: BoxDecoration(
+                              color: const Color(0xFF475569),
+                              borderRadius: BorderRadius.circular(18),
+                            ),
+                            padding: const EdgeInsets.all(14),
+                            child: Row(
+                              children: const [
+                                Icon(Icons.smart_toy, color: Colors.white, size: 28),
+                                SizedBox(width: 12),
+                                Expanded(
+                                  child: Text(
+                                    "Any questions?\nAsk your own AI personal assistant",
+                                    style: TextStyle(
+                                      color: Colors.white,
+                                      fontSize: 11,
+                                      fontWeight: FontWeight.w500,
+                                    ),
+                                  ),
+                                ),
+                              ],
+                            ),
+                          ),
+                        ),
+                      ],
+                    ),
+                  ),
+                ],
+              ),
+
+              const SizedBox(height: 16),
+
+              // =========================================================
+              // COST CALCULATOR
+              // =========================================================
+              GestureDetector(
+                onTap: () => Get.toNamed('/cost-calculator'),
+                child: Container(
+                  padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 14),
+                  decoration: BoxDecoration(
+                    color: Colors.white,
+                    borderRadius: BorderRadius.circular(18),
+                  ),
+                  child: Row(
+                    children: const [
+                      Icon(Icons.calculate, size: 24),
+                      SizedBox(width: 12),
+                      Text(
+                        "Cost Calculator",
+                        style: TextStyle(
+                          fontWeight: FontWeight.w600,
+                          fontSize: 16,
+                        ),
+                      ),
+                    ],
+                  ),
+                ),
+              ),
+
+              const SizedBox(height: 20),
+
+              // =========================================================
+              // DISCOVER
+              // =========================================================
+              Row(
+                mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                children: [
+                  const Text(
+                    "DISCOVER",
+                    style: TextStyle(
+                      color: Colors.white,
+                      fontSize: 15,
+                      fontWeight: FontWeight.w700,
+                      letterSpacing: 0.5,
+                    ),
+                  ),
+                  TextButton(
+                    onPressed: () => Get.toNamed('/discover'),
+                    child: const Text(
+                      "See all",
+                      style: TextStyle(color: Colors.white70, fontSize: 12),
+                    ),
+                  ),
+                ],
+              ),
+
+              const SizedBox(height: 8),
+
+              Container(
+                height: 155,
+                decoration: BoxDecoration(
+                  borderRadius: BorderRadius.circular(18),
+                  image: const DecorationImage(
+                    image: AssetImage("assets/images/jaipur.png"),
+                    fit: BoxFit.cover,
+                  ),
+                ),
+                child: Stack(
+                  children: [
                     Positioned(
-                      bottom: 12,
-                      left: 12,
-                      right: 12,
+                      right: 10,
+                      top: 10,
+                      child: Container(
+                        padding: const EdgeInsets.all(6),
+                        decoration: const BoxDecoration(
+                          color: Colors.white,
+                          shape: BoxShape.circle,
+                        ),
+                        child: const Icon(
+                          Icons.favorite,
+                          color: Colors.red,
+                          size: 16,
+                        ),
+                      ),
+                    ),
+                    Positioned(
+                      bottom: 10,
+                      left: 10,
+                      right: 10,
                       child: Column(
                         crossAxisAlignment: CrossAxisAlignment.start,
                         children: [
                           const Text(
-                            'Jaipur',
+                            "Jaipur",
                             style: TextStyle(
                               color: Colors.white,
-                              fontSize: 20,
+                              fontSize: 17,
                               fontWeight: FontWeight.bold,
                             ),
                           ),
-                          const SizedBox(height: 4),
                           const Text(
-                            'Route - Delhi - BOM expy',
+                            "Route - Delhi - BOM expy",
                             style: TextStyle(
                               color: Colors.white,
-                              fontSize: 12,
+                              fontSize: 10,
                             ),
                           ),
-                          const SizedBox(height: 8),
+                          const SizedBox(height: 6),
                           Row(
                             children: [
-                              _buildTag('Services'),
-                              const SizedBox(width: 8),
-                              _buildTag('Cost'),
-                              const SizedBox(width: 8),
-                              _buildTag('Co2'),
+                              _tag("Services"),
+                              const SizedBox(width: 6),
+                              _tag("Cost"),
+                              const SizedBox(width: 6),
+                              _tag("Co2"),
                             ],
                           ),
                         ],
                       ),
                     ),
-                  ]),
+                  ],
                 ),
+              ),
 
-                const SizedBox(height: 80), // Extra space for bottom nav
-              ],
-            ),
+              const SizedBox(height: 80),
+            ],
           ),
         ),
       ),
     );
   }
 
-  Widget _buildTag(String text) {
+  Widget _tag(String text) {
     return Container(
       padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 4),
       decoration: BoxDecoration(
@@ -1028,7 +723,7 @@ class HomeScreen extends StatelessWidget {
         text,
         style: const TextStyle(
           color: Colors.white,
-          fontSize: 10,
+          fontSize: 9,
           fontWeight: FontWeight.w500,
         ),
       ),

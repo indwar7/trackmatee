@@ -16,6 +16,7 @@
         "flutter_dotenv",
         "flutter_image_compress",
         "flutter_localizations",
+        "flutter_polyline_points",
         "flutter_svg",
         "fluttertoast",
         "geocoding",
@@ -324,6 +325,14 @@
         "flutter_web_plugins",
         "logging",
         "meta"
+      ]
+    },
+    {
+      "name": "flutter_polyline_points",
+      "version": "2.1.0",
+      "dependencies": [
+        "flutter",
+        "http"
       ]
     },
     {

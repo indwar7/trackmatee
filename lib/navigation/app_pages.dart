@@ -4,7 +4,7 @@ import 'package:get/get.dart';
 import 'package:trackmate_app/screens/chat_screen/chat_screen.dart';
 
 import 'package:trackmate_app/screens/onboarding/home_screen.dart';
-import 'package:trackmate_app/screens/planner_screen.dart';
+import 'package:trackmate_app/screens/planned_trip_screen.dart';
 import 'package:trackmate_app/screens/user/profile_screen.dart';
 
 import 'package:trackmate_app/screens/auth/login_screen.dart';
@@ -61,7 +61,7 @@ class AppPages {
     // ---------------- MAIN FEATURES ----------------
     GetPage(name: '/my-stats', page: () => const MyStatsScreen()),
     GetPage(name: '/cost-calculator', page: () => const CostCalculatorScreen()),
-    GetPage(name: '/planner', page: () => const PlannerScreen()),
+    //GetPage(name: '/planner', page: () => const PlannerScreen()),
     GetPage(name: '/maps', page: () => const MapsScreen()),
     GetPage(name: '/ai-checklist', page: () => const AiChecklistScreen()),
     GetPage(name: '/ai-chatbot', page: () => ChatScreen()),
