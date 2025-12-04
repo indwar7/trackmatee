@@ -1,11 +1,12 @@
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 import 'package:trackmate_app/controllers/profile_controller.dart';
+
+// Screens
 import 'home_screen.dart';
-import '../analytics/analytics_screen.dart';
-import '../bookings/booking_screen.dart';
 import '../planner_screen.dart';
 import '../maps_screen.dart';
+import '../my_stats_screen.dart'; // ✅ ADDED (Fix MyStatsScreen error)
 
 class MainNavigationScreen extends StatefulWidget {
   const MainNavigationScreen({super.key});
@@ -19,9 +20,8 @@ class _MainNavigationScreenState extends State<MainNavigationScreen> {
 
   final List<Widget> _screens = [
     const HomeScreen(),
-    const AnalyticsScreen(),
-    const BookingScreen(),
     const PlannerScreen(),
+    const MyStatsScreen(),  // ✅ Works now
     const MapsScreen(),
     const ProfileScreen(),
   ];
@@ -53,29 +53,24 @@ class _MainNavigationScreenState extends State<MainNavigationScreen> {
                   index: 0,
                 ),
                 _buildNavItem(
-                  icon: Icons.analytics,
-                  label: 'Analytics',
+                  icon: Icons.calendar_month, // ✅ FIXED
+                  label: 'Planner',
                   index: 1,
                 ),
                 _buildNavItem(
-                  icon: Icons.book_online,
-                  label: 'Bookings',
+                  icon: Icons.bar_chart,
+                  label: 'My Stats',
                   index: 2,
-                ),
-                _buildNavItem(
-                  icon: Icons.calendar_month,
-                  label: 'Planner',
-                  index: 3,
                 ),
                 _buildNavItem(
                   icon: Icons.map,
                   label: 'Maps',
-                  index: 4,
+                  index: 3,
                 ),
                 _buildNavItem(
                   icon: Icons.person,
                   label: 'Profile',
-                  index: 5,
+                  index: 4,
                 ),
               ],
             ),
@@ -139,10 +134,6 @@ class _MainNavigationScreenState extends State<MainNavigationScreen> {
   }
 }
 
-// ============================================
-// PROFILE SCREEN (Complete Implementation)
-// ============================================
-
 class ProfileScreen extends StatelessWidget {
   const ProfileScreen({Key? key}) : super(key: key);
 
@@ -155,7 +146,7 @@ class ProfileScreen extends StatelessWidget {
       appBar: AppBar(
         backgroundColor: Colors.transparent,
         elevation: 0,
-        automaticallyImplyLeading: false, // Remove back button
+        automaticallyImplyLeading: false,
         title: const Text(
           'Profile',
           style: TextStyle(
@@ -184,158 +175,13 @@ class ProfileScreen extends StatelessWidget {
           padding: const EdgeInsets.all(24),
           child: Column(
             children: [
-              // Profile Picture
-              Center(
-                child: Stack(
-                  children: [
-                    CircleAvatar(
-                      radius: 60,
-                      backgroundColor: const Color(0xFF8B5CF6).withOpacity(0.2),
-                      backgroundImage: controller.profileImage.value.isNotEmpty
-                          ? NetworkImage(controller.profileImage.value)
-                          : null,
-                      child: controller.profileImage.value.isEmpty
-                          ? const Icon(
-                        Icons.person,
-                        size: 60,
-                        color: Color(0xFF8B5CF6),
-                      )
-                          : null,
-                    ),
-                    Positioned(
-                      bottom: 0,
-                      right: 0,
-                      child: GestureDetector(
-                        onTap: () => Get.toNamed('/edit-profile'),
-                        child: Container(
-                          padding: const EdgeInsets.all(8),
-                          decoration: const BoxDecoration(
-                            color: Color(0xFF8B5CF6),
-                            shape: BoxShape.circle,
-                          ),
-                          child: const Icon(
-                            Icons.edit,
-                            color: Colors.white,
-                            size: 20,
-                          ),
-                        ),
-                      ),
-                    ),
-                  ],
-                ),
-              ),
+              _profileHeader(controller),
               const SizedBox(height: 24),
-
-              // Name
-              Text(
-                controller.name.value.isNotEmpty
-                    ? controller.name.value
-                    : 'No Name',
-                style: const TextStyle(
-                  color: Colors.white,
-                  fontSize: 28,
-                  fontWeight: FontWeight.bold,
-                ),
-              ),
-              const SizedBox(height: 8),
-
-              // Email
-              Text(
-                controller.email.value.isNotEmpty
-                    ? controller.email.value
-                    : 'No Email',
-                style: const TextStyle(
-                  color: Colors.white70,
-                  fontSize: 16,
-                ),
-              ),
-              const SizedBox(height: 32),
-
-              // Profile Info Cards
-              _buildInfoCard(
-                icon: Icons.phone,
-                label: 'Phone',
-                value: controller.phone.value.isNotEmpty
-                    ? controller.phone.value
-                    : 'Not set',
-              ),
-              _buildInfoCard(
-                icon: Icons.cake,
-                label: 'Date of Birth',
-                value: controller.dateOfBirth.value.isNotEmpty
-                    ? controller.dateOfBirth.value
-                    : 'Not set',
-              ),
-              _buildInfoCard(
-                icon: Icons.person_outline,
-                label: 'Gender',
-                value: controller.gender.value.isNotEmpty
-                    ? controller.gender.value
-                    : 'Not set',
-              ),
-              _buildInfoCard(
-                icon: Icons.bloodtype,
-                label: 'Blood Group',
-                value: controller.bloodGroup.value.isNotEmpty
-                    ? controller.bloodGroup.value
-                    : 'Not set',
-              ),
-              _buildInfoCard(
-                icon: Icons.location_on,
-                label: 'Address',
-                value: controller.address.value.isNotEmpty
-                    ? controller.address.value
-                    : 'Not set',
-              ),
-              _buildInfoCard(
-                icon: Icons.emergency,
-                label: 'Emergency Contact',
-                value: controller.emergencyContact.value.isNotEmpty
-                    ? controller.emergencyContact.value
-                    : 'Not set',
-              ),
+              _infoCards(controller),
               const SizedBox(height: 24),
-
-              // Action Buttons
-              _buildActionButton(
-                icon: Icons.contacts,
-                label: 'Trusted Contacts',
-                onTap: () => Get.toNamed('/trusted-contacts'),
-              ),
-              _buildActionButton(
-                icon: Icons.directions_car,
-                label: 'Vehicle Information',
-                onTap: () => Get.toNamed('/vehicle-info'),
-              ),
-              _buildActionButton(
-                icon: Icons.verified_user,
-                label: 'User Verification',
-                onTap: () => Get.toNamed('/user-verification'),
-              ),
+              _actionButtons(),
               const SizedBox(height: 24),
-
-              // Edit Profile Button
-              SizedBox(
-                width: double.infinity,
-                height: 56,
-                child: ElevatedButton(
-                  onPressed: () => Get.toNamed('/edit-profile'),
-                  style: ElevatedButton.styleFrom(
-                    backgroundColor: const Color(0xFF8B5CF6),
-                    shape: RoundedRectangleBorder(
-                      borderRadius: BorderRadius.circular(14),
-                    ),
-                  ),
-                  child: const Text(
-                    'Edit Profile',
-                    style: TextStyle(
-                      fontSize: 17,
-                      fontWeight: FontWeight.w600,
-                      color: Colors.white,
-                    ),
-                  ),
-                ),
-              ),
+              _editButton(),
             ],
           ),
         );
@@ -343,11 +189,108 @@ class ProfileScreen extends StatelessWidget {
     );
   }
 
-  Widget _buildInfoCard({
-    required IconData icon,
-    required String label,
-    required String value,
-  }) {
+  Widget _profileHeader(ProfileController controller) {
+    return Column(
+      children: [
+        Center(
+          child: Stack(
+            children: [
+              CircleAvatar(
+                radius: 60,
+                backgroundColor: const Color(0xFF8B5CF6).withOpacity(0.2),
+                backgroundImage: controller.profileImage.value.isNotEmpty
+                    ? NetworkImage(controller.profileImage.value)
+                    : null,
+                child: controller.profileImage.value.isEmpty
+                    ? const Icon(
+                  Icons.person,
+                  size: 60,
+                  color: Color(0xFF8B5CF6),
+                )
+                    : null,
+              ),
+              Positioned(
+                bottom: 0,
+                right: 0,
+                child: GestureDetector(
+                  onTap: () => Get.toNamed('/edit-profile'),
+                  child: Container(
+                    padding: const EdgeInsets.all(8),
+                    decoration: const BoxDecoration(
+                      color: Color(0xFF8B5CF6),
+                      shape: BoxShape.circle,
+                    ),
+                    child: const Icon(Icons.edit, color: Colors.white, size: 20),
+                  ),
+                ),
+              ),
+            ],
+          ),
+        ),
+        const SizedBox(height: 24),
+        Text(
+          controller.name.value.isNotEmpty ? controller.name.value : 'No Name',
+          style: const TextStyle(
+            color: Colors.white,
+            fontSize: 28,
+            fontWeight: FontWeight.bold,
+          ),
+        ),
+        const SizedBox(height: 8),
+        Text(
+          controller.email.value.isNotEmpty ? controller.email.value : 'No Email',
+          style: const TextStyle(color: Colors.white70, fontSize: 16),
+        ),
+      ],
+    );
+  }
+
+  Widget _infoCards(ProfileController controller) {
+    return Column(
+      children: [
+        _buildInfoCard(Icons.phone, "Phone", controller.phone.value),
+        _buildInfoCard(Icons.cake, "Date of Birth", controller.dateOfBirth.value),
+        _buildInfoCard(Icons.person_outline, "Gender", controller.gender.value),
+        _buildInfoCard(Icons.bloodtype, "Blood Group", controller.bloodGroup.value),
+        _buildInfoCard(Icons.location_on, "Address", controller.address.value),
+        _buildInfoCard(Icons.emergency, "Emergency Contact", controller.emergencyContact.value),
+      ],
+    );
+  }
+
+  Widget _actionButtons() {
+    return Column(
+      children: [
+        _buildActionButton(Icons.contacts, "Trusted Contacts", () => Get.toNamed('/trusted-contacts')),
+        _buildActionButton(Icons.directions_car, "Vehicle Information", () => Get.toNamed('/vehicle-info')),
+        _buildActionButton(Icons.verified_user, "User Verification", () => Get.toNamed('/user-verification')),
+      ],
+    );
+  }
+
+  Widget _editButton() {
+    return SizedBox(
+      width: double.infinity,
+      height: 56,
+      child: ElevatedButton(
+        onPressed: () => Get.toNamed('/edit-profile'),
+        style: ElevatedButton.styleFrom(
+          backgroundColor: const Color(0xFF8B5CF6),
+          shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(14)),
+        ),
+        child: const Text(
+          'Edit Profile',
+          style: TextStyle(
+            fontSize: 17,
+            fontWeight: FontWeight.w600,
+            color: Colors.white,
+          ),
+        ),
+      ),
+    );
+  }
+
+  Widget _buildInfoCard(IconData icon, String label, String value) {
     return Container(
       margin: const EdgeInsets.only(bottom: 16),
       padding: const EdgeInsets.all(16),
@@ -363,27 +306,17 @@ class ProfileScreen extends StatelessWidget {
               color: const Color(0xFF8B5CF6).withOpacity(0.2),
               borderRadius: BorderRadius.circular(12),
             ),
-            child: Icon(
-              icon,
-              color: const Color(0xFF8B5CF6),
-              size: 24,
-            ),
+            child: Icon(icon, color: const Color(0xFF8B5CF6), size: 24),
           ),
           const SizedBox(width: 16),
           Expanded(
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
-                Text(
-                  label,
-                  style: const TextStyle(
-                    color: Colors.white54,
-                    fontSize: 14,
-                  ),
-                ),
+                Text(label, style: const TextStyle(color: Colors.white54, fontSize: 14)),
                 const SizedBox(height: 4),
                 Text(
-                  value,
+                  value.isNotEmpty ? value : "Not set",
                   style: const TextStyle(
                     color: Colors.white,
                     fontSize: 16,
@@ -398,11 +331,7 @@ class ProfileScreen extends StatelessWidget {
     );
   }
 
-  Widget _buildActionButton({
-    required IconData icon,
-    required String label,
-    required VoidCallback onTap,
-  }) {
+  Widget _buildActionButton(IconData icon, String label, VoidCallback onTap) {
     return Container(
       margin: const EdgeInsets.only(bottom: 12),
       child: Material(
@@ -415,11 +344,7 @@ class ProfileScreen extends StatelessWidget {
             padding: const EdgeInsets.all(16),
             child: Row(
               children: [
-                Icon(
-                  icon,
-                  color: const Color(0xFF8B5CF6),
-                  size: 24,
-                ),
+                Icon(icon, color: const Color(0xFF8B5CF6), size: 24),
                 const SizedBox(width: 16),
                 Expanded(
                   child: Text(
@@ -431,11 +356,7 @@ class ProfileScreen extends StatelessWidget {
                     ),
                   ),
                 ),
-                const Icon(
-                  Icons.arrow_forward_ios,
-                  color: Colors.white54,
-                  size: 16,
-                ),
+                const Icon(Icons.arrow_forward_ios, color: Colors.white54, size: 16),
               ],
             ),
           ),

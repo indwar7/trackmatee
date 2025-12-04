@@ -49,4 +49,3 @@ class TripMapsArgs {
     this.endLng,
   });
 }
-
