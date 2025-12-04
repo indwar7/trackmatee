@@ -10,22 +10,12 @@ environment:
 dependencies:
   flutter:
     sdk: flutter
+
+  # Routing
   go_router: ^14.0.0
   provider: ^6.0.0
 
-  # -------- State Management & Storage --------
-  get: ^4.6.6
-  get_storage: ^2.1.1
-  shared_preferences: ^2.2.2
-
-  # -------- Localization --------
-  flutter_localizations:
-    sdk: flutter
-
-  # -------- Networking --------
-  http: ^1.2.2
-
-  # -------- Charts & UI --------
+  # Charts & UI
   fl_chart: ^0.69.0
   google_fonts: ^6.2.1
   flutter_svg: ^2.0.7
@@ -36,21 +26,33 @@ dependencies:
   image_picker: ^1.1.1
   flutter_image_compress: ^2.4.0
 
-  # -------- Backend & Auth --------
+  # State management & storage
+  get: ^4.6.6
+  get_storage: ^2.1.1
+  shared_preferences: ^2.2.2
+
+  # Localization
+  flutter_localizations:
+    sdk: flutter
+
+  # Networking
+  http: ^1.2.2
+
+  # Backend & Auth
   email_otp_auth: ^1.1.0
   flutter_dotenv: ^5.1.0
 
-  # -------- Maps + GPS --------
+  # Maps + GPS
   geolocator: ^10.1.0
   geocoding: ^2.1.1
   permission_handler: ^11.0.1
   google_maps_flutter: ^2.6.1
   location: ^8.0.1
 
-  # -------- Contacts --------
+  # Contacts
   flutter_contacts: ^1.1.7
 
-  # -------- Utility --------
+  # Utils
   uuid: ^4.2.1
   intl: ^0.20.2
 
@@ -58,10 +60,8 @@ dev_dependencies:
   flutter_test:
     sdk: flutter
   flutter_lints: ^5.0.0
-  flutter_launcher_icons: ^0.13.1  # <-- Required for icon generation
+  flutter_launcher_icons: ^0.13.1
 
-
-# 🚀 APP ICON CONFIG — (Added & Correctly Indented)
 flutter_icons:
   android: true
   ios: true
@@ -69,9 +69,13 @@ flutter_icons:
   adaptive_icon_background: "#FFFFFF"
   adaptive_icon_foreground: "assets/app_icon.png"
 
-
 flutter:
   uses-material-design: true
 
   assets:
     - .env
+    - assets/app_icon.png
+    - assets/Rectangle.png
+    - assets/images/mumbai.png
+    - assets/images/banglore.png
+    - assets/images/jaipur.png

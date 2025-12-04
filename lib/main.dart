@@ -33,10 +33,12 @@ import 'package:trackmate_app/screens/auth/otp_verification.dart';
 import 'package:trackmate_app/screens/auth/otp_verification_reset.dart';
 
 // =============== MAIN SCREENS ===============
-import 'package:trackmate_app/screens/analytics/analytics_screen.dart';
-import 'package:trackmate_app/screens/bookings/booking_screen.dart';
+//import 'package:trackmate_app/screens/analytics/analytics_screen.dart';
+//import 'package:trackmate_app/screens/bookings/booking_screen.dart';
 import 'package:trackmate_app/screens/discover/discover_screen.dart';
 import 'package:trackmate_app/screens/maps_screen.dart';
+import 'package:trackmate_app/screens/ai_checklist_screen.dart';
+import 'package:trackmate_app/screens/my_stats_screen.dart';
 
 // =============== TRIPS & PLANNER ===============
 import 'package:trackmate_app/screens/trips/planner_screen.dart';
@@ -141,9 +143,9 @@ class TrackMateApp extends StatelessWidget {
         GetPage(name:"/forgot-password", page:()=> const ForgotPasswordScreen()),
         GetPage(name:"/forgot-otp", page:()=> const ForgotOtpVerifyScreen()),
 
-        GetPage(name:"/analytics", page:()=> const AnalyticsScreen()),
+        //GetPage(name:"/analytics", page:()=> const AnalyticsScreen()),
         GetPage(name:"/discover", page:()=> const DiscoverScreen()),
-        GetPage(name:"/bookings", page:()=> const BookingScreen()),
+        //GetPage(name:"/bookings", page:()=> const BookingScreen()),
         GetPage(name:"/maps", page:()=> const MapsScreen()),
 
         /// TRIPS + PLANNER (FIXED)
@@ -178,6 +180,8 @@ class TrackMateApp extends StatelessWidget {
         GetPage(name:"/edit-address", page:()=> const EditAddressScreen()),
         GetPage(name:"/auto-trip-tracking", page:()=> const AutoTripTrackingScreen()),
         GetPage(name:"/cost-calculator", page:()=> const CostCalculatorScreen()),
+        GetPage(name:"/my-stats", page:()=> const MyStatsScreen()),
+        GetPage(name:"/ai-checklist", page:()=> const AiChecklistScreen()),
       ],
     );
   }
