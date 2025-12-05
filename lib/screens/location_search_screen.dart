@@ -26,8 +26,8 @@ class _LocationSearchScreenState extends State<LocationSearchScreen> {
   @override
   void initState() {
     super.initState();
-    fromController.text = locationController.fromLocation.value.city;
-    toController.text = locationController.toLocation.value.city;
+    fromController.text = locationController.fromLocation.value.name;
+    toController.text = locationController.toLocation.value.name;
   }
 
   Future<void> searchPlaces(String query, bool isFrom) async {

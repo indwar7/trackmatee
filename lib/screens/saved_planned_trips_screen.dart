@@ -2,262 +2,482 @@ import 'dart:convert';
 import 'package:flutter/material.dart';
 import 'package:http/http.dart' as http;
 import 'package:provider/provider.dart';
+import 'package:intl/intl.dart';
 import '../../services/api_service.dart';
-class SavedPlannedTripsScreen extends StatefulWidget {
-  const SavedPlannedTripsScreen({super.key});
+
+class ManualTripEntryScreen extends StatefulWidget {
+  const ManualTripEntryScreen({super.key});
 
   @override
-  State<SavedPlannedTripsScreen> createState() => _SavedPlannedTripsScreenState();
+  State<ManualTripEntryScreen> createState() => _ManualTripEntryScreenState();
 }
 
-class _SavedPlannedTripsScreenState extends State<SavedPlannedTripsScreen> {
-  List<Map<String, dynamic>> _trips = [];
-  bool _isLoading = true;
-  String? _error;
+class _ManualTripEntryScreenState extends State<ManualTripEntryScreen> {
+  final _formKey = GlobalKey<FormState>();
+
+  // Location fields
+  final _startLocationController = TextEditingController();
+  final _endLocationController = TextEditingController();
+  double? _startLat;
+  double? _startLng;
+  double? _endLat;
+  double? _endLng;
+
+  // Trip details
+  DateTime _selectedDate = DateTime.now();
+  String _selectedMode = 'car';
+  String _selectedPurpose = 'work';
+  int _companions = 0;
+
+  // Cost fields
+  final _tollCostController = TextEditingController(text: '0');
+  final _parkingCostController = TextEditingController(text: '0');
+  final _fuelExpenseController = TextEditingController(text: '0');
+  final _ticketCostController = TextEditingController(text: '0');
+
+  bool _isSubmitting = false;
+
+  final List<Map<String, dynamic>> _travelModes = [
+    {'value': 'car', 'label': 'Car', 'icon': '🚗'},
+    {'value': 'bike', 'label': 'Bike', 'icon': '🏍'},
+    {'value': 'bus', 'label': 'Bus', 'icon': '🚌'},
+    {'value': 'train', 'label': 'Train', 'icon': '🚂'},
+    {'value': 'metro', 'label': 'Metro', 'icon': '🚇'},
+    {'value': 'auto', 'label': 'Auto', 'icon': '🛺'},
+    {'value': 'walk', 'label': 'Walk', 'icon': '🚶'},
+  ];
+
+  final List<String> _purposes = [
+    'work',
+    'shopping',
+    'personal',
+    'leisure',
+    'education',
+    'medical',
+    'other',
+  ];
 
   @override
-  void initState() {
-    super.initState();
-    _loadTrips();
+  void dispose() {
+    _startLocationController.dispose();
+    _endLocationController.dispose();
+    _tollCostController.dispose();
+    _parkingCostController.dispose();
+    _fuelExpenseController.dispose();
+    _ticketCostController.dispose();
+    super.dispose();
   }
 
-  Future<void> _loadTrips() async {
-    setState(() {
-      _isLoading = true;
-      _error = null;
-    });
+  Future<void> _selectDate() async {
+    final DateTime? picked = await showDatePicker(
+      context: context,
+      initialDate: _selectedDate,
+      firstDate: DateTime(2020),
+      lastDate: DateTime.now(),
+      builder: (context, child) {
+        return Theme(
+          data: Theme.of(context).copyWith(
+            colorScheme: const ColorScheme.dark(
+              primary: Color(0xFFA78BFA),
+              onPrimary: Colors.black,
+              surface: Color(0xFF1E1E1E),
+              onSurface: Colors.white,
+            ),
+          ),
+          child: child!,
+        );
+      },
+    );
+    if (picked != null && picked != _selectedDate) {
+      setState(() {
+        _selectedDate = picked;
+      });
+    }
+  }
+
+  Future<void> _submitTrip() async {
+    if (!_formKey.currentState!.validate()) return;
+
+    // Simple validation for locations
+    if (_startLocationController.text.isEmpty) {
+      _showError('Please enter start location');
+      return;
+    }
+    if (_endLocationController.text.isEmpty) {
+      _showError('Please enter end location');
+      return;
+    }
+
+    setState(() => _isSubmitting = true);
 
     try {
       final api = context.read<ApiService>();
-      final response = await http.get(
-        Uri.parse('${ApiService.baseUrl}/trips/planned/'),
+
+      // For demo purposes, using dummy coordinates
+      // In production, you'd get these from a location picker/map
+      final startLat = _startLat ?? 28.6328;
+      final startLng = _startLng ?? 77.2197;
+      final endLat = _endLat ?? 28.6129;
+      final endLng = _endLng ?? 77.2295;
+
+      final requestBody = {
+        "start_location": _startLocationController.text,
+        "start_latitude": startLat,
+        "start_longitude": startLng,
+
+        "end_location": _endLocationController.text,
+        "end_latitude": endLat,
+        "end_longitude": endLng,
+
+        "trip_date": DateFormat('yyyy-MM-dd').format(_selectedDate),
+        "mode_of_travel": _selectedMode,
+        "trip_purpose": _selectedPurpose,
+        "number_of_companions": _companions,
+
+        "toll_cost": double.parse(_tollCostController.text),
+        "parking_cost": double.parse(_parkingCostController.text),
+        "fuel_expense": double.parse(_fuelExpenseController.text),
+        "ticket_cost": double.parse(_ticketCostController.text),
+      };
+
+      print('Submitting manual trip: $requestBody');
+
+      final response = await http.post(
+        Uri.parse('${ApiService.baseUrl}/trips/create-manual/'),
         headers: api.headers,
+        body: jsonEncode(requestBody),
       );
 
-      print('Load trips response: ${response.statusCode}');
+      print('Response status: ${response.statusCode}');
       print('Response body: ${response.body}');
 
-      if (response.statusCode == 200) {
-        final data = jsonDecode(response.body);
-        setState(() {
-          _trips = List<Map<String, dynamic>>.from(data);
-          _isLoading = false;
-        });
+      if (response.statusCode == 201 || response.statusCode == 200) {
+        if (mounted) {
+          ScaffoldMessenger.of(context).showSnackBar(
+            const SnackBar(
+              content: Text('Trip saved successfully! 🎉'),
+              backgroundColor: Color(0xFF4ADE80),
+              behavior: SnackBarBehavior.floating,
+            ),
+          );
+          Navigator.pop(context, true); // Return true to indicate success
+        }
       } else {
-        throw Exception('Failed to load trips');
+        throw Exception('Failed to create trip: ${response.body}');
       }
     } catch (e) {
-      print('Error loading trips: $e');
-      setState(() {
-        _error = 'Failed to load trips: $e';
-        _isLoading = false;
-      });
+      print('Error submitting trip: $e');
+      _showError('Failed to save trip: $e');
+    } finally {
+      if (mounted) {
+        setState(() => _isSubmitting = false);
+      }
     }
+  }
+
+  void _showError(String message) {
+    ScaffoldMessenger.of(context).showSnackBar(
+      SnackBar(
+        content: Text(message),
+        backgroundColor: Colors.red,
+        behavior: SnackBarBehavior.floating,
+      ),
+    );
   }
 
   @override
   Widget build(BuildContext context) {
     return Scaffold(
+      backgroundColor: const Color(0xFF0A0A0A),
       appBar: AppBar(
-        title: const Text('Saved Planned Trips'),
+        backgroundColor: const Color(0xFF1E1E1E),
+        title: const Text('Record a Trip', style: TextStyle(color: Colors.white)),
         centerTitle: true,
-        actions: [
-          IconButton(
-            icon: const Icon(Icons.refresh),
-            onPressed: _loadTrips,
-          ),
-        ],
-      ),
-      body: _buildBody(),
-      floatingActionButton: FloatingActionButton.extended(
-        onPressed: () {
-          Navigator.pop(context);
-        },
-        backgroundColor: const Color(0xFFf39c12),
-        icon: const Icon(Icons.add),
-        label: const Text('Plan New Trip'),
-      ),
-    );
-  }
-
-  Widget _buildBody() {
-    if (_isLoading) {
-      return const Center(
-        child: CircularProgressIndicator(
-          color: Color(0xFFf39c12),
-        ),
-      );
-    }
-
-    if (_error != null) {
-      return Center(
-        child: Column(
-          mainAxisAlignment: MainAxisAlignment.center,
-          children: [
-            const Icon(Icons.error_outline, size: 64, color: Colors.red),
-            const SizedBox(height: 16),
-            Text(
-              _error!,
-              style: const TextStyle(color: Colors.white70),
-              textAlign: TextAlign.center,
-            ),
-            const SizedBox(height: 16),
-            ElevatedButton(
-              onPressed: _loadTrips,
-              style: ElevatedButton.styleFrom(
-                backgroundColor: const Color(0xFFf39c12),
-              ),
-              child: const Text('Retry'),
-            ),
-          ],
-        ),
-      );
-    }
-
-    if (_trips.isEmpty) {
-      return Center(
-        child: Column(
-          mainAxisAlignment: MainAxisAlignment.center,
-          children: [
-            Icon(
-              Icons.route,
-              size: 80,
-              color: Colors.white.withOpacity(0.3),
-            ),
-            const SizedBox(height: 16),
-            Text(
-              'No planned trips yet',
-              style: TextStyle(
-                fontSize: 18,
-                color: Colors.white.withOpacity(0.6),
-              ),
-            ),
-            const SizedBox(height: 8),
-            Text(
-              'Start planning your first trip!',
-              style: TextStyle(
-                color: Colors.white.withOpacity(0.4),
-              ),
-            ),
-          ],
-        ),
-      );
-    }
-
-    return RefreshIndicator(
-      onRefresh: _loadTrips,
-      color: const Color(0xFFf39c12),
-      child: ListView.builder(
-        padding: const EdgeInsets.all(16),
-        itemCount: _trips.length,
-        itemBuilder: (context, index) {
-          final trip = _trips[index];
-          return _buildTripCard(trip);
-        },
-      ),
-    );
-  }
-
-  Widget _buildTripCard(Map<String, dynamic> trip) {
-    return Card(
-      margin: const EdgeInsets.only(bottom: 16),
-      color: const Color(0xFF16213e),
-      shape: RoundedRectangleBorder(
-        borderRadius: BorderRadius.circular(12),
-        side: BorderSide(
-          color: const Color(0xFFf39c12).withOpacity(0.3),
+        leading: IconButton(
+          icon: const Icon(Icons.arrow_back, color: Colors.white),
+          onPressed: () => Navigator.pop(context),
         ),
       ),
-      child: InkWell(
-        onTap: () => _showTripDetails(trip),
-        borderRadius: BorderRadius.circular(12),
-        child: Padding(
+      body: Form(
+        key: _formKey,
+        child: SingleChildScrollView(
           padding: const EdgeInsets.all(16),
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
-              // Trip Name and Mode
-              Row(
-                children: [
-                  Expanded(
-                    child: Text(
-                      trip['trip_name'] ?? 'Unnamed Trip',
+              _buildSectionTitle('Location Details'),
+              const SizedBox(height: 12),
+
+              // Start Location
+              _buildLocationField(
+                controller: _startLocationController,
+                label: 'From',
+                hint: 'Enter start location',
+                icon: Icons.location_on,
+                iconColor: const Color(0xFF4ADE80),
+              ),
+              const SizedBox(height: 12),
+
+              // End Location
+              _buildLocationField(
+                controller: _endLocationController,
+                label: 'To',
+                hint: 'Enter destination',
+                icon: Icons.location_on,
+                iconColor: const Color(0xFFFB923C),
+              ),
+
+              const SizedBox(height: 24),
+              _buildSectionTitle('Trip Details'),
+              const SizedBox(height: 12),
+
+              // Date Picker
+              GestureDetector(
+                onTap: _selectDate,
+                child: Container(
+                  padding: const EdgeInsets.all(16),
+                  decoration: BoxDecoration(
+                    color: const Color(0xFF1E1E1E),
+                    borderRadius: BorderRadius.circular(12),
+                  ),
+                  child: Row(
+                    children: [
+                      const Icon(Icons.calendar_today, color: Color(0xFFA78BFA), size: 20),
+                      const SizedBox(width: 12),
+                      Column(
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        children: [
+                          Text(
+                            'Trip Date',
+                            style: TextStyle(
+                              color: Colors.white.withOpacity(0.6),
+                              fontSize: 12,
+                            ),
+                          ),
+                          const SizedBox(height: 4),
+                          Text(
+                            DateFormat('MMM dd, yyyy').format(_selectedDate),
+                            style: const TextStyle(
+                              color: Colors.white,
+                              fontSize: 16,
+                              fontWeight: FontWeight.w600,
+                            ),
+                          ),
+                        ],
+                      ),
+                      const Spacer(),
+                      const Icon(Icons.arrow_forward_ios, color: Colors.white54, size: 16),
+                    ],
+                  ),
+                ),
+              ),
+
+              const SizedBox(height: 16),
+
+              // Mode of Travel
+              Text(
+                'Mode of Travel',
+                style: TextStyle(
+                  color: Colors.white.withOpacity(0.8),
+                  fontSize: 14,
+                  fontWeight: FontWeight.w600,
+                ),
+              ),
+              const SizedBox(height: 8),
+              Wrap(
+                spacing: 8,
+                runSpacing: 8,
+                children: _travelModes.map((mode) {
+                  final isSelected = _selectedMode == mode['value'];
+                  return GestureDetector(
+                    onTap: () => setState(() => _selectedMode = mode['value']),
+                    child: Container(
+                      padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 10),
+                      decoration: BoxDecoration(
+                        color: isSelected ? const Color(0xFFA78BFA) : const Color(0xFF1E1E1E),
+                        borderRadius: BorderRadius.circular(12),
+                      ),
+                      child: Row(
+                        mainAxisSize: MainAxisSize.min,
+                        children: [
+                          Text(mode['icon'], style: const TextStyle(fontSize: 18)),
+                          const SizedBox(width: 6),
+                          Text(
+                            mode['label'],
+                            style: TextStyle(
+                              color: isSelected ? Colors.black : Colors.white,
+                              fontWeight: FontWeight.w600,
+                              fontSize: 13,
+                            ),
+                          ),
+                        ],
+                      ),
+                    ),
+                  );
+                }).toList(),
+              ),
+
+              const SizedBox(height: 16),
+
+              // Purpose
+              Text(
+                'Trip Purpose',
+                style: TextStyle(
+                  color: Colors.white.withOpacity(0.8),
+                  fontSize: 14,
+                  fontWeight: FontWeight.w600,
+                ),
+              ),
+              const SizedBox(height: 8),
+              Container(
+                padding: const EdgeInsets.symmetric(horizontal: 16),
+                decoration: BoxDecoration(
+                  color: const Color(0xFF1E1E1E),
+                  borderRadius: BorderRadius.circular(12),
+                ),
+                child: DropdownButtonHideUnderline(
+                  child: DropdownButton<String>(
+                    value: _selectedPurpose,
+                    isExpanded: true,
+                    dropdownColor: const Color(0xFF1E1E1E),
+                    style: const TextStyle(color: Colors.white, fontSize: 16),
+                    icon: const Icon(Icons.arrow_drop_down, color: Colors.white54),
+                    items: _purposes.map((purpose) {
+                      return DropdownMenuItem(
+                        value: purpose,
+                        child: Text(purpose[0].toUpperCase() + purpose.substring(1)),
+                      );
+                    }).toList(),
+                    onChanged: (value) {
+                      if (value != null) {
+                        setState(() => _selectedPurpose = value);
+                      }
+                    },
+                  ),
+                ),
+              ),
+
+              const SizedBox(height: 16),
+
+              // Companions
+              Container(
+                padding: const EdgeInsets.all(16),
+                decoration: BoxDecoration(
+                  color: const Color(0xFF1E1E1E),
+                  borderRadius: BorderRadius.circular(12),
+                ),
+                child: Row(
+                  children: [
+                    const Icon(Icons.people, color: Color(0xFFA78BFA), size: 20),
+                    const SizedBox(width: 12),
+                    const Text(
+                      'Companions',
+                      style: TextStyle(color: Colors.white, fontSize: 16),
+                    ),
+                    const Spacer(),
+                    IconButton(
+                      onPressed: () {
+                        if (_companions > 0) {
+                          setState(() => _companions--);
+                        }
+                      },
+                      icon: const Icon(Icons.remove_circle_outline, color: Colors.white54),
+                    ),
+                    Text(
+                      '$_companions',
                       style: const TextStyle(
+                        color: Colors.white,
                         fontSize: 18,
                         fontWeight: FontWeight.bold,
-                        color: Colors.white,
                       ),
                     ),
-                  ),
-                  _getModeIcon(trip['mode_of_travel']),
-                ],
+                    IconButton(
+                      onPressed: () => setState(() => _companions++),
+                      icon: const Icon(Icons.add_circle_outline, color: Color(0xFFA78BFA)),
+                    ),
+                  ],
+                ),
               ),
+
+              const SizedBox(height: 24),
+              _buildSectionTitle('Expenses (Optional)'),
               const SizedBox(height: 12),
 
-              // Route
               Row(
                 children: [
-                  const Icon(Icons.location_on, color: Colors.green, size: 20),
-                  const SizedBox(width: 8),
                   Expanded(
-                    child: Text(
-                      trip['start_location'] ?? 'Unknown',
-                      style: TextStyle(
-                        color: Colors.white.withOpacity(0.8),
-                        fontSize: 14,
-                      ),
-                      maxLines: 1,
-                      overflow: TextOverflow.ellipsis,
+                    child: _buildCostField(
+                      controller: _tollCostController,
+                      label: 'Toll',
+                      icon: Icons.local_parking,
                     ),
                   ),
-                ],
-              ),
-              const SizedBox(height: 4),
-              Row(
-                children: [
-                  const Icon(Icons.location_on, color: Colors.orange, size: 20),
-                  const SizedBox(width: 8),
+                  const SizedBox(width: 12),
                   Expanded(
-                    child: Text(
-                      trip['end_location'] ?? 'Unknown',
-                      style: TextStyle(
-                        color: Colors.white.withOpacity(0.8),
-                        fontSize: 14,
-                      ),
-                      maxLines: 1,
-                      overflow: TextOverflow.ellipsis,
+                    child: _buildCostField(
+                      controller: _parkingCostController,
+                      label: 'Parking',
+                      icon: Icons.local_parking,
                     ),
                   ),
                 ],
               ),
               const SizedBox(height: 12),
-
-              // Date and Purpose
-              Wrap(
-                spacing: 12,
-                runSpacing: 8,
+              Row(
                 children: [
-                  _buildInfoChip(
-                    Icons.calendar_today,
-                    trip['start_date'] ?? 'No date',
+                  Expanded(
+                    child: _buildCostField(
+                      controller: _fuelExpenseController,
+                      label: 'Fuel',
+                      icon: Icons.local_gas_station,
+                    ),
                   ),
-                  if (trip['trip_purpose'] != null)
-                    _buildInfoChip(
-                      Icons.label,
-                      trip['trip_purpose'],
+                  const SizedBox(width: 12),
+                  Expanded(
+                    child: _buildCostField(
+                      controller: _ticketCostController,
+                      label: 'Ticket',
+                      icon: Icons.confirmation_number,
                     ),
-                  if (trip['number_of_companions'] != null && trip['number_of_companions'] > 0)
-                    _buildInfoChip(
-                      Icons.people,
-                      '${trip['number_of_companions']} companions',
-                    ),
-                  if (trip['estimated_budget'] != null)
-                    _buildInfoChip(
-                      Icons.currency_rupee,
-                      trip['estimated_budget'].toString(),
-                    ),
+                  ),
                 ],
               ),
+
+              const SizedBox(height: 32),
+
+              // Submit Button
+              SizedBox(
+                width: double.infinity,
+                child: ElevatedButton(
+                  onPressed: _isSubmitting ? null : _submitTrip,
+                  style: ElevatedButton.styleFrom(
+                    backgroundColor: const Color(0xFFA78BFA),
+                    foregroundColor: Colors.black,
+                    padding: const EdgeInsets.symmetric(vertical: 16),
+                    shape: RoundedRectangleBorder(
+                      borderRadius: BorderRadius.circular(12),
+                    ),
+                  ),
+                  child: _isSubmitting
+                      ? const SizedBox(
+                    height: 20,
+                    width: 20,
+                    child: CircularProgressIndicator(
+                      strokeWidth: 2,
+                      valueColor: AlwaysStoppedAnimation<Color>(Colors.black),
+                    ),
+                  )
+                      : const Text(
+                    'Save Trip',
+                    style: TextStyle(
+                      fontSize: 16,
+                      fontWeight: FontWeight.w700,
+                    ),
+                  ),
+                ),
+              ),
+
+              const SizedBox(height: 40),
             ],
           ),
         ),
@@ -265,223 +485,75 @@ class _SavedPlannedTripsScreenState extends State<SavedPlannedTripsScreen> {
     );
   }
 
-  Widget _buildInfoChip(IconData icon, String label) {
-    return Container(
-      padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 6),
-      decoration: BoxDecoration(
-        color: const Color(0xFFf39c12).withOpacity(0.2),
-        borderRadius: BorderRadius.circular(8),
-      ),
-      child: Row(
-        mainAxisSize: MainAxisSize.min,
-        children: [
-          Icon(icon, size: 14, color: const Color(0xFFf39c12)),
-          const SizedBox(width: 4),
-          Text(
-            label,
-            style: const TextStyle(
-              color: Color(0xFFf39c12),
-              fontSize: 12,
-              fontWeight: FontWeight.w500,
-            ),
-          ),
-        ],
+  Widget _buildSectionTitle(String title) {
+    return Text(
+      title,
+      style: const TextStyle(
+        color: Colors.white,
+        fontSize: 18,
+        fontWeight: FontWeight.bold,
       ),
     );
   }
 
-  Widget _getModeIcon(String? mode) {
-    final icons = {
-      'car': '🚗',
-      'bike': '🏍',
-      'bus': '🚌',
-      'train': '🚂',
-      'metro': '🚇',
-      'walk': '🚶',
-    };
-
+  Widget _buildLocationField({
+    required TextEditingController controller,
+    required String label,
+    required String hint,
+    required IconData icon,
+    required Color iconColor,
+  }) {
     return Container(
-      padding: const EdgeInsets.all(8),
       decoration: BoxDecoration(
-        color: const Color(0xFFf39c12).withOpacity(0.2),
-        borderRadius: BorderRadius.circular(8),
+        color: const Color(0xFF1E1E1E),
+        borderRadius: BorderRadius.circular(12),
       ),
-      child: Text(
-        icons[mode] ?? '🚗',
-        style: const TextStyle(fontSize: 20),
+      child: TextFormField(
+        controller: controller,
+        style: const TextStyle(color: Colors.white, fontSize: 16),
+        decoration: InputDecoration(
+          prefixIcon: Icon(icon, color: iconColor, size: 20),
+          labelText: label,
+          hintText: hint,
+          labelStyle: TextStyle(color: Colors.white.withOpacity(0.6), fontSize: 14),
+          hintStyle: TextStyle(color: Colors.white.withOpacity(0.3)),
+          border: InputBorder.none,
+          contentPadding: const EdgeInsets.symmetric(horizontal: 16, vertical: 16),
+        ),
+        validator: (value) {
+          if (value == null || value.isEmpty) {
+            return 'Please enter $label';
+          }
+          return null;
+        },
       ),
     );
   }
 
-  void _showTripDetails(Map<String, dynamic> trip) {
-    showModalBottomSheet(
-      context: context,
-      backgroundColor: const Color(0xFF16213e),
-      shape: const RoundedRectangleBorder(
-        borderRadius: BorderRadius.vertical(top: Radius.circular(20)),
+  Widget _buildCostField({
+    required TextEditingController controller,
+    required String label,
+    required IconData icon,
+  }) {
+    return Container(
+      decoration: BoxDecoration(
+        color: const Color(0xFF1E1E1E),
+        borderRadius: BorderRadius.circular(12),
       ),
-      builder: (context) => Padding(
-        padding: const EdgeInsets.all(20),
-        child: Column(
-          mainAxisSize: MainAxisSize.min,
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            Text(
-              trip['trip_name'] ?? 'Trip Details',
-              style: const TextStyle(
-                fontSize: 22,
-                fontWeight: FontWeight.bold,
-                color: Colors.white,
-              ),
-            ),
-            const SizedBox(height: 16),
-            if (trip['description'] != null && trip['description'].isNotEmpty) ...[
-              const Text(
-                'Description:',
-                style: TextStyle(
-                  color: Color(0xFFf39c12),
-                  fontWeight: FontWeight.bold,
-                ),
-              ),
-              const SizedBox(height: 4),
-              Text(
-                trip['description'],
-                style: TextStyle(color: Colors.white.withOpacity(0.8)),
-              ),
-              const SizedBox(height: 16),
-            ],
-            _buildDetailRow('From', trip['start_location'] ?? 'Unknown'),
-            _buildDetailRow('To', trip['end_location'] ?? 'Unknown'),
-            _buildDetailRow('Start Date', trip['start_date'] ?? 'Not set'),
-            if (trip['end_date'] != null)
-              _buildDetailRow('End Date', trip['end_date']),
-            _buildDetailRow('Mode', trip['mode_of_travel'] ?? 'Not set'),
-            _buildDetailRow('Purpose', trip['trip_purpose'] ?? 'Not set'),
-            if (trip['estimated_budget'] != null)
-              _buildDetailRow('Budget', '₹${trip['estimated_budget']}'),
-            const SizedBox(height: 16),
-            Row(
-              children: [
-                Expanded(
-                  child: ElevatedButton.icon(
-                    onPressed: () {
-                      Navigator.pop(context);
-                      // Add edit functionality later if needed
-                    },
-                    style: ElevatedButton.styleFrom(
-                      backgroundColor: const Color(0xFFf39c12),
-                      padding: const EdgeInsets.symmetric(vertical: 12),
-                    ),
-                    icon: const Icon(Icons.edit),
-                    label: const Text('Edit Trip'),
-                  ),
-                ),
-                const SizedBox(width: 12),
-                Expanded(
-                  child: OutlinedButton.icon(
-                    onPressed: () => _deleteTrip(trip['id']),
-                    style: OutlinedButton.styleFrom(
-                      foregroundColor: Colors.red,
-                      side: const BorderSide(color: Colors.red),
-                      padding: const EdgeInsets.symmetric(vertical: 12),
-                    ),
-                    icon: const Icon(Icons.delete),
-                    label: const Text('Delete'),
-                  ),
-                ),
-              ],
-            ),
-          ],
+      child: TextFormField(
+        controller: controller,
+        keyboardType: TextInputType.number,
+        style: const TextStyle(color: Colors.white, fontSize: 16),
+        decoration: InputDecoration(
+          prefixIcon: Icon(icon, color: Color(0xFFA78BFA), size: 18),
+          labelText: label,
+          prefixText: '₹ ',
+          labelStyle: TextStyle(color: Colors.white.withOpacity(0.6), fontSize: 13),
+          prefixStyle: const TextStyle(color: Colors.white),
+          border: InputBorder.none,
+          contentPadding: const EdgeInsets.symmetric(horizontal: 16, vertical: 16),
         ),
       ),
     );
-  }
-
-  Widget _buildDetailRow(String label, String value) {
-    return Padding(
-      padding: const EdgeInsets.only(bottom: 8),
-      child: Row(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
-          SizedBox(
-            width: 100,
-            child: Text(
-              '$label:',
-              style: TextStyle(
-                color: Colors.white.withOpacity(0.6),
-                fontWeight: FontWeight.w500,
-              ),
-            ),
-          ),
-          Expanded(
-            child: Text(
-              value,
-              style: const TextStyle(color: Colors.white),
-            ),
-          ),
-        ],
-      ),
-    );
-  }
-
-  Future<void> _deleteTrip(int? tripId) async {
-    if (tripId == null) return;
-
-    final confirm = await showDialog<bool>(
-      context: context,
-      builder: (context) => AlertDialog(
-        backgroundColor: const Color(0xFF16213e),
-        title: const Text('Delete Trip', style: TextStyle(color: Colors.white)),
-        content: const Text(
-          'Are you sure you want to delete this trip?',
-          style: TextStyle(color: Colors.white70),
-        ),
-        actions: [
-          TextButton(
-            onPressed: () => Navigator.pop(context, false),
-            child: const Text('Cancel'),
-          ),
-          TextButton(
-            onPressed: () => Navigator.pop(context, true),
-            style: TextButton.styleFrom(foregroundColor: Colors.red),
-            child: const Text('Delete'),
-          ),
-        ],
-      ),
-    );
-
-    if (confirm != true) return;
-
-    try {
-      final api = context.read<ApiService>();
-      final response = await http.delete(
-        Uri.parse('${ApiService.baseUrl}/trips/planned/$tripId/'),
-        headers: api.headers,
-      );
-
-      if (response.statusCode == 204 || response.statusCode == 200) {
-        if (mounted) {
-          Navigator.pop(context); // Close bottom sheet
-          ScaffoldMessenger.of(context).showSnackBar(
-            const SnackBar(
-              content: Text('Trip deleted successfully'),
-              backgroundColor: Colors.green,
-            ),
-          );
-          _loadTrips(); // Reload trips
-        }
-      } else {
-        throw Exception('Failed to delete');
-      }
-    } catch (e) {
-      if (mounted) {
-        ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(
-            content: Text('Failed to delete trip: $e'),
-            backgroundColor: Colors.red,
-          ),
-        );
-      }
-    }
   }
 }

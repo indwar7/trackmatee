@@ -305,7 +305,7 @@ class _PlannedTripScreenState extends State<PlannedTripScreen> {
       Navigator.pushReplacement(
         context,
         MaterialPageRoute(
-          builder: (_) => const SavedPlannedTripsScreen(),
+          builder: (_) => const ManualTripEntryScreen(),
         ),
       );
       _show("Trip saved!");

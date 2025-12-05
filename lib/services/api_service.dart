@@ -36,7 +36,7 @@ class ApiService {
   Map<String, String> get headers {
     return {
       "Content-Type": "application/json",
-      if (accessToken != null) "Authorization": "Bearer $accessToken",
+      if (accessToken != null) "Authorization": "Token $accessToken",
     };
   }
 

@@ -33,15 +33,15 @@ class HomeScreen extends StatelessWidget {
                       const Text(
                         "Greetings,",
                         style: TextStyle(
-                          color: Colors.white70,
-                          fontSize: 14,
+                          color: Colors.white,
+                          fontSize: 18,
                         ),
                       ),
                       Text(
                         userName,
                         style: const TextStyle(
                           color: Colors.white,
-                          fontSize: 20,
+                          fontSize: 22,
                           fontWeight: FontWeight.w600,
                         ),
                       ),
@@ -50,24 +50,24 @@ class HomeScreen extends StatelessWidget {
                   GestureDetector(
                     onTap: () => Get.toNamed('/settings'),
                     child: Container(
-                      padding: const EdgeInsets.all(10),
+                      padding: const EdgeInsets.all(12),
                       decoration: BoxDecoration(
                         color: const Color(0xFF7C3AED),
-                        borderRadius: BorderRadius.circular(12),
+                        borderRadius: BorderRadius.circular(14),
                       ),
-                      child: const Icon(Icons.translate, color: Colors.white, size: 22),
+                      child: const Icon(Icons.translate, color: Colors.white, size: 24),
                     ),
                   )
                 ],
               ),
 
-              const SizedBox(height: 20),
+              const SizedBox(height: 22),
 
               // =========================================================
               // SEARCH CARD
               // =========================================================
               Container(
-                padding: const EdgeInsets.all(16),
+                padding: const EdgeInsets.all(20),
                 decoration: BoxDecoration(
                   color: const Color(0xFF1E1E1E),
                   borderRadius: BorderRadius.circular(20),
@@ -95,12 +95,12 @@ class HomeScreen extends StatelessWidget {
                                 children: [
                                   const Text(
                                     "From",
-                                    style: TextStyle(fontSize: 9, color: Colors.black54),
+                                    style: TextStyle(fontSize: 14, color: Colors.black87),
                                   ),
                                   Obx(() => Text(
-                                    locationController.fromLocation.value.city,
+                                    locationController.fromLocation.value.name,
                                     style: const TextStyle(
-                                      fontSize: 13,
+                                      fontSize: 18,
                                       fontWeight: FontWeight.w700,
                                       color: Colors.black,
                                     ),
@@ -113,10 +113,10 @@ class HomeScreen extends StatelessWidget {
                             GestureDetector(
                               onTap: () => locationController.swapLocations(),
                               child: Container(
-                                padding: const EdgeInsets.all(6),
+                                padding: const EdgeInsets.all(8),
                                 decoration: BoxDecoration(
                                   color: Colors.black12,
-                                  borderRadius: BorderRadius.circular(8),
+                                  borderRadius: BorderRadius.circular(10),
                                 ),
                                 child: const Icon(Icons.swap_horiz, color: Colors.black87, size: 18),
                               ),
@@ -131,14 +131,14 @@ class HomeScreen extends StatelessWidget {
                                 children: [
                                   const Text(
                                     "To",
-                                    style: TextStyle(fontSize: 9, color: Colors.black54),
+                                    style: TextStyle(fontSize: 14, color: Colors.black54),
                                   ),
                                   Obx(() => Text(
-                                    locationController.toLocation.value.city,
+                                    locationController.toLocation.value.name,
                                     style: const TextStyle(
-                                      fontSize: 13,
+                                      fontSize: 18,
                                       fontWeight: FontWeight.w700,
-                                      color: Colors.black,
+                                      color: Colors.black87,
                                     ),
                                   )),
                                 ],
@@ -166,7 +166,7 @@ class HomeScreen extends StatelessWidget {
                           textAlign: TextAlign.center,
                           style: TextStyle(
                             fontWeight: FontWeight.w700,
-                            fontSize: 16,
+                            fontSize: 20,
                             color: Colors.black,
                           ),
                         ),
@@ -193,7 +193,7 @@ class HomeScreen extends StatelessWidget {
                                         "Home",
                                         style: TextStyle(
                                           color: Colors.white,
-                                          fontSize: 12,
+                                          fontSize: 16,
                                           fontWeight: FontWeight.w600,
                                         ),
                                       ),
@@ -201,7 +201,7 @@ class HomeScreen extends StatelessWidget {
                                         "Sector Name-3 Intraspuram, Delhi, India",
                                         style: TextStyle(
                                           color: Colors.white54,
-                                          fontSize: 8,
+                                          fontSize: 10,
                                         ),
                                         maxLines: 2,
                                         overflow: TextOverflow.ellipsis,
@@ -229,7 +229,7 @@ class HomeScreen extends StatelessWidget {
                                         "Work",
                                         style: TextStyle(
                                           color: Colors.white,
-                                          fontSize: 12,
+                                          fontSize: 16,
                                           fontWeight: FontWeight.w600,
                                         ),
                                       ),
@@ -237,7 +237,7 @@ class HomeScreen extends StatelessWidget {
                                         "Cyber city plaza-3, Gurgaon Haryana, India",
                                         style: TextStyle(
                                           color: Colors.white54,
-                                          fontSize: 8,
+                                          fontSize: 10,
                                         ),
                                         maxLines: 2,
                                         overflow: TextOverflow.ellipsis,
@@ -281,15 +281,15 @@ class HomeScreen extends StatelessWidget {
                                 "25%",
                                 style: TextStyle(
                                   color: Color(0xFFA78BFA),
-                                  fontSize: 26,
+                                  fontSize: 32,
                                   fontWeight: FontWeight.bold,
                                 ),
                               ),
                               Text(
                                 "more than previous month",
                                 style: TextStyle(
-                                  fontSize: 9,
-                                  color: Colors.black54,
+                                  fontSize: 15,
+                                  color: Colors.black87,
                                 ),
                               ),
                             ],
@@ -300,22 +300,23 @@ class HomeScreen extends StatelessWidget {
                               Text(
                                 "250 g/km",
                                 style: TextStyle(
-                                  fontSize: 13,
+                                  fontSize: 28,
+                                  color:Colors.black87,
                                   fontWeight: FontWeight.w600,
                                 ),
                               ),
                               Text(
                                 "Monthly carbon",
                                 style: TextStyle(
-                                  fontSize: 9,
-                                  color: Colors.black54,
+                                  fontSize: 12,
+                                  color: Colors.black87,
                                 ),
                               ),
                               Text(
                                 "emission",
                                 style: TextStyle(
-                                  fontSize: 9,
-                                  color: Colors.black54,
+                                  fontSize: 12,
+                                  color: Colors.black87,
                                 ),
                               ),
                             ],
@@ -327,9 +328,9 @@ class HomeScreen extends StatelessWidget {
                         mainAxisAlignment: MainAxisAlignment.spaceAround,
                         crossAxisAlignment: CrossAxisAlignment.end,
                         children: List.generate(12, (i) {
-                          final heights = [22.0, 28.0, 32.0, 38.0, 40.0, 44.0, 48.0, 52.0, 42.0, 48.0, 54.0, 60.0];
+                          final heights = [25.0, 30.0, 35.0, 40.0, 45.0, 50.0, 52.0, 54.0, 56.0, 58.0, 60.0, 62.0];
                           return Container(
-                            width: 10,
+                            width: 16,
                             height: heights[i],
                             decoration: BoxDecoration(
                               borderRadius: BorderRadius.circular(5),
@@ -363,10 +364,11 @@ class HomeScreen extends StatelessWidget {
                       Icon(Icons.list, size: 22),
                       SizedBox(width: 10),
                       Text(
-                        "AI Checklist",
+                        "Smart Personalised Check Assist",
                         style: TextStyle(
                           fontWeight: FontWeight.w600,
-                          fontSize: 16,
+                          fontSize: 20,
+                          color: Colors.black87,
                         ),
                       ),
                     ],
@@ -418,7 +420,7 @@ class HomeScreen extends StatelessWidget {
                                   style: TextStyle(
                                     color: Colors.white,
                                     fontWeight: FontWeight.w700,
-                                    fontSize: 12,
+                                    fontSize: 18,
                                     height: 1.2,
                                   ),
                                 ),
@@ -449,7 +451,7 @@ class HomeScreen extends StatelessWidget {
                             "Trip History",
                             style: TextStyle(
                               fontWeight: FontWeight.w700,
-                              fontSize: 16,
+                              fontSize: 22,
                               color: Colors.black,
                             ),
                           ),
@@ -471,7 +473,7 @@ class HomeScreen extends StatelessWidget {
                   Expanded(
                     flex: 30,
                     child: GestureDetector(
-                      onTap: () => Get.toNamed('/saved-planned-trips'),
+                      onTap: () => Get.toNamed('/record-trip'),
                       child: Container(
                         height: 215,
                         decoration: BoxDecoration(
@@ -495,8 +497,8 @@ class HomeScreen extends StatelessWidget {
                                   "Record a trip",
                                   style: TextStyle(
                                     fontWeight: FontWeight.w700,
-                                    fontSize: 14,
-                                    color: Colors.black,
+                                    fontSize: 20,
+                                    color: Colors.black87,
                                   ),
                                 ),
                               ),
@@ -532,7 +534,8 @@ class HomeScreen extends StatelessWidget {
                                     "Schedule a\nTrip for later",
                                     style: TextStyle(
                                       fontWeight: FontWeight.w700,
-                                      fontSize: 15,
+                                      fontSize: 20,
+                                      color: Colors.black87,
                                     ),
                                   ),
                                 ),
@@ -565,7 +568,7 @@ class HomeScreen extends StatelessWidget {
                                     "Any questions?\nAsk your own AI personal assistant",
                                     style: TextStyle(
                                       color: Colors.white,
-                                      fontSize: 11,
+                                      fontSize: 18,
                                       fontWeight: FontWeight.w500,
                                     ),
                                   ),
@@ -598,10 +601,11 @@ class HomeScreen extends StatelessWidget {
                       Icon(Icons.calculate, size: 24),
                       SizedBox(width: 12),
                       Text(
-                        "Cost Calculator",
+                        "Expense Calculator",
                         style: TextStyle(
                           fontWeight: FontWeight.w600,
-                          fontSize: 16,
+                          color: Colors.black87,
+                          fontSize: 20,
                         ),
                       ),
                     ],
@@ -621,7 +625,7 @@ class HomeScreen extends StatelessWidget {
                     "DISCOVER",
                     style: TextStyle(
                       color: Colors.white,
-                      fontSize: 15,
+                      fontSize: 22,
                       fontWeight: FontWeight.w700,
                       letterSpacing: 0.5,
                     ),
@@ -630,7 +634,7 @@ class HomeScreen extends StatelessWidget {
                     onPressed: () => Get.toNamed('/discover'),
                     child: const Text(
                       "See all",
-                      style: TextStyle(color: Colors.white70, fontSize: 12),
+                      style: TextStyle(color: Colors.white70, fontSize: 15),
                     ),
                   ),
                 ],
@@ -675,25 +679,25 @@ class HomeScreen extends StatelessWidget {
                           const Text(
                             "Jaipur",
                             style: TextStyle(
-                              color: Colors.white,
-                              fontSize: 17,
+                              color: Colors.black54,
+                              fontSize: 25,
                               fontWeight: FontWeight.bold,
                             ),
                           ),
                           const Text(
                             "Route - Delhi - BOM expy",
                             style: TextStyle(
-                              color: Colors.white,
-                              fontSize: 10,
+                              color: Colors.black87,
+                              fontSize: 18,
                             ),
                           ),
-                          const SizedBox(height: 6),
+                          const SizedBox(height: 12),
                           Row(
                             children: [
                               _tag("Services"),
-                              const SizedBox(width: 6),
+                              const SizedBox(width: 12),
                               _tag("Cost"),
-                              const SizedBox(width: 6),
+                              const SizedBox(width: 12),
                               _tag("Co2"),
                             ],
                           ),

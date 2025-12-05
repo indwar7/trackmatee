@@ -179,12 +179,12 @@ class TrackMateApp extends StatelessWidget {
         // RECORD A TRIP BUTTON
         GetPage(
           name: "/saved-planned-trips",
-          page: () => const SavedPlannedTripsScreen(),
+          page: () => const ManualTripEntryScreen(),
         ),
 
         // SCHEDULE TRIP FOR LATER BUTTON
         GetPage(
-          name: "/manual-trip",
+          name: "/record-trip",
           page: () => const ManualTripScreen(),
         ),
 

@@ -55,7 +55,7 @@ class _TripHistoryScreenState extends State<TripHistoryScreen> {
           });
         }
       } else {
-        throw Exception('Failed to load history');
+        throw Exception('Failed to load history: ${response.statusCode} - ${response.body}');
       }
     } catch (e) {
       debugPrint('Error loading history: $e');
