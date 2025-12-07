@@ -8,6 +8,8 @@ import 'onboarding/home_screen.dart';
 class TripEndFormScreen extends StatefulWidget {
   final int tripId;
   final String startLocation;
+  final double startLat;
+  final double startLng;
   final double endLat;
   final double endLng;
   final String endLocation;
@@ -18,6 +20,8 @@ class TripEndFormScreen extends StatefulWidget {
     super.key,
     required this.tripId,
     required this.startLocation,
+    required this.startLat,
+    required this.startLng,
     required this.endLat,
     required this.endLng,
     required this.endLocation,
@@ -57,7 +61,7 @@ class _TripEndFormScreenState extends State<TripEndFormScreen> {
   final _ticketController = TextEditingController();
   final _totalCostController = TextEditingController();
 
-  // CO2 emission factors
+  // CO2 emission factors (kg per km)
   final Map<String, double> _co2EmissionFactors = {
     'Car - Petrol': 0.192,
     'Car - Diesel': 0.171,
@@ -73,7 +77,7 @@ class _TripEndFormScreenState extends State<TripEndFormScreen> {
     'Other': 0.15,
   };
 
-  /// NEW: Backend accepted values mapping
+  /// Backend accepted values mapping
   final Map<String, String> _modeBackendMap = {
     'Car - Petrol': 'car_petrol',
     'Car - Diesel': 'car_diesel',
@@ -102,7 +106,7 @@ class _TripEndFormScreenState extends State<TripEndFormScreen> {
 
     final now = DateTime.now();
     _dateController.text = '${now.day}/${now.month}/${now.year}';
-    _timeController.text = '${now.hour}:${now.minute}';
+    _timeController.text = '${now.hour}:${now.minute.toString().padLeft(2, '0')}';
 
     _modeController.text = 'Car - Petrol';
     _calculateCO2Emission();
@@ -116,6 +120,10 @@ class _TripEndFormScreenState extends State<TripEndFormScreen> {
 
     _modeController.addListener(_calculateCO2Emission);
     _distanceController.addListener(_calculateCO2Emission);
+
+    debugPrint('🎯 Form initialized');
+    debugPrint('Start: ${widget.startLocation} (${widget.startLat}, ${widget.startLng})');
+    debugPrint('End: ${widget.endLocation} (${widget.endLat}, ${widget.endLng})');
   }
 
   void _calculateCO2Emission() {
@@ -185,7 +193,7 @@ class _TripEndFormScreenState extends State<TripEndFormScreen> {
     return Scaffold(
       backgroundColor: const Color(0xFF0f0f1e),
       appBar: AppBar(
-        title: const Text('Trip Info'),
+        title: const Text('Complete Trip'),
         centerTitle: true,
         backgroundColor: const Color(0xFF16213e),
         automaticallyImplyLeading: false,
@@ -238,7 +246,10 @@ class _TripEndFormScreenState extends State<TripEndFormScreen> {
               padding: const EdgeInsets.symmetric(vertical: 16),
               shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
             ),
-            child: const Text('Continue', style: TextStyle(fontSize: 18, color: Colors.white)),
+            child: const Text(
+              'Continue',
+              style: TextStyle(fontSize: 18, color: Colors.white),
+            ),
           ),
         ),
       ],
@@ -324,10 +335,15 @@ class _TripEndFormScreenState extends State<TripEndFormScreen> {
                       backgroundColor: const Color(0xFF00adb5),
                       padding: const EdgeInsets.symmetric(vertical: 16),
                       shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+                      disabledBackgroundColor: const Color(0xFF00adb5).withOpacity(0.5),
                     ),
                     child: _isLoading
-                        ? const CircularProgressIndicator(color: Colors.white)
-                        : const Text('Complete Trip', style: TextStyle(fontSize: 18, color: Colors.white)),
+                        ? const SizedBox(
+                      height: 20,
+                      width: 20,
+                      child: CircularProgressIndicator(color: Colors.white, strokeWidth: 2),
+                    )
+                        : const Text('Save Trip', style: TextStyle(fontSize: 18, color: Colors.white)),
                   ),
                 ),
               ],
@@ -416,62 +432,164 @@ class _TripEndFormScreenState extends State<TripEndFormScreen> {
         initialTime: TimeOfDay.now(),
       );
       if (time != null) {
-        _dateController.text =
-        '${picked.day}/${picked.month}/${picked.year} ${time.hour}:${time.minute}';
+        setState(() {
+          _dateController.text =
+          '${picked.day}/${picked.month}/${picked.year} ${time.hour}:${time.minute.toString().padLeft(2, '0')}';
+        });
       }
     }
   }
 
+  /// ✅ FULLY FIXED SUBMIT METHOD
   Future<void> _submitForm() async {
+    // Prevent double submission
+    if (_isLoading) return;
+
     setState(() => _isLoading = true);
 
     try {
       final api = context.read<ApiService>();
 
+      // 🔑 Load tokens
+      await api.loadTokens();
+
+      debugPrint('━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━');
+      debugPrint('🔐 AUTHENTICATION CHECK');
+      if (api.accessToken != null) {
+        debugPrint('Access Token: ${api.accessToken!.substring(0, 30)}...');
+        debugPrint('Token Length: ${api.accessToken!.length}');
+      } else {
+        debugPrint('❌ No Access Token Found!');
+      }
+      debugPrint('━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━');
+
+      if (api.accessToken == null || api.accessToken!.isEmpty) {
+        throw Exception('Not authenticated. Please login again.');
+      }
+
+      // Parse form values
       final fuelCost = double.tryParse(_fuelCostController.text);
       final parkingCost = double.tryParse(_parkingController.text);
       final tollCost = double.tryParse(_tollController.text);
       final ticketCost = double.tryParse(_ticketController.text);
       final companions = int.tryParse(_companionsController.text);
+      final co2Emitted = double.tryParse(_co2Controller.text);
+      final totalCost = double.tryParse(_totalCostController.text);
 
-      await api.endTrip(
+      debugPrint('━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━');
+      debugPrint('🚀 SUBMITTING TRIP DATA');
+      debugPrint('━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━');
+      debugPrint('Trip ID: ${widget.tripId}');
+      debugPrint('End Location: $_selectedEndAddress');
+      debugPrint('End Coords: ${_selectedEndPoint!.latitude}, ${_selectedEndPoint!.longitude}');
+      debugPrint('Distance: ${_distanceController.text} km');
+      debugPrint('Duration: ${_durationController.text} min');
+      debugPrint('Mode: ${_modeBackendMap[_modeController.text]}');
+      debugPrint('Purpose: ${_purposeController.text.isEmpty ? "null" : _purposeController.text}');
+      debugPrint('Companions: $companions');
+      debugPrint('CO2: $co2Emitted kg');
+      debugPrint('Fuel Cost: ₹$fuelCost');
+      debugPrint('Parking: ₹$parkingCost');
+      debugPrint('Toll: ₹$tollCost');
+      debugPrint('Ticket: ₹$ticketCost');
+      debugPrint('Total: ₹$totalCost');
+      debugPrint('━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━');
+
+      // ✅ Call API with correct parameters
+      final response = await api.endTrip(
         tripId: widget.tripId,
         endLat: _selectedEndPoint!.latitude,
         endLng: _selectedEndPoint!.longitude,
         endLocationName: _selectedEndAddress,
-        modeOfTravel: _modeBackendMap[_modeController.text], // FIXED HERE
+        modeOfTravel: _modeBackendMap[_modeController.text],
         tripPurpose: _purposeController.text.isNotEmpty ? _purposeController.text : null,
         companions: companions,
         fuelExpense: fuelCost,
         parkingCost: parkingCost,
         tollCost: tollCost,
         ticketCost: ticketCost,
+        fuelType: _fuelTypeController.text.isNotEmpty ? _fuelTypeController.text : null,
+        co2Emitted: co2Emitted,
+        totalCost: totalCost,
       );
 
+      debugPrint('✅ Trip saved successfully!');
+      debugPrint('Response: $response');
+      debugPrint('━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━');
+
       if (mounted) {
+        // Show success message
         ScaffoldMessenger.of(context).showSnackBar(
           const SnackBar(
-            content: Text('Trip completed successfully!'),
+            content: Text('✅ Trip saved successfully!'),
             backgroundColor: Colors.green,
+            duration: Duration(seconds: 2),
           ),
         );
 
-        Navigator.pushAndRemoveUntil(
-          context,
-          MaterialPageRoute(builder: (_) => HomeScreen()),
-              (route) => false,
-        );
+        // Wait for snackbar
+        await Future.delayed(const Duration(milliseconds: 800));
+
+        // Navigate to home
+        if (mounted) {
+          Navigator.pushAndRemoveUntil(
+            context,
+            MaterialPageRoute(builder: (_) => const HomeScreen()),
+                (route) => false,
+          );
+        }
       }
     } catch (e) {
-      _showError('Failed to complete trip: $e');
+      debugPrint('━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━');
+      debugPrint('❌ ERROR SAVING TRIP');
+      debugPrint('Error Type: ${e.runtimeType}');
+      debugPrint('Error Message: $e');
+      debugPrint('━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━');
+
+      if (mounted) {
+        // Check for authentication errors
+        final errorMsg = e.toString().toLowerCase();
+        if (errorMsg.contains('401') ||
+            errorMsg.contains('unauthorized') ||
+            errorMsg.contains('session expired') ||
+            errorMsg.contains('token')) {
+
+          // Clear tokens
+          final api = context.read<ApiService>();
+          await api.clearTokens();
+
+          _showError('Session expired. Please login again.');
+
+          // Navigate to login
+          await Future.delayed(const Duration(seconds: 2));
+          if (mounted) {
+            Navigator.pushNamedAndRemoveUntil(
+              context,
+              '/login',
+                  (route) => false,
+            );
+          }
+        } else {
+          // Other errors
+          _showError('Failed to save trip: ${e.toString()}');
+        }
+      }
     } finally {
-      setState(() => _isLoading = false);
+      if (mounted) {
+        setState(() => _isLoading = false);
+      }
     }
   }
 
   void _showError(String message) {
-    ScaffoldMessenger.of(context).showSnackBar(
-      SnackBar(content: Text(message), backgroundColor: Colors.red),
-    );
+    if (mounted) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(
+          content: Text(message),
+          backgroundColor: Colors.red,
+          duration: const Duration(seconds: 3),
+        ),
+      );
+    }
   }
 }

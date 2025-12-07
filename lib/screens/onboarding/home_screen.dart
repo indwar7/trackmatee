@@ -3,6 +3,17 @@ import 'package:get/get.dart';
 
 import '../../services/auth_service.dart';
 import '../../controllers/location_controller.dart';
+import 'package:flutter/material.dart';
+import 'package:google_maps_flutter/google_maps_flutter.dart';
+import 'package:flutter/material.dart';
+import 'package:provider/provider.dart';
+import 'package:trackmate_app/services/api_service.dart';
+import 'package:trackmate_app/services/location_service.dart';
+
+import 'package:trackmate_app/screens/live_tracking_screen.dart';
+import 'package:trackmate_app/screens/manual_trip_screen.dart';
+import 'package:trackmate_app/screens/planned_trip_screen.dart';
+import 'package:trackmate_app/screens/trip_history_screen.dart';
 
 class HomeScreen extends StatelessWidget {
   const HomeScreen({super.key});
@@ -517,7 +528,7 @@ class HomeScreen extends StatelessWidget {
                       children: [
                         // SCHEDULE TRIP
                         GestureDetector(
-                          onTap: () => Get.toNamed('/manual-trip'),
+                          onTap: () => Get.toNamed('/planned-trip'),
                           child: Container(
                             height: 95,
                             decoration: BoxDecoration(
@@ -545,6 +556,7 @@ class HomeScreen extends StatelessWidget {
                         ),
 
                         const SizedBox(height: 12),
+
 
                         // ANY QUESTIONS → CHAT SCREEN
                         GestureDetector(

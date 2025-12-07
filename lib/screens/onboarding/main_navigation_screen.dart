@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 import 'package:trackmate_app/controllers/profile_controller.dart';
+import  'package:trackmate_app/screens/planned_trip_screen.dart';
 
 // Screens
 import 'home_screen.dart';
@@ -19,9 +20,9 @@ class _MainNavigationScreenState extends State<MainNavigationScreen> {
 
   final List<Widget> _screens = [
     const HomeScreen(),
-    Center(child: Text('Planner Coming Soon')),
+    const PlannedTripScreen(),
     const MyStatsScreen(),  // ✅ Works now
-    const MapsScreen(),
+    const MapScreen(),
     const ProfileScreen(),
   ];
 

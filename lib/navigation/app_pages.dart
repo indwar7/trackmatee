@@ -62,7 +62,7 @@ class AppPages {
     GetPage(name: '/my-stats', page: () => const MyStatsScreen()),
     GetPage(name: '/cost-calculator', page: () => const CostCalculatorScreen()),
     //GetPage(name: '/planner', page: () => const PlannerScreen()),
-    GetPage(name: '/maps', page: () => const MapsScreen()),
+    GetPage(name: '/maps', page: () => const MapScreen()),
     GetPage(name: '/ai-checklist', page: () => const AiChecklistScreen()),
     GetPage(name: '/ai-chatbot', page: () => ChatScreen()),
 

@@ -1,6 +1,7 @@
 import 'dart:convert';
 import 'package:http/http.dart' as http;
-
+import 'dart:convert';
+import 'package:trackmate_app/services/stats_api_service.dart';
 import 'package:trackmate_app/models/stats_model.dart';
 
 class StatsApiService {
@@ -22,7 +23,7 @@ class StatsApiService {
   // GET DAILY SCORE
   // ---------------------------------------------------------------------------
   Future<DailyScoreResponse> getDailyScore({String? date}) async {
-    String url = "$baseUrl/daily-score/";
+    String url = "http://56.228.42.249/daily-score/";
 
     if (date != null && date.isNotEmpty) {
       url += "?date=$date";
@@ -53,7 +54,7 @@ class StatsApiService {
     final query = params.isEmpty ? "" : "?${params.join("&")}";
 
     final response = await http.get(
-      Uri.parse("$baseUrl/calendar-stats/$query"),
+      Uri.parse("http://56.228.42.249/calendar-stats/$query"),
       headers: _headers,
     );
 
@@ -80,7 +81,7 @@ class StatsApiService {
     final query = params.isEmpty ? "" : "?${params.join("&")}";
 
     final response = await http.get(
-      Uri.parse("$baseUrl/monthly-chart/$query"),
+      Uri.parse("http://56.228.42.249/monthly-chart/$query"),
       headers: _headers,
     );
 

@@ -72,3 +72,4 @@ Future<AuthService> initAuthService() async {
   Get.put(AuthService());
   return Get.find<AuthService>();
 }
+

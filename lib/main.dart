@@ -9,7 +9,14 @@ import 'package:flutter/material.dart';
 import 'package:flutter_dotenv/flutter_dotenv.dart';
 import 'package:get/get.dart';
 import 'package:get_storage/get_storage.dart';
-
+// =============== AUTH ===============
+import 'package:trackmate_app/screens/auth/login_screen.dart';
+import 'package:trackmate_app/screens/auth/signup_screen.dart';
+import 'package:trackmate_app/screens/auth/forgot_password_screen.dart';
+import 'package:trackmate_app/screens/auth/forgot_otp_screen.dart';
+import 'package:trackmate_app/screens/auth/reset_password_screen.dart';
+import 'package:trackmate_app/screens/auth/otp_verification.dart';
+import 'package:trackmate_app/screens/auth/otp_verification_reset.dart';
 // ================= SERVICES =================
 import 'package:trackmate_app/services/auth_service.dart';
 
@@ -24,6 +31,8 @@ import 'package:trackmate_app/screens/onboarding/welcome_screen.dart';
 import 'package:trackmate_app/screens/onboarding/permissions_screen.dart';
 import 'package:trackmate_app/screens/onboarding/terms_of_use_screen.dart';
 import 'package:trackmate_app/screens/onboarding/main_navigation_screen.dart';
+import 'package:trackmate_app/screens/auth/login_screen.dart';
+// or wherever your login screen is located
 
 // ================= MAIN SCREENS =============
 import 'package:trackmate_app/screens/discover/discover_screen.dart';
@@ -88,20 +97,20 @@ Future<void> main() async {
   Get.put(LanguageController(), permanent: true);
   Get.put(LocationController(), permanent: true);
 
+  final apiService = ApiService();
+  await apiService.loadTokens();
+
   runApp(
     MultiProvider(
       providers: [
-        Provider<ApiService>(
-          create: (_) => ApiService(),
-        ),
-        Provider<LocationService>(
-          create: (_) => LocationService(),
-        ),
+        Provider<ApiService>.value(value: apiService),
+        Provider<LocationService>(create: (_) => LocationService()),
       ],
       child: const TrackMateApp(),
     ),
   );
-  }
+
+}
 
 
 
@@ -140,6 +149,7 @@ class TrackMateApp extends StatelessWidget {
         GetPage(name: "/permissions", page: () => const LocationPermissionScreen()),
         GetPage(name: "/terms", page: () => const TermsOfUseScreen()),
         GetPage(name: "/home", page: () => const MainNavigationScreen()),
+        GetPage(name: '/login', page: () => LoginScreen()),
 
         /// ---------------- MAIN ----------------------
         GetPage(name: "/discover", page: () => const DiscoverScreen()),
@@ -147,6 +157,15 @@ class TrackMateApp extends StatelessWidget {
         GetPage(name: "/ai-chatbot", page: () => ChatScreen()),
         GetPage(name: "/ai-checklist", page: () => const AiChecklistScreen()),
         GetPage(name: "/cost-calculator", page: () => const CostCalculatorScreen()),
+
+        /// AUTH
+        GetPage(name:"/login", page:()=> const LoginScreen()),
+        GetPage(name:"/signup", page:()=> const SignUpScreen()),
+        GetPage(name:"/reset-password", page:()=> const ResetPasswordScreen()),
+        GetPage(name:"/otp", page:()=> const OtpVerificationScreen()),
+        GetPage(name:"/otp-reset", page:()=> const OtpVerificationResetScreen()),
+        GetPage(name:"/forgot-password", page:()=> const ForgotPasswordScreen()),
+        GetPage(name:"/forgot-otp", page:()=> const ForgotOtpVerifyScreen()),
 
         /// ============================================================
         ///                       TRIP & MAP
@@ -208,6 +227,13 @@ class TrackMateApp extends StatelessWidget {
             );
           },
         ),
+        GetPage(name: "/plan-trip", page: () => const PlannedTripScreen()),
+        GetPage(name: "/login", page: () => const LoginScreen()),
+        GetPage(
+          name: "/plan-trip",
+          page: () => const PlannedTripScreen(),
+        ),
+
 
         /// ============================================================
         ///                          USER
@@ -240,6 +266,8 @@ class TrackMateApp extends StatelessWidget {
         GetPage(name: "/location-search", page: () => const LocationSearchScreen()),
         GetPage(name: "/edit-address", page: () => const EditAddressScreen()),
         GetPage(name: "/add-work", page: () => const AddWorkScreen()),
+
+
       ],
     );
   }

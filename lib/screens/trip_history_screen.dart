@@ -1,9 +1,8 @@
-import 'dart:convert';
+// lib/screens/trip_history_screen.dart
 import 'package:flutter/material.dart';
 import 'package:intl/intl.dart';
-import 'package:http/http.dart' as http;
 import 'package:provider/provider.dart';
-import '../../services/api_service.dart';
+import '../services/api_service.dart';
 
 class TripHistoryScreen extends StatefulWidget {
   const TripHistoryScreen({super.key});
@@ -30,40 +29,48 @@ class _TripHistoryScreenState extends State<TripHistoryScreen> {
 
     try {
       final api = context.read<ApiService>();
-      final response = await http.get(
-        Uri.parse('${ApiService.baseUrl}/trips/history/'),
-        headers: api.headers,
-      );
 
-      if (response.statusCode == 200) {
-        final data = jsonDecode(response.body);
+      // 🔐 Ensure tokens are loaded
+      await api.loadTokens();
+      debugPrint(
+          '🔑 TripHistory token present: ${api.accessToken != null && api.accessToken!.isNotEmpty}');
 
-        if (data is List) {
-          setState(() {
-            _trips = List<Map<String, dynamic>>.from(data);
-            _isLoading = false;
-          });
-        } else if (data is Map && data['trips'] != null) {
-          setState(() {
-            _trips = List<Map<String, dynamic>>.from(data['trips']);
-            _isLoading = false;
-          });
-        } else {
-          setState(() {
-            _trips = [];
-            _isLoading = false;
-          });
-        }
-      } else {
-        throw Exception('Failed to load history: ${response.statusCode} - ${response.body}');
+      final result = await api.getTripHistory(); // Uses centralized API logic
+
+      // Try to extract "trips" list from the result
+      final dynamic tripsRaw =
+          result['trips'] ?? result['results'] ?? result;
+
+      List<Map<String, dynamic>> trips = [];
+      if (tripsRaw is List) {
+        trips = tripsRaw
+            .whereType<Map<String, dynamic>>()
+            .toList();
       }
+
+      setState(() {
+        _trips = trips;
+        _isLoading = false;
+      });
     } catch (e) {
       debugPrint('Error loading history: $e');
       setState(() {
         _trips = [];
         _isLoading = false;
       });
-      _showError('Failed to load trip history');
+
+      if (e.toString().toLowerCase().contains('unauthorized')) {
+        _showError('Session expired. Please login again.');
+        Future.microtask(() {
+          Navigator.pushNamedAndRemoveUntil(
+            context,
+            '/login',
+                (_) => false,
+          );
+        });
+      } else {
+        _showError('Failed to load trip history');
+      }
     }
   }
 
@@ -73,8 +80,20 @@ class _TripHistoryScreenState extends State<TripHistoryScreen> {
     // Filter by mode
     if (_filterMode != 'all') {
       filtered = filtered.where((trip) {
-        final mode = trip['mode_of_travel']?.toString().toLowerCase();
-        return mode == _filterMode;
+        final mode =
+            trip['mode_of_travel']?.toString().toLowerCase() ?? '';
+
+        if (_filterMode == 'car') {
+          return mode.contains('car');
+        } else if (_filterMode == 'bike') {
+          return mode.contains('bike') || mode.contains('motorcycle');
+        } else if (_filterMode == 'bus') {
+          return mode.contains('bus');
+        } else if (_filterMode == 'train') {
+          return mode.contains('train');
+        }
+
+        return mode.contains(_filterMode);
       }).toList();
     }
 
@@ -95,7 +114,8 @@ class _TripHistoryScreenState extends State<TripHistoryScreen> {
       filtered = filtered.where((trip) {
         try {
           final tripDate = DateTime.parse(trip['start_time']);
-          return tripDate.isBefore(_filterEndDate!.add(const Duration(days: 1)));
+          return tripDate
+              .isBefore(_filterEndDate!.add(const Duration(days: 1)));
         } catch (e) {
           return true;
         }
@@ -120,10 +140,7 @@ class _TripHistoryScreenState extends State<TripHistoryScreen> {
       ),
       body: Column(
         children: [
-          // Stats Summary
           if (_trips.isNotEmpty) _buildStatsCard(),
-
-          // Trip List
           Expanded(
             child: _isLoading
                 ? const Center(child: CircularProgressIndicator())
@@ -148,12 +165,16 @@ class _TripHistoryScreenState extends State<TripHistoryScreen> {
   Widget _buildStatsCard() {
     final totalTrips = _trips.length;
     final totalDistance = _trips.fold<double>(
-        0,
-            (sum, trip) => sum + (double.tryParse(trip['distance_km']?.toString() ?? '0') ?? 0)
+      0,
+          (sum, trip) =>
+      sum +
+          (double.tryParse(trip['distance_km']?.toString() ?? '0') ?? 0),
     );
     final totalCost = _trips.fold<double>(
-        0,
-            (sum, trip) => sum + (double.tryParse(trip['total_cost']?.toString() ?? '0') ?? 0)
+      0,
+          (sum, trip) =>
+      sum +
+          (double.tryParse(trip['total_cost']?.toString() ?? '0') ?? 0),
     );
 
     return Container(
@@ -233,6 +254,9 @@ class _TripHistoryScreenState extends State<TripHistoryScreen> {
   }
 
   Widget _buildEmptyState() {
+    final hasFilters =
+        _filterMode != 'all' || _filterStartDate != null || _filterEndDate != null;
+
     return Center(
       child: Column(
         mainAxisAlignment: MainAxisAlignment.center,
@@ -244,9 +268,7 @@ class _TripHistoryScreenState extends State<TripHistoryScreen> {
           ),
           const SizedBox(height: 16),
           Text(
-            _filterMode != 'all' || _filterStartDate != null
-                ? 'No trips match your filters'
-                : 'No trips yet',
+            hasFilters ? 'No trips match your filters' : 'No trips yet',
             style: TextStyle(
               fontSize: 20,
               color: Colors.white.withOpacity(0.6),
@@ -254,7 +276,7 @@ class _TripHistoryScreenState extends State<TripHistoryScreen> {
           ),
           const SizedBox(height: 8),
           Text(
-            _filterMode != 'all' || _filterStartDate != null
+            hasFilters
                 ? 'Try adjusting your filters'
                 : 'Start tracking your trips!',
             style: TextStyle(
@@ -262,7 +284,7 @@ class _TripHistoryScreenState extends State<TripHistoryScreen> {
               color: Colors.white.withOpacity(0.4),
             ),
           ),
-          if (_filterMode != 'all' || _filterStartDate != null) ...[
+          if (hasFilters) ...[
             const SizedBox(height: 16),
             TextButton(
               onPressed: () {
@@ -285,9 +307,8 @@ class _TripHistoryScreenState extends State<TripHistoryScreen> {
     final formattedDate = date != null
         ? DateFormat('MMM dd, yyyy').format(date)
         : 'Unknown date';
-    final formattedTime = date != null
-        ? DateFormat('hh:mm a').format(date)
-        : 'Unknown time';
+    final formattedTime =
+    date != null ? DateFormat('hh:mm a').format(date) : 'Unknown time';
 
     final distance = trip['distance_km']?.toString() ?? '0';
     final duration = trip['duration_minutes']?.toString() ?? '0';
@@ -331,7 +352,9 @@ class _TripHistoryScreenState extends State<TripHistoryScreen> {
                       crossAxisAlignment: CrossAxisAlignment.start,
                       children: [
                         Text(
-                          trip['start_location_name'] ?? trip['start_location'] ?? 'Unknown',
+                          trip['start_location_name'] ??
+                              trip['start_location'] ??
+                              'Unknown',
                           style: const TextStyle(
                             color: Colors.white,
                             fontWeight: FontWeight.bold,
@@ -351,7 +374,9 @@ class _TripHistoryScreenState extends State<TripHistoryScreen> {
                             const SizedBox(width: 4),
                             Expanded(
                               child: Text(
-                                trip['end_location_name'] ?? trip['end_location'] ?? 'Unknown',
+                                trip['end_location_name'] ??
+                                    trip['end_location'] ??
+                                    'Unknown',
                                 style: TextStyle(
                                   color: Colors.white.withOpacity(0.6),
                                   fontSize: 14,
@@ -434,22 +459,18 @@ class _TripHistoryScreenState extends State<TripHistoryScreen> {
   }
 
   IconData _getModeIcon(String? mode) {
-    switch (mode?.toLowerCase()) {
-      case 'car':
-        return Icons.directions_car;
-      case 'bike':
-        return Icons.two_wheeler;
-      case 'bus':
-        return Icons.directions_bus;
-      case 'train':
-        return Icons.train;
-      case 'metro':
-        return Icons.subway;
-      case 'walk':
-        return Icons.directions_walk;
-      default:
-        return Icons.location_on;
+    final m = mode?.toLowerCase() ?? '';
+    if (m.contains('car')) return Icons.directions_car;
+    if (m.contains('bike') || m.contains('motorcycle')) {
+      return Icons.two_wheeler;
     }
+    if (m.contains('bus')) return Icons.directions_bus;
+    if (m.contains('train')) return Icons.train;
+    if (m.contains('metro') || m.contains('subway')) {
+      return Icons.subway;
+    }
+    if (m.contains('walk')) return Icons.directions_walk;
+    return Icons.location_on;
   }
 
   void _showFilterDialog() {
@@ -476,8 +497,6 @@ class _TripHistoryScreenState extends State<TripHistoryScreen> {
                   ),
                 ),
                 const SizedBox(height: 20),
-
-                // Mode filter
                 const Text(
                   'Mode of Travel',
                   style: TextStyle(color: Colors.white70),
@@ -494,8 +513,6 @@ class _TripHistoryScreenState extends State<TripHistoryScreen> {
                   ],
                 ),
                 const SizedBox(height: 20),
-
-                // Date range
                 const Text(
                   'Date Range',
                   style: TextStyle(color: Colors.white70),
@@ -508,40 +525,50 @@ class _TripHistoryScreenState extends State<TripHistoryScreen> {
                         onPressed: () async {
                           final picked = await showDatePicker(
                             context: context,
-                            initialDate: _filterStartDate ?? DateTime.now(),
+                            initialDate:
+                            _filterStartDate ?? DateTime.now(),
                             firstDate: DateTime(2020),
                             lastDate: DateTime.now(),
                           );
                           if (picked != null) {
-                            setModalState(() => _filterStartDate = picked);
+                            setModalState(
+                                    () => _filterStartDate = picked);
                             setState(() => _filterStartDate = picked);
                           }
                         },
                         child: Text(
                           _filterStartDate != null
-                              ? DateFormat('MMM dd').format(_filterStartDate!)
+                              ? DateFormat('MMM dd')
+                              .format(_filterStartDate!)
                               : 'Start Date',
                         ),
                       ),
                     ),
-                    const Text('to', style: TextStyle(color: Colors.white70)),
+                    const Text(
+                      'to',
+                      style: TextStyle(color: Colors.white70),
+                    ),
                     Expanded(
                       child: TextButton(
                         onPressed: () async {
                           final picked = await showDatePicker(
                             context: context,
-                            initialDate: _filterEndDate ?? DateTime.now(),
-                            firstDate: _filterStartDate ?? DateTime(2020),
+                            initialDate:
+                            _filterEndDate ?? DateTime.now(),
+                            firstDate:
+                            _filterStartDate ?? DateTime(2020),
                             lastDate: DateTime.now(),
                           );
                           if (picked != null) {
-                            setModalState(() => _filterEndDate = picked);
+                            setModalState(
+                                    () => _filterEndDate = picked);
                             setState(() => _filterEndDate = picked);
                           }
                         },
                         child: Text(
                           _filterEndDate != null
-                              ? DateFormat('MMM dd').format(_filterEndDate!)
+                              ? DateFormat('MMM dd')
+                              .format(_filterEndDate!)
                               : 'End Date',
                         ),
                       ),
@@ -549,8 +576,6 @@ class _TripHistoryScreenState extends State<TripHistoryScreen> {
                   ],
                 ),
                 const SizedBox(height: 20),
-
-                // Buttons
                 Row(
                   children: [
                     Expanded(
@@ -590,7 +615,11 @@ class _TripHistoryScreenState extends State<TripHistoryScreen> {
     );
   }
 
-  Widget _buildFilterChip(String value, String label, StateSetter setModalState) {
+  Widget _buildFilterChip(
+      String value,
+      String label,
+      StateSetter setModalState,
+      ) {
     final isSelected = _filterMode == value;
     return FilterChip(
       label: Text(label),
@@ -644,21 +673,55 @@ class _TripHistoryScreenState extends State<TripHistoryScreen> {
                   ),
                 ),
                 const SizedBox(height: 20),
-                _buildDetailRow('Start', trip['start_location_name'] ?? trip['start_location']),
-                _buildDetailRow('Destination', trip['end_location_name'] ?? trip['end_location']),
-                _buildDetailRow('Distance', '${trip['distance_km']} km'),
-                _buildDetailRow('Duration', '${trip['duration_minutes']} minutes'),
-                _buildDetailRow('Mode', trip['mode_of_travel'] ?? 'N/A'),
-                _buildDetailRow('Purpose', trip['trip_purpose'] ?? 'N/A'),
-                _buildDetailRow('Companions', trip['number_of_companions']?.toString() ?? '0'),
+                _buildDetailRow(
+                  'Start',
+                  trip['start_location_name'] ?? trip['start_location'],
+                ),
+                _buildDetailRow(
+                  'Destination',
+                  trip['end_location_name'] ?? trip['end_location'],
+                ),
+                _buildDetailRow(
+                  'Distance',
+                  '${trip['distance_km']} km',
+                ),
+                _buildDetailRow(
+                  'Duration',
+                  '${trip['duration_minutes']} minutes',
+                ),
+                _buildDetailRow(
+                  'Mode',
+                  trip['mode_of_travel'] ?? 'N/A',
+                ),
+                _buildDetailRow(
+                  'Purpose',
+                  trip['trip_purpose'] ?? 'N/A',
+                ),
+                _buildDetailRow(
+                  'Companions',
+                  trip['number_of_companions']?.toString() ?? '0',
+                ),
                 if (trip['fuel_expense'] != null)
-                  _buildDetailRow('Fuel Cost', '₹${trip['fuel_expense']}'),
+                  _buildDetailRow(
+                    'Fuel Cost',
+                    '₹${trip['fuel_expense']}',
+                  ),
                 if (trip['parking_cost'] != null)
-                  _buildDetailRow('Parking', '₹${trip['parking_cost']}'),
+                  _buildDetailRow(
+                    'Parking',
+                    '₹${trip['parking_cost']}',
+                  ),
                 if (trip['toll_cost'] != null)
-                  _buildDetailRow('Toll', '₹${trip['toll_cost']}'),
+                  _buildDetailRow(
+                    'Toll',
+                    '₹${trip['toll_cost']}',
+                  ),
                 const Divider(color: Colors.white24, height: 32),
-                _buildDetailRow('Total Cost', '₹${trip['total_cost']}', isTotal: true),
+                _buildDetailRow(
+                  'Total Cost',
+                  '₹${trip['total_cost']}',
+                  isTotal: true,
+                ),
               ],
             ),
           );
@@ -667,7 +730,8 @@ class _TripHistoryScreenState extends State<TripHistoryScreen> {
     );
   }
 
-  Widget _buildDetailRow(String label, String? value, {bool isTotal = false}) {
+  Widget _buildDetailRow(String label, String? value,
+      {bool isTotal = false}) {
     return Padding(
       padding: const EdgeInsets.only(bottom: 12),
       child: Row(
@@ -695,8 +759,9 @@ class _TripHistoryScreenState extends State<TripHistoryScreen> {
   }
 
   void _showError(String message) {
+    if (!mounted) return;
     ScaffoldMessenger.of(context).showSnackBar(
       SnackBar(content: Text(message), backgroundColor: Colors.red),
     );
   }
-}// TODO Implement this library.
+}

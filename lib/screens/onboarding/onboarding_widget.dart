@@ -6,7 +6,7 @@ import 'package:get/get.dart';
 import 'package:get_storage/get_storage.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:smooth_page_indicator/smooth_page_indicator.dart';
-import 'package:trackmate_app/screens/login_screen.dart'; // Corrected Path
+import 'package:trackmate_app/screens/auth/login_screen.dart'; // Corrected Path
 import 'package:trackmate_app/utils/app_colors.dart';
 
 import '../auth/login_screen.dart';

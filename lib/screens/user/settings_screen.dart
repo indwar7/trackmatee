@@ -1,7 +1,11 @@
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
+import 'package:provider/provider.dart';
 import 'package:trackmate_app/controllers/profile_controller.dart';
 import 'package:trackmate_app/controllers/language_controller.dart';
+import 'package:trackmate_app/services/api_service.dart';
+import 'package:trackmate_app/screens/onboarding/welcome_screen.dart';
+import 'package:trackmate_app/screens/auth/login_screen.dart';
 
 class SettingsScreen extends StatelessWidget {
   const SettingsScreen({Key? key}) : super(key: key);
@@ -147,13 +151,8 @@ class SettingsScreen extends StatelessWidget {
                     confirmTextColor: Colors.white,
                     cancelTextColor: Colors.white,
                     buttonColor: Colors.red,
-                    onConfirm: () async {
-                      try {
-                        final authService = Get.find();
-                        await authService.logout();
-                      } catch (e) {
-                        print('Logout error: $e');
-                      }
+                    onConfirm: () {
+                      _handleLogout(context);
                     },
                   );
                 },
@@ -179,6 +178,46 @@ class SettingsScreen extends StatelessWidget {
           ],
         ),
       ),
+    );
+  }
+
+  // ------------------------------------------------------------ LOGOUT HANDLER
+
+  void _handleLogout(BuildContext context) async {
+    // Close confirmation dialog
+    Get.back();
+
+    // Show loading indicator
+    Get.dialog(
+      const Center(
+        child: CircularProgressIndicator(
+          color: Color(0xFF8B5CF6),
+        ),
+      ),
+      barrierDismissible: false,
+    );
+
+    // Get ApiService from Provider
+    final apiService = context.read<ApiService>();
+
+    // Call logout API (always succeeds, clears tokens)
+    await apiService.logout();
+
+    // Close loading indicator
+    Get.back();
+
+    // Navigate to login screen and clear all routes
+    Get.offAll(() => const LoginScreen());
+
+    // Show success message
+    Get.snackbar(
+      'Logged Out',
+      'You have been successfully logged out',
+      backgroundColor: Colors.green,
+      colorText: Colors.white,
+      snackPosition: SnackPosition.BOTTOM,
+      margin: const EdgeInsets.all(16),
+      duration: const Duration(seconds: 2),
     );
   }
 
@@ -258,7 +297,7 @@ class SettingsScreen extends StatelessWidget {
     );
   }
 
-  // ------------------------------------------------------------ LANGUAGE DIALOG FIXED
+  // ------------------------------------------------------------ LANGUAGE DIALOG
   void _showLanguageDialog(BuildContext context, LanguageController controller) {
     Get.dialog(
       AlertDialog(
@@ -292,7 +331,7 @@ class SettingsScreen extends StatelessWidget {
     );
   }
 
-  // ------------------------------------------------------------ ADD LOCATION DIALOG FIXED
+  // ------------------------------------------------------------ ADD LOCATION DIALOG
   void _showAddLocationDialog(
       BuildContext context,
       String type,
@@ -340,7 +379,6 @@ class SettingsScreen extends StatelessWidget {
                 ),
                 const SizedBox(width: 8),
 
-                // SAVE BUTTON
                 ElevatedButton(
                   onPressed: () {
                     if (locationController.text.trim().isNotEmpty) {
