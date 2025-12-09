@@ -1,9 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:http/http.dart' as http;
 import 'dart:convert';
-import 'dart:async';
 
-// ---------------- Chat Screen ----------------
 class ChatScreen extends StatefulWidget {
   final String? initialMessage;
 
@@ -22,41 +20,68 @@ class Message {
 class _ChatScreenState extends State<ChatScreen> {
   final List<Message> _messages = [];
   final controller = TextEditingController();
-  String? _conversationId;
   bool _isLoading = false;
-
-  // Backend URL - Deployed on Render
-  final String baseUrl = 'https://chatbotcopy-ev49.onrender.com';
+  String? _conversationId;
+  final String backendUrl = 'https://chatbotcopy-ev49.onrender.com';
 
   @override
   void initState() {
     super.initState();
-
     _messages.add(Message('Hi, my name is Trackro, how may I help you today?', isUser: false));
 
     if (widget.initialMessage != null) {
-      _sendMessage(widget.initialMessage!);
+      _messages.add(Message(widget.initialMessage!, isUser: true));
+      Future.delayed(Duration(milliseconds: 500), () {
+        _startConversation(widget.initialMessage!);
+      });
     }
   }
 
-  Future<void> _sendMessage(String text) async {
-    if (_isLoading) return;
+  @override
+  void dispose() {
+    controller.dispose();
+    super.dispose();
+  }
 
-    // Add user message to UI
+  Future<void> _startConversation(String userMessage) async {
     setState(() {
-      _messages.add(Message(text, isUser: true));
       _isLoading = true;
     });
 
-    controller.clear();
-
     try {
-      if (_conversationId == null) {
-        // Start new conversation
-        await _startConversation(text);
+      final response = await http.post(
+        Uri.parse('$backendUrl/inquire/start'),
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: jsonEncode({
+          'message': userMessage,
+        }),
+      ).timeout(
+        Duration(seconds: 30),
+        onTimeout: () {
+          throw Exception('Request timeout');
+        },
+      );
+
+      if (response.statusCode == 200) {
+        final data = jsonDecode(response.body);
+
+        // Store conversation ID for continuing the conversation
+        _conversationId = data['conversation_id'];
+
+        // Get the assistant's response
+        final botReply = data['question'] ?? 'Sorry, I could not process your request.';
+
+        setState(() {
+          _messages.add(Message(botReply, isUser: false));
+          _isLoading = false;
+        });
       } else {
-        // Continue existing conversation
-        await _continueConversation(text);
+        setState(() {
+          _messages.add(Message('Error: Unable to get response from server (${response.statusCode})', isUser: false));
+          _isLoading = false;
+        });
       }
     } catch (e) {
       setState(() {
@@ -66,118 +91,74 @@ class _ChatScreenState extends State<ChatScreen> {
     }
   }
 
-  Future<void> _startConversation(String message) async {
-    try {
-      print('Attempting to connect to: $baseUrl/inquire/start/stream');
-
-      final response = await http.post(
-        Uri.parse('$baseUrl/inquire/start/stream'),
-        headers: {
-          'Content-Type': 'application/json',
-          'Accept': 'text/event-stream',
-        },
-        body: json.encode({'message': message}),
-      ).timeout(
-        Duration(seconds: 60),
-        onTimeout: () {
-          throw Exception('Request timeout - Backend might be waking up (Render free tier takes 30-60 seconds)');
-        },
-      );
-
-      print('Response status: ${response.statusCode}');
-      print('Response body: ${response.body}');
-
-      if (response.statusCode == 200) {
-        await _handleStreamResponse(response.body);
-      } else {
-        throw Exception('Failed to start conversation: ${response.statusCode} - ${response.body}');
-      }
-    } catch (e) {
-      print('Error details: $e');
-      throw Exception('Network error: $e');
-    }
-  }
-
-  Future<void> _continueConversation(String answer) async {
-    try {
-      print('Continuing conversation: $baseUrl/inquire/continue/stream');
-
-      final response = await http.post(
-        Uri.parse('$baseUrl/inquire/continue/stream'),
-        headers: {
-          'Content-Type': 'application/json',
-          'Accept': 'text/event-stream',
-        },
-        body: json.encode({
-          'conversation_id': _conversationId,
-          'answer': answer,
-        }),
-      ).timeout(
-        Duration(seconds: 60),
-        onTimeout: () {
-          throw Exception('Request timeout - Backend might be waking up');
-        },
-      );
-
-      print('Response status: ${response.statusCode}');
-
-      if (response.statusCode == 200) {
-        await _handleStreamResponse(response.body);
-      } else {
-        throw Exception('Failed to continue conversation: ${response.statusCode} - ${response.body}');
-      }
-    } catch (e) {
-      print('Error details: $e');
-      throw Exception('Network error: $e');
-    }
-  }
-
-  Future<void> _handleStreamResponse(String responseBody) async {
-    String fullResponse = '';
-
-    // Parse SSE (Server-Sent Events) response
-    final lines = responseBody.split('\n');
-
-    for (var line in lines) {
-      if (line.startsWith('data: ')) {
-        final jsonStr = line.substring(6);
-        try {
-          final data = json.decode(jsonStr);
-          final type = data['type'];
-
-          if (type == 'token') {
-            // Accumulate streaming tokens
-            fullResponse += data['content'];
-            if (data['conversation_id'] != null) {
-              _conversationId = data['conversation_id'];
-            }
-          } else if (type == 'done') {
-            // Message complete
-            if (data['conversation_id'] != null) {
-              _conversationId = data['conversation_id'];
-            }
-            if (data['question'] != null) {
-              fullResponse = data['question'];
-            }
-          } else if (type == 'final_query') {
-            // Refined query received
-            fullResponse = data['refined_query'];
-            _conversationId = null; // Reset conversation
-          } else if (type == 'error') {
-            fullResponse = 'Error: ${data['content']}';
-          }
-        } catch (e) {
-          print('Error parsing JSON: $e');
-        }
-      }
+  Future<void> _continueConversation(String userMessage) async {
+    if (_conversationId == null) {
+      setState(() {
+        _messages.add(Message('Error: Conversation ID not found. Please start a new conversation.', isUser: false));
+      });
+      return;
     }
 
     setState(() {
-      if (fullResponse.isNotEmpty) {
-        _messages.add(Message(fullResponse, isUser: false));
-      }
-      _isLoading = false;
+      _isLoading = true;
     });
+
+    try {
+      final response = await http.post(
+        Uri.parse('$backendUrl/inquire/continue'),
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: jsonEncode({
+          'conversation_id': _conversationId,
+          'answer': userMessage,
+        }),
+      ).timeout(
+        Duration(seconds: 30),
+        onTimeout: () {
+          throw Exception('Request timeout');
+        },
+      );
+
+      if (response.statusCode == 200) {
+        final data = jsonDecode(response.body);
+
+        // Get the assistant's response
+        final botReply = data['question'] ?? data['refined_query'] ?? 'Sorry, I could not process your request.';
+
+        setState(() {
+          _messages.add(Message(botReply, isUser: false));
+          _isLoading = false;
+        });
+      } else {
+        setState(() {
+          _messages.add(Message('Error: Unable to get response from server (${response.statusCode})', isUser: false));
+          _isLoading = false;
+        });
+      }
+    } catch (e) {
+      setState(() {
+        _messages.add(Message('Error: ${e.toString()}', isUser: false));
+        _isLoading = false;
+      });
+    }
+  }
+
+  void _sendMessage() {
+    final text = controller.text.trim();
+    if (text.isEmpty || _isLoading) return;
+
+    _messages.add(Message(text, isUser: true));
+    setState(() {});
+    controller.clear();
+
+    // If this is the first message, start a conversation
+    if (_conversationId == null) {
+      _startConversation(text);
+    } else {
+      // Otherwise, continue the existing conversation
+      _continueConversation(text);
+    }
   }
 
   @override
@@ -206,16 +187,20 @@ class _ChatScreenState extends State<ChatScreen> {
           ),
           if (_isLoading)
             Padding(
-              padding: const EdgeInsets.all(8.0),
+              padding: const EdgeInsets.all(16.0),
               child: Row(
+                mainAxisAlignment: MainAxisAlignment.start,
                 children: [
-                  SizedBox(width: 16),
-                  CircleAvatar(
-                    backgroundColor: Colors.transparent,
-                    child: Icon(Icons.android, color: Color(0xFF6C4BDB)),
+                  SizedBox(
+                    width: 20,
+                    height: 20,
+                    child: CircularProgressIndicator(
+                      strokeWidth: 2,
+                      valueColor: AlwaysStoppedAnimation<Color>(Color(0xFF6C4BDB)),
+                    ),
                   ),
                   SizedBox(width: 12),
-                  Text('Trackro is typing...', style: TextStyle(color: Colors.grey)),
+                  Text('Trackro is typing...', style: TextStyle(color: Colors.grey[400])),
                 ],
               ),
             ),
@@ -227,6 +212,7 @@ class _ChatScreenState extends State<ChatScreen> {
                   Expanded(
                     child: TextField(
                       controller: controller,
+                      enabled: !_isLoading,
                       style: TextStyle(color: Colors.white),
                       decoration: InputDecoration(
                         filled: true,
@@ -239,11 +225,6 @@ class _ChatScreenState extends State<ChatScreen> {
                           borderSide: BorderSide.none,
                         ),
                       ),
-                      onSubmitted: (text) {
-                        if (text.trim().isNotEmpty && !_isLoading) {
-                          _sendMessage(text.trim());
-                        }
-                      },
                     ),
                   ),
                   SizedBox(width: 8),
@@ -251,17 +232,10 @@ class _ChatScreenState extends State<ChatScreen> {
                     style: ElevatedButton.styleFrom(
                       shape: CircleBorder(),
                       padding: EdgeInsets.all(12),
-                      backgroundColor: _isLoading ? Colors.grey : Color(0xFF6C4BDB),
+                      backgroundColor: Color(0xFF6C4BDB),
                     ),
+                    onPressed: _isLoading ? null : _sendMessage,
                     child: Icon(Icons.send, color: Colors.white),
-                    onPressed: _isLoading
-                        ? null
-                        : () {
-                      final text = controller.text.trim();
-                      if (text.isNotEmpty) {
-                        _sendMessage(text);
-                      }
-                    },
                   )
                 ],
               ),
@@ -270,12 +244,6 @@ class _ChatScreenState extends State<ChatScreen> {
         ],
       ),
     );
-  }
-
-  @override
-  void dispose() {
-    controller.dispose();
-    super.dispose();
   }
 }
 
@@ -304,13 +272,14 @@ class ChatBubble extends StatelessWidget {
       child: Row(
         mainAxisAlignment: isUser ? MainAxisAlignment.end : MainAxisAlignment.start,
         children: [
-          if (!isUser) ...[
-            CircleAvatar(
-              backgroundColor: Colors.transparent,
-              child: Icon(Icons.android, color: Color(0xFF6C4BDB)),
-            ),
-            SizedBox(width: 8),
-          ],
+          if (!isUser)
+            ...[
+              CircleAvatar(
+                backgroundColor: Colors.transparent,
+                child: Icon(Icons.android, color: Color(0xFF6C4BDB)),
+              ),
+              SizedBox(width: 8),
+            ],
           Flexible(
             child: Container(
               padding: EdgeInsets.all(14),
