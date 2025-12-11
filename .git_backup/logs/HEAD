@@ -1,0 +1,74 @@
+0000000000000000000000000000000000000000 e9823414b6e6e8d402a37b6b079aade47b36eaa0 indwar7 <abhay.indwar7@gmail.com> 1764094698 +0530	commit (initial): Clean recovery – repo was corrupted
+e9823414b6e6e8d402a37b6b079aade47b36eaa0 e9823414b6e6e8d402a37b6b079aade47b36eaa0 indwar7 <abhay.indwar7@gmail.com> 1764095043 +0530	checkout: moving from main to main
+e9823414b6e6e8d402a37b6b079aade47b36eaa0 e9823414b6e6e8d402a37b6b079aade47b36eaa0 indwar7 <abhay.indwar7@gmail.com> 1764095074 +0530	checkout: moving from main to analyticsbooking
+e9823414b6e6e8d402a37b6b079aade47b36eaa0 0210ccaefb617b19d109f5a28a28939598c363a7 indwar7 <abhay.indwar7@gmail.com> 1764095537 +0530	checkout: moving from analyticsbooking to home_translation_profile
+0210ccaefb617b19d109f5a28a28939598c363a7 0210ccaefb617b19d109f5a28a28939598c363a7 indwar7 <abhay.indwar7@gmail.com> 1764101034 +0530	reset: moving to HEAD
+0210ccaefb617b19d109f5a28a28939598c363a7 e9823414b6e6e8d402a37b6b079aade47b36eaa0 indwar7 <abhay.indwar7@gmail.com> 1764101110 +0530	checkout: moving from home_translation_profile to analyticsbooking
+e9823414b6e6e8d402a37b6b079aade47b36eaa0 e9823414b6e6e8d402a37b6b079aade47b36eaa0 indwar7 <abhay.indwar7@gmail.com> 1764102325 +0530	checkout: moving from analyticsbooking to main
+e9823414b6e6e8d402a37b6b079aade47b36eaa0 c018c4826a3db4518d7f29dd48fb49e832ea1f91 indwar7 <abhay.indwar7@gmail.com> 1764102385 +0530	commit: Reset main to clean state
+c018c4826a3db4518d7f29dd48fb49e832ea1f91 0210ccaefb617b19d109f5a28a28939598c363a7 indwar7 <abhay.indwar7@gmail.com> 1764102410 +0530	checkout: moving from main to home_translation_profile
+0210ccaefb617b19d109f5a28a28939598c363a7 e9823414b6e6e8d402a37b6b079aade47b36eaa0 indwar7 <abhay.indwar7@gmail.com> 1764102420 +0530	checkout: moving from home_translation_profile to analyticsbooking
+e9823414b6e6e8d402a37b6b079aade47b36eaa0 e9823414b6e6e8d402a37b6b079aade47b36eaa0 indwar7 <abhay.indwar7@gmail.com> 1764102441 +0530	checkout: moving from analyticsbooking to analyticsbooking
+e9823414b6e6e8d402a37b6b079aade47b36eaa0 e9823414b6e6e8d402a37b6b079aade47b36eaa0 indwar7 <abhay.indwar7@gmail.com> 1764325802 +0530	reset: moving to HEAD
+e9823414b6e6e8d402a37b6b079aade47b36eaa0 0210ccaefb617b19d109f5a28a28939598c363a7 indwar7 <abhay.indwar7@gmail.com> 1764326018 +0530	checkout: moving from analyticsbooking to login
+0210ccaefb617b19d109f5a28a28939598c363a7 0210ccaefb617b19d109f5a28a28939598c363a7 indwar7 <abhay.indwar7@gmail.com> 1764326520 +0530	reset: moving to HEAD
+0210ccaefb617b19d109f5a28a28939598c363a7 e9823414b6e6e8d402a37b6b079aade47b36eaa0 indwar7 <abhay.indwar7@gmail.com> 1764326529 +0530	checkout: moving from login to analyticsbooking
+e9823414b6e6e8d402a37b6b079aade47b36eaa0 cb394971cccb3e918fb1dc0325fa262ffe8dde0e indwar7 <abhay.indwar7@gmail.com> 1764326809 +0530	reset: moving to origin/analyticsbooking
+cb394971cccb3e918fb1dc0325fa262ffe8dde0e 0210ccaefb617b19d109f5a28a28939598c363a7 indwar7 <abhay.indwar7@gmail.com> 1764326944 +0530	checkout: moving from analyticsbooking to login
+0210ccaefb617b19d109f5a28a28939598c363a7 cb394971cccb3e918fb1dc0325fa262ffe8dde0e indwar7 <abhay.indwar7@gmail.com> 1764327113 +0530	checkout: moving from login to analyticsbooking
+cb394971cccb3e918fb1dc0325fa262ffe8dde0e 0210ccaefb617b19d109f5a28a28939598c363a7 indwar7 <abhay.indwar7@gmail.com> 1764327196 +0530	checkout: moving from analyticsbooking to login
+0210ccaefb617b19d109f5a28a28939598c363a7 cb394971cccb3e918fb1dc0325fa262ffe8dde0e indwar7 <abhay.indwar7@gmail.com> 1764327247 +0530	checkout: moving from login to analyticsbooking
+cb394971cccb3e918fb1dc0325fa262ffe8dde0e 0210ccaefb617b19d109f5a28a28939598c363a7 indwar7 <abhay.indwar7@gmail.com> 1764327310 +0530	checkout: moving from analyticsbooking to login
+0210ccaefb617b19d109f5a28a28939598c363a7 f1673875f67971290b045458060bbb42d6839812 indwar7 <abhay.indwar7@gmail.com> 1764330190 +0530	commit: Saving complete working state from analyticsbooking work
+f1673875f67971290b045458060bbb42d6839812 cb394971cccb3e918fb1dc0325fa262ffe8dde0e indwar7 <abhay.indwar7@gmail.com> 1764330315 +0530	checkout: moving from login to analyticsbooking
+cb394971cccb3e918fb1dc0325fa262ffe8dde0e cb394971cccb3e918fb1dc0325fa262ffe8dde0e indwar7 <abhay.indwar7@gmail.com> 1764330434 +0530	checkout: moving from analyticsbooking to analyticsbooking
+cb394971cccb3e918fb1dc0325fa262ffe8dde0e 0067e860f3f84a358dc0b194c885239301df9512 indwar7 <abhay.indwar7@gmail.com> 1764330651 +0530	commit (merge): Resolved merge conflicts — Final working login auth code kept
+0067e860f3f84a358dc0b194c885239301df9512 0067e860f3f84a358dc0b194c885239301df9512 indwar7 <abhay.indwar7@gmail.com> 1764405661 +0530	checkout: moving from analyticsbooking to analyticsbooking
+0067e860f3f84a358dc0b194c885239301df9512 d93947830f11bc6487d79b611a936e84fa7e8ecf indwar7 <abhay.indwar7@gmail.com> 1764405710 +0530	commit: Cleaned up duplicate files and fixed configuration
+d93947830f11bc6487d79b611a936e84fa7e8ecf d93947830f11bc6487d79b611a936e84fa7e8ecf indwar7 <abhay.indwar7@gmail.com> 1764557132 +0530	checkout: moving from analyticsbooking to AnalyticsBooking
+d93947830f11bc6487d79b611a936e84fa7e8ecf e3d113126b14c42eab1408903497d5cde7463653 indwar7 <abhay.indwar7@gmail.com> 1764578025 +0530	commit: full homescreen done
+d93947830f11bc6487d79b611a936e84fa7e8ecf 0000000000000000000000000000000000000000 indwar7 <abhay.indwar7@gmail.com> 1764664094 +0530	Branch: renamed refs/heads/AnalyticsBooking to refs/heads/home
+0000000000000000000000000000000000000000 d93947830f11bc6487d79b611a936e84fa7e8ecf indwar7 <abhay.indwar7@gmail.com> 1764664094 +0530	Branch: renamed refs/heads/AnalyticsBooking to refs/heads/home
+d93947830f11bc6487d79b611a936e84fa7e8ecf 2ee5ae2ccbbf5aa25d8147508ec882ee2637ae5d indwar7 <abhay.indwar7@gmail.com> 1764664441 +0530	commit: rough homescreen
+2ee5ae2ccbbf5aa25d8147508ec882ee2637ae5d e3d113126b14c42eab1408903497d5cde7463653 indwar7 <abhay.indwar7@gmail.com> 1764683341 +0530	checkout: moving from home to AnalyticsBooking
+e3d113126b14c42eab1408903497d5cde7463653 e3d113126b14c42eab1408903497d5cde7463653 indwar7 <abhay.indwar7@gmail.com> 1764746888 +0530	checkout: moving from AnalyticsBooking to analyticsbooking
+e3d113126b14c42eab1408903497d5cde7463653 fd6b92b34cf7b3f63d9a62ca36ebcf7f977f2c93 indwar7 <abhay.indwar7@gmail.com> 1764746911 +0530	commit: Updated analytics & booking logic
+fd6b92b34cf7b3f63d9a62ca36ebcf7f977f2c93 fd6b92b34cf7b3f63d9a62ca36ebcf7f977f2c93 indwar7 <abhay.indwar7@gmail.com> 1764748238 +0530	checkout: moving from analyticsbooking to AnalyticsBooking
+fd6b92b34cf7b3f63d9a62ca36ebcf7f977f2c93 50c63b220f53a15e372913334b48aabb1cb6c292 indwar7 <abhay.indwar7@gmail.com> 1764749799 +0530	commit: all
+50c63b220f53a15e372913334b48aabb1cb6c292 c018c4826a3db4518d7f29dd48fb49e832ea1f91 indwar7 <abhay.indwar7@gmail.com> 1764749841 +0530	checkout: moving from AnalyticsBooking to main
+c018c4826a3db4518d7f29dd48fb49e832ea1f91 0a5b6ae91da8e2e02ea589e638ae9ab41d4d757c indwar7 <abhay.indwar7@gmail.com> 1764750247 +0530	pull: Fast-forward
+0a5b6ae91da8e2e02ea589e638ae9ab41d4d757c 0a5b6ae91da8e2e02ea589e638ae9ab41d4d757c indwar7 <abhay.indwar7@gmail.com> 1764751569 +0530	checkout: moving from main to dev
+0a5b6ae91da8e2e02ea589e638ae9ab41d4d757c 62cf132ace87bc2288bea52788e899b73322c267 indwar7 <abhay.indwar7@gmail.com> 1764774712 +0530	commit: all files at one place
+62cf132ace87bc2288bea52788e899b73322c267 62cf132ace87bc2288bea52788e899b73322c267 indwar7 <abhay.indwar7@gmail.com> 1764784166 +0530	checkout: moving from dev to dev
+62cf132ace87bc2288bea52788e899b73322c267 62cf132ace87bc2288bea52788e899b73322c267 indwar7 <abhay.indwar7@gmail.com> 1764784463 +0530	checkout: moving from dev to dev
+62cf132ace87bc2288bea52788e899b73322c267 50c63b220f53a15e372913334b48aabb1cb6c292 indwar7 <abhay.indwar7@gmail.com> 1764784583 +0530	checkout: moving from dev to AnalyticsBooking
+50c63b220f53a15e372913334b48aabb1cb6c292 50c63b220f53a15e372913334b48aabb1cb6c292 indwar7 <abhay.indwar7@gmail.com> 1764784584 +0530	checkout: moving from AnalyticsBooking to AnalyticsBooking
+50c63b220f53a15e372913334b48aabb1cb6c292 62cf132ace87bc2288bea52788e899b73322c267 indwar7 <abhay.indwar7@gmail.com> 1764784711 +0530	checkout: moving from AnalyticsBooking to dev
+62cf132ace87bc2288bea52788e899b73322c267 62cf132ace87bc2288bea52788e899b73322c267 indwar7 <abhay.indwar7@gmail.com> 1764790453 +0530	reset: moving to HEAD
+62cf132ace87bc2288bea52788e899b73322c267 0a5b6ae91da8e2e02ea589e638ae9ab41d4d757c indwar7 <abhay.indwar7@gmail.com> 1764790515 +0530	checkout: moving from dev to main
+0a5b6ae91da8e2e02ea589e638ae9ab41d4d757c 60c1ac06ac415ed1a813d8932decff45ed54e4fe indwar7 <abhay.indwar7@gmail.com> 1764790864 +0530	checkout: moving from main to shashwat-fix
+60c1ac06ac415ed1a813d8932decff45ed54e4fe 62cf132ace87bc2288bea52788e899b73322c267 indwar7 <abhay.indwar7@gmail.com> 1764791359 +0530	checkout: moving from shashwat-fix to dev
+62cf132ace87bc2288bea52788e899b73322c267 60c1ac06ac415ed1a813d8932decff45ed54e4fe indwar7 <abhay.indwar7@gmail.com> 1764791700 +0530	checkout: moving from dev to shashwat-fix
+60c1ac06ac415ed1a813d8932decff45ed54e4fe 62cf132ace87bc2288bea52788e899b73322c267 indwar7 <abhay.indwar7@gmail.com> 1764792447 +0530	checkout: moving from shashwat-fix to dev
+62cf132ace87bc2288bea52788e899b73322c267 e0900f1857fa123e10de867f193cbca50e0a3324 indwar7 <abhay.indwar7@gmail.com> 1764796149 +0530	commit: app built
+e0900f1857fa123e10de867f193cbca50e0a3324 60c1ac06ac415ed1a813d8932decff45ed54e4fe indwar7 <abhay.indwar7@gmail.com> 1764796174 +0530	checkout: moving from dev to shashwat/fix
+60c1ac06ac415ed1a813d8932decff45ed54e4fe 38e0ab5a0e0246bb5d377f5a5fb5b67882fd4197 indwar7 <abhay.indwar7@gmail.com> 1764796779 +0530	commit: app fix & built
+38e0ab5a0e0246bb5d377f5a5fb5b67882fd4197 b38c8abf896eb06399ea4d0b0ce250cba4ac3e7f indwar7 <abhay.indwar7@gmail.com> 1764832119 +0530	commit: Updated working app
+b38c8abf896eb06399ea4d0b0ce250cba4ac3e7f b4881ce0038bb51be0ff3445bd64b6d2b9a14b6e indwar7 <abhay.indwar7@gmail.com> 1764837938 +0530	commit: maps to be done
+b4881ce0038bb51be0ff3445bd64b6d2b9a14b6e 872afd6d94235cb427d90905afa0776310341f1a indwar7 <abhay.indwar7@gmail.com> 1764884886 +0530	commit: maps working
+872afd6d94235cb427d90905afa0776310341f1a 5f6398251f27c455aabf5fec1ae8fef1257a020a indwar7 <abhay.indwar7@gmail.com> 1764900665 +0530	commit: schedule n trip history/yet to be fixed/
+5f6398251f27c455aabf5fec1ae8fef1257a020a db8684b783fc0365255478e8b3f0225b6c2dfe37 indwar7 <abhay.indwar7@gmail.com> 1765085775 +0530	commit: pre final done
+db8684b783fc0365255478e8b3f0225b6c2dfe37 db8684b783fc0365255478e8b3f0225b6c2dfe37 indwar7 <abhay.indwar7@gmail.com> 1765117641 +0530	checkout: moving from shashwat/fix to shashwat/fix
+db8684b783fc0365255478e8b3f0225b6c2dfe37 db8684b783fc0365255478e8b3f0225b6c2dfe37 indwar7 <abhay.indwar7@gmail.com> 1765118694 +0530	checkout: moving from shashwat/fix to abhay
+db8684b783fc0365255478e8b3f0225b6c2dfe37 9bd8c6c22ac8fda537be6f17dfc282e02326e4bd indwar7 <abhay.indwar7@gmail.com> 1765118712 +0530	commit: new branch
+9bd8c6c22ac8fda537be6f17dfc282e02326e4bd 7ae16bfbe310a57e77600a650f3f15bbfd598bbb indwar7 <abhay.indwar7@gmail.com> 1765121875 +0530	pull origin abhay: Fast-forward
+7ae16bfbe310a57e77600a650f3f15bbfd598bbb 7ae16bfbe310a57e77600a650f3f15bbfd598bbb indwar7 <abhay.indwar7@gmail.com> 1765121956 +0530	checkout: moving from abhay to abhay
+7ae16bfbe310a57e77600a650f3f15bbfd598bbb 7ae16bfbe310a57e77600a650f3f15bbfd598bbb indwar7 <abhay.indwar7@gmail.com> 1765124716 +0530	reset: moving to HEAD
+7ae16bfbe310a57e77600a650f3f15bbfd598bbb 203dd824e1b9e631be0da934894a58f7be21c3af indwar7 <abhay.indwar7@gmail.com> 1765124722 +0530	pull origin abhay: Fast-forward
+203dd824e1b9e631be0da934894a58f7be21c3af 203dd824e1b9e631be0da934894a58f7be21c3af indwar7 <abhay.indwar7@gmail.com> 1765126592 +0530	reset: moving to HEAD
+203dd824e1b9e631be0da934894a58f7be21c3af 02db880129ecc35963254ae399f4f1c07374bd7d indwar7 <abhay.indwar7@gmail.com> 1765126599 +0530	pull origin abhay: Fast-forward
+02db880129ecc35963254ae399f4f1c07374bd7d 6b788d9a156d0b05be812bd9f1eae782cda53712 indwar7 <abhay.indwar7@gmail.com> 1765131524 +0530	commit: app is almost fix
+6b788d9a156d0b05be812bd9f1eae782cda53712 c43d2b102024502b67c514853579002ea6d416d7 indwar7 <abhay.indwar7@gmail.com> 1765161258 +0530	commit: final fix
+c43d2b102024502b67c514853579002ea6d416d7 00025531565982347aef7d4c395732b7fdbc89b5 indwar7 <abhay.indwar7@gmail.com> 1765192080 +0530	commit: app final done
+00025531565982347aef7d4c395732b7fdbc89b5 2643f47e3ecb1fff58cd610eed451a84e6c3ed0f indwar7 <abhay.indwar7@gmail.com> 1765237043 +0530	commit: final apk
+2643f47e3ecb1fff58cd610eed451a84e6c3ed0f 6c6bc94b870583c58bb402dcb115b126c2fac928 indwar7 <abhay.indwar7@gmail.com> 1765270951 +0530	commit: abhay

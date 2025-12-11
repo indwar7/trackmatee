@@ -1,0 +1,39 @@
+[core]
+	repositoryformatversion = 0
+	filemode = true
+	bare = false
+	logallrefupdates = true
+	ignorecase = true
+	precomposeunicode = true
+[remote "origin"]
+	url = https://github.com/indwar7/trackmatee.git
+	fetch = +refs/heads/*:refs/remotes/origin/*
+[branch "home_translation_profile"]
+	remote = origin
+	merge = refs/heads/home_translation_profile
+[branch "analyticsbooking"]
+	remote = origin
+	merge = refs/heads/analyticsbooking
+[branch "login"]
+	remote = origin
+	merge = refs/heads/login
+[pack]
+	window = 0
+	threads = 1
+[branch "home"]
+	remote = origin
+	merge = refs/heads/home
+[branch "AnalyticsBooking"]
+	remote = origin
+	merge = refs/heads/AnalyticsBooking
+[branch "main"]
+	remote = origin
+	merge = refs/heads/main
+[branch "shashwat-fix"]
+	remote = origin
+	merge = refs/heads/shashwat/fix
+[branch "shashwat/fix"]
+	remote = origin
+	merge = refs/heads/shashwat/fix
+	vscode-merge-base = origin/shashwat/fix
+	vscode-merge-base = origin/shashwat/fix
